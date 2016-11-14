@@ -51,7 +51,7 @@ class EngineDelay;
 // engine. Prevents memory allocation in EngineMaster::addChannel.
 static const int kPreallocatedChannels = 64;
 
-class EngineMaster : public QObject, public AudioSource {
+class EngineMaster : public QObject, public AudioOrigin {
     Q_OBJECT
   public:
     EngineMaster(UserSettingsPointer pConfig,
@@ -98,24 +98,22 @@ class EngineMaster : public QObject, public AudioSource {
     virtual void onOutputConnected(AudioOutput output);
     virtual void onOutputDisconnected(AudioOutput output);
 
-    void process(const int iBufferSize);
+    void process(int iBufferSize);
 
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);
     EngineChannel* getChannel(const QString& group);
-    static inline double gainForOrientation(EngineChannel::ChannelOrientation orientation,
-                                            double leftGain,
-                                            double centerGain,
-                                            double rightGain) {
+    static inline CSAMPLE_GAIN gainForOrientation(EngineChannel::ChannelOrientation orientation,
+                                            CSAMPLE_GAIN leftGain,
+                                            CSAMPLE_GAIN centerGain,
+                                            CSAMPLE_GAIN rightGain)
+    {
         switch (orientation) {
-            case EngineChannel::LEFT:
-                return leftGain;
-            case EngineChannel::RIGHT:
-                return rightGain;
+            case EngineChannel::LEFT:   return leftGain;
+            case EngineChannel::RIGHT:  return rightGain;
             case EngineChannel::CENTER:
-            default:
-                return centerGain;
+            default:                    return centerGain;
         }
     }
 
@@ -151,31 +149,29 @@ class EngineMaster : public QObject, public AudioSource {
         ControlPushButton* m_pMuteControl;
         int m_index;
     };
-
     struct GainCache {
-        CSAMPLE m_gain;
+        CSAMPLE_GAIN m_gain;
         bool m_fadeout;
     };
-
     class GainCalculator {
       public:
-        virtual double getGain(ChannelInfo* pChannelInfo) const = 0;
+        virtual CSAMPLE_GAIN getGain(ChannelInfo* pChannelInfo) const = 0;
     };
     class PflGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        CSAMPLE_GAIN getGain(ChannelInfo* pChannelInfo) const override {
             Q_UNUSED(pChannelInfo);
             return m_dGain;
         }
-        inline void setGain(double dGain) {
+        void setGain(CSAMPLE_GAIN dGain) {
             m_dGain = dGain;
         }
       private:
-        double m_dGain;
+        CSAMPLE_GAIN m_dGain;
     };
     class TalkoverGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        CSAMPLE_GAIN getGain(ChannelInfo* pChannelInfo) const override {
             Q_UNUSED(pChannelInfo);
             return 1.0;
         }
@@ -188,61 +184,60 @@ class EngineMaster : public QObject, public AudioSource {
                   m_dCenterGain(1.0),
                   m_dRightGain(1.0) {
         }
-
-        inline double getGain(ChannelInfo* pChannelInfo) const {
-            const double channelVolume = pChannelInfo->m_pVolumeControl->get();
-            const double orientationGain = EngineMaster::gainForOrientation(
+        CSAMPLE_GAIN getGain(ChannelInfo* pChannelInfo) const override {
+            auto channelVolume = CSAMPLE_GAIN(pChannelInfo->m_pVolumeControl->get());
+            auto orientationGain = EngineMaster::gainForOrientation(
                     pChannelInfo->m_pChannel->getOrientation(),
                     m_dLeftGain, m_dCenterGain, m_dRightGain);
             return m_dVolume * channelVolume * orientationGain;
         }
 
-        inline void setGains(double dVolume, double leftGain,
-                double centerGain, double rightGain) {
+        void setGains(CSAMPLE_GAIN dVolume, CSAMPLE_GAIN  leftGain,
+                CSAMPLE_GAIN centerGain, CSAMPLE_GAIN rightGain)
+        {
             m_dVolume = dVolume;
             m_dLeftGain = leftGain;
             m_dCenterGain = centerGain;
             m_dRightGain = rightGain;
         }
-
       private:
-        double m_dVolume;
-        double m_dLeftGain;
-        double m_dCenterGain;
-        double m_dRightGain;
+        CSAMPLE_GAIN m_dVolume;
+        CSAMPLE_GAIN m_dLeftGain;
+        CSAMPLE_GAIN m_dCenterGain;
+        CSAMPLE_GAIN m_dRightGain;
     };
     template<typename T, unsigned int CAPACITY>
     class FastVector {
       public:
-        inline FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
-        inline ~FastVector() {
+        FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
+        ~FastVector() {
             if (QTypeInfo<T>::isComplex) {
                 for (int i = 0; i < m_size; ++i) {
                     m_data[i].~T();
                 }
             }
         }
-        inline void append(const T& t) {
+        void append(const T& t) {
             if (QTypeInfo<T>::isComplex) {
                 new (&m_data[m_size++]) T(t);
             } else {
                 m_data[m_size++] = t;
             }
         };
-        inline const T& operator[](unsigned int i) const {
+        const T& operator[](unsigned int i) const {
             return m_data[i];
         }
-        inline T& operator[](unsigned int i) {
+        T& operator[](unsigned int i) {
             return m_data[i];
         }
-        inline const T& at(unsigned int i) const {
+        const T& at(unsigned int i) const {
             return m_data[i];
         }
-        inline void replace(unsigned int i, const T& t) {
+        void replace(unsigned int i, const T& t) {
             T copy(t);
             m_data[i] = copy;
         }
-        inline int size () const {
+        int size () const {
             return m_size;
         }
       private:
@@ -253,7 +248,6 @@ class EngineMaster : public QObject, public AudioSource {
         long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) /
                              sizeof(long double)];
     };
-
   protected:
     // The master buffer is protected so it can be accessed by test subclasses.
     CSAMPLE* m_pMaster;

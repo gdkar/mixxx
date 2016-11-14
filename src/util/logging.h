@@ -3,6 +3,10 @@
 
 #include <QDir>
 
+#include <QString>
+#include <QMetaObject>
+#include <QObject>
+#include <QMetaEnum>
 
 namespace mixxx {
 
@@ -16,7 +20,15 @@ enum class LogLevel {
 };
 
 class Logging {
+    Q_GADGET
   public:
+    using LogLevel = mixxx::LogLevel;
+    Q_ENUM(LogLevel);
+    static constexpr LogLevel kLogLevelDefault = LogLevel::Warning;
+    // Any debug statement starting with this prefix bypasses the --logLevel
+    // command line flags.
+    static constexpr const char* kControllerDebugPrefix = "CDBG";
+
     // These are not thread safe. Only call them on Mixxx startup and shutdown.
     static void initialize(const QDir& settingsDir,
                            LogLevel logLevel,

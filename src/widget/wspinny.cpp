@@ -20,7 +20,7 @@
 WSpinny::WSpinny(QWidget* parent, const QString& group,
                  UserSettingsPointer pConfig,
                  VinylControlManager* pVCMan)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent, SharedGLContext::getWidget()),
+        : QWidget(parent),
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
@@ -65,12 +65,8 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 #endif
     //Drag and drop
     setAcceptDrops(true);
-    qDebug() << "WSpinny(): Created QGLWidget, Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
 
-    CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != nullptr) {
+    if(auto  pCache = CoverArtCache::instance()){
         connect(pCache, SIGNAL(coverFound(const QObject*,
                                           const CoverInfo&, QPixmap, bool)),
                 this, SLOT(slotCoverFound(const QObject*,
@@ -126,10 +122,10 @@ void WSpinny::onVinylSignalQualityUpdate(const VinylSignalQualityReport& report)
 
 void WSpinny::setup(const QDomNode& node, const SkinContext& context) {
     // Set images
-    QDomElement backPathElement = context.selectElement(node, "PathBackground");
+    auto backPathElement = context.selectElement(node, "PathBackground");
     m_pBgImage = WImageStore::getImage(context.getPixmapSource(backPathElement),
                                        context.getScaleFactor());
-    Paintable::DrawMode bgmode = context.selectScaleMode(backPathElement,
+    auto bgmode = context.selectScaleMode(backPathElement,
                                                          Paintable::FIXED);
     if (m_pBgImage && !m_pBgImage->isNull() && bgmode == Paintable::FIXED) {
         setFixedSize(m_pBgImage->size());
@@ -618,7 +614,7 @@ bool WSpinny::event(QEvent* pEvent) {
     if (pEvent->type() == QEvent::ToolTip) {
         updateTooltip();
     }
-    return QGLWidget::event(pEvent);
+    return QWidget::event(pEvent);
 }
 
 void WSpinny::dragEnterEvent(QDragEnterEvent* event) {

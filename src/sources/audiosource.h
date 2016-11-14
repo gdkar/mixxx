@@ -33,20 +33,18 @@ class AudioSource: public UrlResource, public AudioSignal {
     static constexpr SampleLayout kSampleLayout = SampleLayout::Interleaved;
 
     // Returns the total number of sample frames.
-    inline SINT getFrameCount() const {
+    SINT getFrameCount() const {
         return m_frameCount;
     }
-
-    inline bool isEmpty() const {
+    bool isEmpty() const {
         return kFrameCountZero >= getFrameCount();
     }
-
     // The actual duration in seconds.
     // Well defined only for valid files!
-    inline bool hasDuration() const {
+    bool hasDuration() const {
         return hasValidSamplingRate();
     }
-    inline double getDuration() const {
+    double getDuration() const {
         DEBUG_ASSERT(hasDuration()); // prevents division by zero
         return double(getFrameCount()) / double(getSamplingRate());
     }
@@ -54,31 +52,27 @@ class AudioSource: public UrlResource, public AudioSignal {
     // The bitrate is optional and measured in kbit/s (kbps).
     // It depends on the metadata and decoder if a value for the
     // bitrate is available.
-    inline bool hasBitrate() const {
+    bool hasBitrate() const {
         return kBitrateZero < m_bitrate;
     }
-    inline SINT getBitrate() const {
+    SINT getBitrate() const {
         return m_bitrate;
     }
-
     // Index of the first sample frame.
-    inline static SINT getMinFrameIndex() {
+    static SINT getMinFrameIndex() {
         return kFrameIndexMin;
     }
-
     // Index of the sample frame following the last
     // sample frame.
-    inline SINT getMaxFrameIndex() const {
+    SINT getMaxFrameIndex() const {
         return getMinFrameIndex() + getFrameCount();
     }
-
     // The sample frame index is valid in the range
     // [getMinFrameIndex(), getMaxFrameIndex()].
-    inline bool isValidFrameIndex(SINT frameIndex) const {
+    bool isValidFrameIndex(SINT frameIndex) const {
         return (getMinFrameIndex() <= frameIndex) &&
                 (getMaxFrameIndex() >= frameIndex);
     }
-
     // Adjusts the current frame seek index:
     // - Precondition: isValidFrameIndex(frameIndex) == true
     //   - Index of first frame: frameIndex = 0
@@ -103,15 +97,15 @@ class AudioSource: public UrlResource, public AudioSignal {
     virtual SINT readSampleFrames(
             SINT numberOfFrames,
             CSAMPLE* sampleBuffer) = 0;
-
-    inline SINT skipSampleFrames(
-            SINT numberOfFrames) {
+    virtual SINT skipSampleFrames(
+            SINT numberOfFrames)
+    {
         return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
     }
-
-    inline SINT readSampleFrames(
+    virtual SINT readSampleFrames(
             SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
+            SampleBuffer* pSampleBuffer)
+    {
         if (pSampleBuffer) {
             DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
             return readSampleFrames(numberOfFrames, pSampleBuffer->data());
@@ -119,7 +113,6 @@ class AudioSource: public UrlResource, public AudioSignal {
             return skipSampleFrames(numberOfFrames);
         }
     }
-
     // Specialized function for explicitly reading stereo (= 2 channels)
     // frames from an AudioSource. This is the preferred method in Mixxx
     // to read a stereo signal.
@@ -156,17 +149,15 @@ class AudioSource: public UrlResource, public AudioSignal {
             CSAMPLE* sampleBuffer,
             SINT sampleBufferSize);
 
-    inline SINT readSampleFramesStereo(
+    virtual SINT readSampleFramesStereo(
             SINT numberOfFrames,
             SampleBuffer* pSampleBuffer) {
         if (pSampleBuffer) {
-            return readSampleFramesStereo(numberOfFrames,
-                    pSampleBuffer->data(), pSampleBuffer->size());
+            return readSampleFramesStereo(numberOfFrames,pSampleBuffer->data(), pSampleBuffer->size());
         } else {
             return skipSampleFrames(numberOfFrames);
         }
     }
-
     // Utility function to clamp the frame index interval
     // [*pMinFrameIndexOfInterval, *pMaxFrameIndexOfInterval)
     // to valid frame indexes. The lower bound is inclusive and
@@ -182,12 +173,11 @@ class AudioSource: public UrlResource, public AudioSignal {
     explicit AudioSource(const QUrl& url);
     explicit AudioSource(const AudioSource& other) = default;
 
-    inline static bool isValidFrameCount(SINT frameCount) {
+    static bool isValidFrameCount(SINT frameCount) {
         return kFrameCountZero <= frameCount;
     }
     void setFrameCount(SINT frameCount);
-
-    inline static bool isValidBitrate(SINT bitrate) {
+    static bool isValidBitrate(SINT bitrate) {
         return kBitrateZero <= bitrate;
     }
     void setBitrate(SINT bitrate);
@@ -209,7 +199,6 @@ class AudioSource: public UrlResource, public AudioSignal {
     static constexpr SINT kBitrateDefault = kBitrateZero;
 
     SINT m_frameCount;
-
     SINT m_bitrate;
 };
 

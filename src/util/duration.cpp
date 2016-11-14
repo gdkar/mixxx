@@ -11,33 +11,34 @@ namespace mixxx {
 
 namespace {
 
-static const qint64 kSecondsPerMinute = 60;
-static const qint64 kSecondsPerHour = 60 * kSecondsPerMinute;
-static const qint64 kSecondsPerDay = 24 * kSecondsPerHour;
+constexpr const qint64 kSecondsPerMinute = 60;
+constexpr const qint64 kSecondsPerHour = 60 * kSecondsPerMinute;
+constexpr const qint64 kSecondsPerDay = 24 * kSecondsPerHour;
 
 } // namespace
 
 // static
-QString DurationBase::formatSeconds(double dSeconds, Precision precision) {
+QString impl::Duration::formatSeconds(double dSeconds, Precision precision)
+{
     if (dSeconds < 0.0) {
         // negative durations are not supported
         return "?";
     }
 
-    const qint64 days = static_cast<qint64>(std::floor(dSeconds)) / kSecondsPerDay;
+    auto days = static_cast<qint64>(std::floor(dSeconds)) / kSecondsPerDay;
     dSeconds -= days * kSecondsPerDay;
 
     // NOTE(uklotzde): QTime() constructs a 'null' object, but
     // we need 'zero' here.
-    QTime t = QTime(0, 0).addMSecs(dSeconds * kMillisPerSecond);
+    auto t = QTime(0, 0).addMSecs(dSeconds * kMillisPerSecond);
 
-    QString formatString =
-            (days > 0 ? (QString::number(days) %
+    auto formatString =
+            QString((days > 0 ? (QString::number(days) %
                          QLatin1String("'d', ")) : QString()) %
             QLatin1String(days > 0 || t.hour() > 0 ? "hh:mm:ss" : "mm:ss") %
-            QLatin1String(Precision::SECONDS == precision ? "" : ".zzz");
+            QLatin1String(Precision::SECONDS == precision ? "" : ".zzz"));
 
-    QString durationString = t.toString(formatString);
+    auto durationString = QString{t.toString(formatString)};
 
     // The format string gives us milliseconds but we want
     // centiseconds. Slice one character off.

@@ -25,14 +25,14 @@ SkinContext::SkinContext(UserSettingsPointer pConfig,
     m_pScriptEngine->installTranslatorFunctions();
 
     // Retrieving hooks pattern from script extension
-    QScriptValue global = m_pScriptEngine->globalObject();
-    QScriptValue svg = global.property("svg");
-    QScriptValue hooksPattern = svg.property("getHooksPattern").call(svg);
+    auto global = m_pScriptEngine->globalObject();
+    auto svg = global.property("svg");
+    auto hooksPattern = svg.property("getHooksPattern").call(svg);
     if (!hooksPattern.isNull()) {
         m_hookRx.setPattern(hooksPattern.toString());
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if 1 || (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     // Load the config option once, here, rather than in setupSize.
     m_scaleFactor = m_pConfig->getValue(ConfigKey("[Config]","ScaleFactor"), 1.0);
 #else
@@ -54,15 +54,15 @@ SkinContext::SkinContext(const SkinContext& parent)
           m_scaleFactor(parent.m_scaleFactor) {
     // we generate a new global object to preserve the scope between
     // a context and its children
-    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
-    QScriptValue newGlobal = m_pScriptEngine->newObject();
+    auto context = m_pScriptEngine->pushContext()->activationObject();
+    auto newGlobal = m_pScriptEngine->newObject();
     QScriptValueIterator it(m_parentGlobal);
     while (it.hasNext()) {
         it.next();
         newGlobal.setProperty(it.name(), it.value());
     }
 
-    for (QHash<QString, QString>::const_iterator it = m_variables.begin();
+    for (auto it = m_variables.begin();
          it != m_variables.end(); ++it) {
         newGlobal.setProperty(it.key(), it.value());
     }
@@ -92,7 +92,7 @@ void SkinContext::setXmlPath(const QString& xmlPath) {
 }
 
 bool SkinContext::hasVariableUpdates(const QDomNode& node) const {
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.isElement() && child.nodeName() == "SetVariable") {
             return true;
@@ -103,7 +103,7 @@ bool SkinContext::hasVariableUpdates(const QDomNode& node) const {
 }
 
 void SkinContext::updateVariables(const QDomNode& node) {
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.isElement() && child.nodeName() == "SetVariable") {
             updateVariable(child.toElement());
@@ -117,22 +117,22 @@ void SkinContext::updateVariable(const QDomElement& element) {
         qDebug() << "Can't update variable without name:" << element.text();
         return;
     }
-    QString name = element.attribute("name");
-    QString value = variableNodeToText(element);
+    auto name = element.attribute("name");
+    auto value = variableNodeToText(element);
     setVariable(name, value);
 }
 
 QString SkinContext::variableNodeToText(const QDomElement& variableNode) const {
-    QString expression = variableNode.attribute("expression");
+    auto expression = variableNode.attribute("expression");
     if (!expression.isNull()) {
-        QScriptValue result = m_pScriptEngine->evaluate(
+        auto result = m_pScriptEngine->evaluate(
             expression, m_xmlPath, variableNode.lineNumber());
         return result.toString();
     }
 
-    QString variableName = variableNode.attribute("name");
+    auto variableName = variableNode.attribute("name");
     if (!variableName.isNull()) {
-        QString formatString = variableNode.attribute("format");
+        auto formatString = variableNode.attribute("format");
         if (!formatString.isNull()) {
             return formatString.arg(variable(variableName));
         } else if (variableNode.nodeName() == "SetVariable") {
@@ -149,7 +149,7 @@ QString SkinContext::variableNodeToText(const QDomElement& variableNode) const {
 
 QString SkinContext::nodeToString(const QDomNode& node) const {
     QString result;
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.isElement()) {
             if (child.nodeName() == "Variable") {
@@ -170,10 +170,10 @@ PixmapSource SkinContext::getPixmapSource(const QDomNode& pixmapNode) const {
     const SvgParser svgParser(*this);
 
     if (!pixmapNode.isNull()) {
-        QDomNode svgNode = selectNode(pixmapNode, "svg");
+        auto svgNode = selectNode(pixmapNode, "svg");
         if (!svgNode.isNull()) {
             // inline svg
-            const QByteArray rslt = svgParser.saveToQByteArray(
+            auto rslt = svgParser.saveToQByteArray(
                     svgParser.parseSvgTree(svgNode, m_xmlPath));
             PixmapSource source;
             source.setSVG(rslt);
@@ -191,7 +191,7 @@ PixmapSource SkinContext::getPixmapSource(const QString& filename) const {
 }
 
 QDomElement SkinContext::loadSvg(const QString& filename) const {
-    QDomElement& cachedSvg = (*m_pSvgCache)[filename];
+    auto& cachedSvg = (*m_pSvgCache)[filename];
     if (cachedSvg.isNull()) {
         QFile file(filename);
         if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -208,7 +208,17 @@ QDomElement SkinContext::loadSvg(const QString& filename) const {
 
 PixmapSource SkinContext::getPixmapSourceInner(const QString& filename) const {
     if (!filename.isEmpty()) {
+//<<<<<<< HEAD
         return PixmapSource(getSkinPath(filename));
+/*=======
+        source.setPath(getSkinPath(filename));
+        if (source.isSVG()) {
+            auto svgElement = loadSvg(filename);
+            auto rslt = svgParser.saveToQByteArray(
+                svgParser.parseSvgTree(svgElement, filename));
+            source.setSVG(rslt);
+        }
+>>>>>>> stuff?*/
     }
     return PixmapSource();
 }
@@ -224,7 +234,7 @@ QScriptValue SkinContext::evaluateScript(const QString& expression,
 }
 
 QScriptValue SkinContext::importScriptExtension(const QString& extensionName) {
-    QScriptValue out = m_pScriptEngine->importExtension(extensionName);
+    auto out = m_pScriptEngine->importExtension(extensionName);
     if (m_pScriptEngine->hasUncaughtException()) {
         qDebug() << out.toString();
     }

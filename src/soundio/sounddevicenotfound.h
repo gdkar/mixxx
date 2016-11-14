@@ -14,29 +14,17 @@ class EngineNetworkStream;
 // sound API
 
 class SoundDeviceNotFound : public SoundDevice {
+    Q_OBJECT
   public:
-    SoundDeviceNotFound(QString internalName)
-            : SoundDevice(UserSettingsPointer(), nullptr) {
-        m_strInternalName = internalName;
-        m_strDisplayName = internalName;
-    }
-
-    SoundDeviceError open(bool isClkRefDevice, int syncBuffers) override {
-        Q_UNUSED(isClkRefDevice);
-        Q_UNUSED(syncBuffers);
-        return SOUNDDEVICE_ERROR_ERR;
-    };
-    bool isOpen() const  override { return false; };
-    SoundDeviceError close() override {
-        return SOUNDDEVICE_ERROR_ERR;
-    };
-    void readProcess() override { };
-    void writeProcess() override { };
-    QString getError() const override{ return QObject::tr("Device not found"); };
-
-    unsigned int getDefaultSampleRate() const override {
-        return 44100;
-    }
+    SoundDeviceNotFound(QString internalName, SoundManager *sm);
+   ~SoundDeviceNotFound() override = default;
+    SoundDeviceError open(bool isClkRefDevice, int syncBuffers) override;
+    bool isOpen() const  override;
+    SoundDeviceError close() override;
+    void readProcess() override;
+    void writeProcess() override;
+    QString getError() const override;
+    unsigned int getDefaultSampleRate() const override;
 };
 
 #endif // SOUNDDEVICENOTFOUND_H

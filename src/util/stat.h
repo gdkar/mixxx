@@ -4,12 +4,18 @@
 #include <QMap>
 #include <QVector>
 #include <QString>
+#include <QMetaEnum>
+#include <QMetaType>
+#include <QtGlobal>
+#include <deque>
 
+#include "util/intrusive_fifo.hpp"
 #include "util/experiment.h"
 
 struct StatReport;
 
 class Stat {
+    Q_GADGET
   public:
     enum StatType {
         UNSPECIFIED = 0,
@@ -21,31 +27,13 @@ class Stat {
         EVENT_START,
         EVENT_END,
     };
-
+    Q_ENUM(StatType);
     static QString statTypeToString(StatType type) {
-        switch (type) {
-            case UNSPECIFIED:
-                return "UNSPECIFIED";
-            case COUNTER:
-                return "COUNTER";
-            case DURATION_MSEC:
-                return "DURATION_MSEC";
-            case DURATION_NANOSEC:
-                return "DURATION_NANOSEC";
-            case DURATION_SEC:
-                return "DURATION_SEC";
-            case EVENT:
-                return "EVENT";
-            case EVENT_START:
-                return "START";
-            case EVENT_END:
-                return "END";
-            default:
-                return "UNKNOWN";
-        }
+        auto me = QMetaEnum::fromType<StatType>();
+        return me.valueToKey(type);
     }
 
-    enum ComputeTypes {
+    enum ComputeType {
         NONE            = 0x0000,
         // O(1) in time and space.
         COUNT           = 0x0001,
@@ -60,7 +48,7 @@ class Stat {
         MIN             = 0x0020,
         // O(1) in time and space.
         MAX             = 0x0040,
-        // O(1) in time, O(k) in space where k is # of distinct values.
+        // O(log(k)) in time, O(k) in space where k is # of distinct values.
         // Use carefully!
         HISTOGRAM       = 0x0080,
         // O(1) in time, O(n) in space where n is the # of reports.
@@ -75,9 +63,10 @@ class Stat {
         // Used for marking stats recorded in BASE mode.
         STATS_BASE        = 0x1000,
     };
-    typedef int ComputeFlags;
-
-    static Experiment::Mode modeFromFlags(ComputeFlags flags) {
+    Q_DECLARE_FLAGS(ComputeFlags,ComputeType)
+//    typedef int ComputeFlags;
+    static Experiment::Mode modeFromFlags(ComputeFlags flags)
+    {
         if (flags & Stat::STATS_EXPERIMENT) {
             return Experiment::EXPERIMENT;
         } else if (flags & Stat::STATS_BASE) {
@@ -85,31 +74,33 @@ class Stat {
         }
         return Experiment::OFF;
     }
-
-    static ComputeFlags experimentFlags(ComputeFlags flags) {
+    static ComputeFlags experimentFlags(ComputeFlags flags)
+    {
         switch (Experiment::mode()) {
-            case Experiment::EXPERIMENT:
-                return flags | STATS_EXPERIMENT;
-            case Experiment::BASE:
-                return flags | STATS_BASE;
+            case Experiment::EXPERIMENT: return flags | STATS_EXPERIMENT;
+            case Experiment::BASE:       return flags | STATS_BASE;
             default:
-            case Experiment::OFF:
-                return flags;
+            case Experiment::OFF:        return flags;
         }
     }
 
-    explicit Stat();
-    void processReport(const StatReport& report);
+    Q_INVOKABLE Stat();
+    Q_INVOKABLE void processReport(const StatReport& report);
     QString valueUnits() const;
 
-    double variance() const {
+    Q_INVOKABLE double variance() const {
         return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;
     }
-
+    Q_INVOKABLE void clear()
+    {
+        m_report_count = m_sum = m_min = m_max = m_variance_mk = m_variance_sk = 0.;
+        m_histogram.clear();
+        m_values.clear();
+    }
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;
-    QVector<double> m_values;
+    std::deque<double> m_values;
     double m_report_count;
     double m_sum;
     double m_min;
@@ -117,21 +108,39 @@ class Stat {
     double m_variance_mk;
     double m_variance_sk;
     QMap<double, double> m_histogram;
-
+    QHash<QString, int>  m_thread_usage;
     static bool track(const QString& tag,
                       Stat::StatType type,
                       Stat::ComputeFlags compute,
                       double value);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Stat::ComputeFlags);
 
 QDebug operator<<(QDebug dbg, const Stat &stat);
 
-struct StatReport {
-    char* tag;
+struct StatReport : public intrusive::node {
+    QString tag;
+    QString thread_id;
+//    char* tag;
     qint64 time;
+    double value;
     Stat::StatType type;
     Stat::ComputeFlags compute;
-    double value;
+    StatReport() = default;
+    StatReport(
+        const QString &_tag
+      , double value
+      , Stat::StatType type
+      , Stat::ComputeFlags flags
+        );
+    StatReport(
+        const QString &_tag
+      , const QString &_thread
+      , qint64 time
+      , double value
+      , Stat::StatType type
+      , Stat::ComputeFlags flags
+        );
 };
-
+Q_DECLARE_METATYPE(StatReport*);
 #endif /* STAT_H */

@@ -33,7 +33,8 @@ ControllerEngine::ControllerEngine(Controller* controller)
         : m_pEngine(nullptr),
           m_pController(controller),
           m_bPopups(false),
-          m_pBaClass(nullptr) {
+          m_pBaClass(nullptr)
+{
     // Handle error dialog buttons
     qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 
@@ -66,8 +67,8 @@ ControllerEngine::~ControllerEngine() {
 
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
-    if (m_pEngine != nullptr) {
-        QScriptEngine *engine = m_pEngine;
+    if (m_pEngine ) {
+        auto engine = m_pEngine;
         m_pEngine = nullptr;
         engine->deleteLater();
     }
@@ -78,24 +79,25 @@ Purpose: Calls the same method on a list of JS Objects
 Input:   -
 Output:  -
 -------- ------------------------------------------------------ */
-void ControllerEngine::callFunctionOnObjects(QList<QString> scriptFunctionPrefixes,
+void ControllerEngine::callFunctionOnObjects(QScriptValueList scriptFunctionPrefixes,
                                              const QString& function, QScriptValueList args) {
-    const QScriptValue global = m_pEngine->globalObject();
+    auto global = m_pEngine->globalObject();
 
-    for (const QString& prefixName : scriptFunctionPrefixes) {
-        QScriptValue prefix = global.property(prefixName);
+    for (auto & prefix: scriptFunctionPrefixes) {
+/*        auto prefix = global.property(prefixName);
         if (!prefix.isValid() || !prefix.isObject()) {
             qWarning() << "ControllerEngine: No" << prefixName << "object in script";
             continue;
+        }*/
+        if(prefix.isObject()) {
+            auto func = prefix.property(function);
+            if (!func.isValid() || !func.isFunction()) {
+                qWarning() << "ControllerEngine:" << prefix .toString() << "has no" << function << " method";
+                continue;
+            }
+            controllerDebug("ControllerEngine: Executing" << prefix.toString() << "." << function);
+            func.call(prefix, args);
         }
-
-        QScriptValue init = prefix.property(function);
-        if (!init.isValid() || !init.isFunction()) {
-            qWarning() << "ControllerEngine:" << prefixName << "has no" << function << " method";
-            continue;
-        }
-        controllerDebug("ControllerEngine: Executing" << prefixName << "." << function);
-        init.call(prefix, args);
     }
 }
 
@@ -113,8 +115,7 @@ QScriptValue ControllerEngine::wrapFunctionCode(const QString& codeSnippet,
                                                 int numberOfArgs) {
     QScriptValue wrappedFunction;
 
-    QHash<QString, QScriptValue>::const_iterator i =
-            m_scriptWrappedFunctionCache.find(codeSnippet);
+    auto i = m_scriptWrappedFunctionCache.find(codeSnippet);
 
     if (i != m_scriptWrappedFunctionCache.end()) {
         wrappedFunction = i.value();
@@ -123,8 +124,8 @@ QScriptValue ControllerEngine::wrapFunctionCode(const QString& codeSnippet,
         for (int i = 1; i <= numberOfArgs; i++) {
             wrapperArgList << QString("arg%1").arg(i);
         }
-        QString wrapperArgs = wrapperArgList.join(",");
-        QString wrappedCode = "(function (" + wrapperArgs + ") { (" +
+        auto wrapperArgs = wrapperArgList.join(",");
+        auto wrappedCode = "(function (" + wrapperArgs + ") { (" +
                                 codeSnippet + ")(" + wrapperArgs + "); })";
         wrappedFunction = m_pEngine->evaluate(wrappedCode);
         checkException();
@@ -133,14 +134,16 @@ QScriptValue ControllerEngine::wrapFunctionCode(const QString& codeSnippet,
     return wrappedFunction;
 }
 
-QScriptValue ControllerEngine::getThisObjectInFunctionCall() {
-    QScriptContext *ctxt = m_pEngine->currentContext();
+QScriptValue ControllerEngine::getThisObjectInFunctionCall()
+{
+    if(auto ctxt = m_pEngine->currentContext()) {
     // Our current context is a function call. We want to grab the 'this'
     // from the caller's context, so we walk up the stack.
-    if (ctxt) {
         ctxt = ctxt->parentContext();
+        if(ctxt)
+            ctxt->thisObject();
     }
-    return ctxt ? ctxt->thisObject() : QScriptValue();
+    return QScriptValue();
 }
 
 /* -------- ------------------------------------------------------
@@ -156,7 +159,7 @@ void ControllerEngine::gracefulShutdown() {
     stopAllTimers();
 
     // Call each script's shutdown function if it exists
-    callFunctionOnObjects(m_scriptFunctionPrefixes, "shutdown");
+    callFunctionOnObjects(m_prefixValues, "shutdown");
 
     // Prevents leaving decks in an unstable state
     //  if the controller is shut down while scratching
@@ -165,10 +168,8 @@ void ControllerEngine::gracefulShutdown() {
         i.next();
         qDebug() << "Aborting scratching on deck" << i.value();
         // Clear scratch2_enable. PlayerManager::groupForDeck is 0-indexed.
-        QString group = PlayerManager::groupForDeck(i.value() - 1);
-        ControlObjectScript* pScratch2Enable =
-                getControlObjectScript(group, "scratch2_enable");
-        if (pScratch2Enable != nullptr) {
+        auto group = PlayerManager::groupForDeck(i.value() - 1);
+        if(auto  pScratch2Enable = getControlObjectScript(group, "scratch2_enable")){
             pScratch2Enable->set(0);
         }
     }
@@ -177,12 +178,12 @@ void ControllerEngine::gracefulShutdown() {
     m_scriptWrappedFunctionCache.clear();
 
     // Free all the ControlObjectScripts
-    QList<ConfigKey> keys = m_controlCache.keys();
-    QList<ConfigKey>::iterator it = keys.begin();
-    QList<ConfigKey>::iterator end = keys.end();
+    auto keys = m_controlCache.keys();
+    auto it = keys.begin();
+    auto end = keys.end();
     while (it != end) {
         ConfigKey key = *it;
-        ControlObjectScript* coScript = m_controlCache.take(key);
+        auto  coScript = m_controlCache.take(key);
         delete coScript;
         ++it;
     }
@@ -196,12 +197,13 @@ bool ControllerEngine::isReady() {
     return ret;
 }
 
-void ControllerEngine::initializeScriptEngine() {
+void ControllerEngine::initializeScriptEngine()
+{
     // Create the Script Engine
     m_pEngine = new QScriptEngine(this);
 
     // Make this ControllerEngine instance available to scripts as 'engine'.
-    QScriptValue engineGlobalObject = m_pEngine->globalObject();
+    auto engineGlobalObject = m_pEngine->globalObject();
     engineGlobalObject.setProperty("engine", m_pEngine->newQObject(this));
 
     if (m_pController) {
@@ -224,7 +226,8 @@ void ControllerEngine::initializeScriptEngine() {
    Output:  Returns true if no errors occurred.
    -------- ------------------------------------------------------ */
 bool ControllerEngine::loadScriptFiles(const QList<QString>& scriptPaths,
-                                       const QList<ControllerPreset::ScriptFileInfo>& scripts) {
+                                       const QList<ControllerPreset::ScriptFileInfo>& scripts)
+{
     m_lastScriptPaths = scriptPaths;
 
     // scriptPaths holds the paths to search in when we're looking for scripts
@@ -251,7 +254,7 @@ bool ControllerEngine::loadScriptFiles(const QList<QString>& scriptPaths,
 void ControllerEngine::scriptHasChanged(const QString& scriptFilename) {
     Q_UNUSED(scriptFilename);
     qDebug() << "ControllerEngine: Reloading Scripts";
-    ControllerPresetPointer pPreset = m_pController->getPreset();
+    auto pPreset = ControllerPresetPointer(m_pController->getPreset());
 
     disconnect(&m_scriptWatcher, SIGNAL(fileChanged(QString)),
                this, SLOT(scriptHasChanged(QString)));
@@ -260,8 +263,8 @@ void ControllerEngine::scriptHasChanged(const QString& scriptFilename) {
 
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
-    if (m_pEngine != nullptr) {
-        QScriptEngine *engine = m_pEngine;
+    if (m_pEngine) {
+        auto engine = m_pEngine;
         m_pEngine = nullptr;
         engine->deleteLater();
     }
@@ -281,20 +284,22 @@ void ControllerEngine::scriptHasChanged(const QString& scriptFilename) {
    -------- ------------------------------------------------------ */
 void ControllerEngine::initializeScripts(const QList<ControllerPreset::ScriptFileInfo>& scripts) {
 
+    auto global = m_pEngine->globalObject();
     m_scriptFunctionPrefixes.clear();
     for (const ControllerPreset::ScriptFileInfo& script : scripts) {
         // Skip empty prefixes.
         if (!script.functionPrefix.isEmpty()) {
             m_scriptFunctionPrefixes.append(script.functionPrefix);
+            m_prefixValues <<  global.property(script.functionPrefix);
         }
     }
 
-    QScriptValueList args;
-    args << QScriptValue(m_pController->getName());
-    args << QScriptValue(ControllerDebug::enabled());
+    auto args = QScriptValueList{}
+        << QScriptValue(m_pController->getName())
+        << QScriptValue(ControllerDebug::enabled());
 
     // Call the init method for all the prefixes.
-    callFunctionOnObjects(m_scriptFunctionPrefixes, "init", args);
+    callFunctionOnObjects(m_prefixValues, "init", args);
 
     emit(initialized());
 }
@@ -305,7 +310,8 @@ void ControllerEngine::initializeScripts(const QList<ControllerPreset::ScriptFil
    Input:   -
    Output:  -
    -------- ------------------------------------------------------ */
-bool ControllerEngine::evaluate(const QString& filepath) {
+bool ControllerEngine::evaluate(const QString& filepath)
+{
     QList<QString> dummy;
     bool ret = evaluate(filepath, dummy);
 
@@ -317,8 +323,8 @@ bool ControllerEngine::syntaxIsValid(const QString& scriptCode) {
         return false;
     }
 
-    QScriptSyntaxCheckResult result = m_pEngine->checkSyntax(scriptCode);
-    QString error = "";
+    auto result = m_pEngine->checkSyntax(scriptCode);
+    auto error = QString{""};
     switch (result.state()) {
         case (QScriptSyntaxCheckResult::Valid): break;
         case (QScriptSyntaxCheckResult::Intermediate):
@@ -351,7 +357,7 @@ bool ControllerEngine::internalExecute(QScriptValue thisObject,
                                        const QString& scriptCode) {
     // A special version of safeExecute since we're evaluating strings, not actual functions
     //  (execute() would print an error that it's not a function every time a timer fires.)
-    if (m_pEngine == nullptr) {
+    if (!m_pEngine) {
         return false;
     }
 
@@ -359,7 +365,7 @@ bool ControllerEngine::internalExecute(QScriptValue thisObject,
         return false;
     }
 
-    QScriptValue scriptFunction = m_pEngine->evaluate(scriptCode);
+    auto scriptFunction = m_pEngine->evaluate(scriptCode);
 
     if (checkException()) {
         qDebug() << "Exception evaluating:" << scriptCode;
@@ -381,7 +387,7 @@ Output:  false if an exception
 -------- ------------------------------------------------------ */
 bool ControllerEngine::internalExecute(QScriptValue thisObject, QScriptValue functionObject,
                                        QScriptValueList args) {
-    if (m_pEngine == nullptr) {
+    if (!m_pEngine) {
         qDebug() << "ControllerEngine::execute: No script engine exists!";
         return false;
     }
@@ -401,7 +407,7 @@ bool ControllerEngine::internalExecute(QScriptValue thisObject, QScriptValue fun
     }
 
     // If it does happen to be a function, call it.
-    QScriptValue rc = functionObject.call(thisObject, args);
+    auto rc = functionObject.call(thisObject, args);
     if (!rc.isValid()) {
         qDebug() << "QScriptValue is not a function or ...";
         return false;
@@ -418,11 +424,9 @@ bool ControllerEngine::execute(QScriptValue functionObject,
                                const QString& group,
                                mixxx::Duration timestamp) {
     Q_UNUSED(timestamp);
-    if (m_pEngine == nullptr) {
+    if (!m_pEngine)
         return false;
-    }
-    QScriptValueList args;
-    args << QScriptValue(channel);
+    auto args = QScriptValueList{} << QScriptValue(channel);
     args << QScriptValue(control);
     args << QScriptValue(value);
     args << QScriptValue(status);
@@ -433,11 +437,9 @@ bool ControllerEngine::execute(QScriptValue functionObject,
 bool ControllerEngine::execute(QScriptValue function, const QByteArray data,
                                mixxx::Duration timestamp) {
     Q_UNUSED(timestamp);
-    if (m_pEngine == nullptr) {
+    if (!m_pEngine)
         return false;
-    }
-    QScriptValueList args;
-    args << m_pBaClass->newInstance(data);
+    auto args = QScriptValueList{}<< m_pBaClass->newInstance(data);
     args << QScriptValue(data.size());
     return internalExecute(m_pEngine->globalObject(), function, args);
 }
@@ -453,17 +455,16 @@ bool ControllerEngine::checkException() {
     }
 
     if (m_pEngine->hasUncaughtException()) {
-        QScriptValue exception = m_pEngine->uncaughtException();
-        QString errorMessage = exception.toString();
-        QString line = QString::number(m_pEngine->uncaughtExceptionLineNumber());
-        QStringList backtrace = m_pEngine->uncaughtExceptionBacktrace();
-        QString filename = exception.property("fileName").toString();
+        auto exception = m_pEngine->uncaughtException();
+        auto errorMessage = exception.toString();
+        auto line = QString::number(m_pEngine->uncaughtExceptionLineNumber());
+        auto backtrace = m_pEngine->uncaughtExceptionBacktrace();
+        auto filename = exception.property("fileName").toString();
 
-        QStringList error;
-        error << (filename.isEmpty() ? "" : filename) << errorMessage << line;
+        auto error = QStringList{} << (filename.isEmpty() ? "" : filename) << errorMessage << line;
         m_scriptErrors.insert((filename.isEmpty() ? "passed code" : filename), error);
 
-        QString errorText = tr("Uncaught exception at line %1 in file %2: %3")
+        auto errorText = tr("Uncaught exception at line %1 in file %2: %3")
                 .arg(line, (filename.isEmpty() ? "" : filename), errorMessage);
 
         if (filename.isEmpty())
@@ -488,7 +489,7 @@ bool ControllerEngine::checkException() {
     -------- ------------------------------------------------------ */
 void ControllerEngine::scriptErrorDialog(const QString& detailedError) {
     qWarning() << "ControllerEngine:" << detailedError;
-    ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+    auto  props = ErrorDialogHandler::instance()->newDialogProperties();
     props->setType(DLG_WARNING);
     props->setTitle(tr("Controller script error"));
     props->setText(tr("A control you just used is not working properly."));
@@ -533,9 +534,10 @@ void ControllerEngine::errorDialogButton(const QString& key, QMessageBox::Standa
     }
 }
 
-ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& group, const QString& name) {
-    ConfigKey key = ConfigKey(group, name);
-    ControlObjectScript* coScript = m_controlCache.value(key, nullptr);
+ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& group, const QString& name)
+{
+    auto key = ConfigKey(group, name);
+    auto coScript = m_controlCache.value(key, nullptr);
     if (coScript == nullptr) {
         // create COT
         coScript = new ControlObjectScript(key, this);
@@ -555,7 +557,7 @@ ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& gro
    Output:  The value
    -------- ------------------------------------------------------ */
 double ControllerEngine::getValue(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
@@ -575,12 +577,11 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
         return;
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
-
-    if (coScript != nullptr) {
-        ControlObject* pControl = ControlObject::getControl(coScript->getKey());
-        if (pControl && !m_st.ignore(pControl, coScript->getParameterForValue(newValue))) {
-            coScript->slotSet(newValue);
+    if(auto  coScript = getControlObjectScript(group, name)){
+        if(auto  pControl = ControlObject::getControl(coScript->getKey())){
+            if (!m_st.ignore(pControl, coScript->getParameterForValue(newValue))) {
+                coScript->slotSet(newValue);
+            }
         }
     }
 }
@@ -592,8 +593,8 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
    Output:  The value
    -------- ------------------------------------------------------ */
 double ControllerEngine::getParameter(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
-    if (coScript == nullptr) {
+    auto  coScript = getControlObjectScript(group, name);
+    if (!coScript) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -612,12 +613,11 @@ void ControllerEngine::setParameter(QString group, QString name, double newParam
         return;
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
-
-    if (coScript != nullptr) {
-        ControlObject* pControl = ControlObject::getControl(coScript->getKey());
-        if (pControl && !m_st.ignore(pControl, newParameter)) {
-          coScript->setParameter(newParameter);
+    if(auto coScript = getControlObjectScript(group, name)){
+        if(auto  pControl = ControlObject::getControl(coScript->getKey())){
+            if (!m_st.ignore(pControl, newParameter)) {
+                coScript->setParameter(newParameter);
+            }
         }
     }
 }
@@ -634,7 +634,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
         return 0.0;
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
 
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
@@ -650,8 +650,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
    Output:  -
    -------- ------------------------------------------------------ */
 void ControllerEngine::reset(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
-    if (coScript != nullptr) {
+    if(auto  coScript = getControlObjectScript(group, name)){
         coScript->reset();
     }
 }
@@ -662,7 +661,7 @@ void ControllerEngine::reset(QString group, QString name) {
    Output:  -
    -------- ------------------------------------------------------ */
 double ControllerEngine::getDefaultValue(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto  coScript = getControlObjectScript(group, name);
 
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
@@ -678,7 +677,7 @@ double ControllerEngine::getDefaultValue(QString group, QString name) {
    Output:  -
    -------- ------------------------------------------------------ */
 double ControllerEngine::getDefaultParameter(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
 
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
@@ -710,7 +709,7 @@ QScriptValue ControllerEngine::makeConnection(QString group, QString name,
         return QScriptValue();
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: script tried to connect to ControlObject (" +
                       group + ", " + name +
@@ -745,12 +744,11 @@ QScriptValue ControllerEngine::makeConnection(QString group, QString name,
    Input:   the value of the connected ControlObject to pass to the callback
    -------- ------------------------------------------------------ */
 void ScriptConnection::executeCallback(double value) const {
-    QScriptValueList args;
-    args << QScriptValue(value);
+    auto args = QScriptValueList{} << QScriptValue(value);
     args << QScriptValue(key.group);
     args << QScriptValue(key.item);
-    QScriptValue func = callback; // copy function because QScriptValue::call is not const
-    QScriptValue result = func.call(context, args);
+    auto func = callback; // copy function because QScriptValue::call is not const
+    auto result = func.call(context, args);
     if (result.isError()) {
         qWarning() << "ControllerEngine: Invocation of connection " << id.toString()
                    << "connected to (" + key.group + ", " + key.item + ") failed:"
@@ -762,9 +760,9 @@ void ScriptConnection::executeCallback(double value) const {
    Purpose: (Dis)connects a ScriptConnection
    Input:   the ScriptConnection to disconnect
    -------- ------------------------------------------------------ */
-void ControllerEngine::removeScriptConnection(const ScriptConnection connection) {
-    ControlObjectScript* coScript = getControlObjectScript(connection.key.group,
-                                                           connection.key.item);
+void ControllerEngine::removeScriptConnection(const ScriptConnection connection)
+{
+    auto  coScript = getControlObjectScript(connection.key.group,connection.key.item);
 
     if (m_pEngine == nullptr || coScript == nullptr) {
         return;
@@ -786,8 +784,7 @@ void ControllerEngine::triggerScriptConnection(const ScriptConnection connection
         return;
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(connection.key.group,
-                                                           connection.key.item);
+    auto  coScript = getControlObjectScript(connection.key.group,connection.key.item);
     if (coScript == nullptr) {
         return;
     }
@@ -821,7 +818,7 @@ QScriptValue ControllerEngine::connectControl(
         actualCallbackFunction = passedCallback;
     }
 
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
     // This check is redundant with makeConnection, but the
     // ControlObjectScript is also needed here to check for duplicate connections.
     if (coScript == nullptr) {
@@ -857,7 +854,7 @@ QScriptValue ControllerEngine::connectControl(
             // This is inconsistent with the behavior when passing the callback as
             // a function, but keep the old behavior to make sure old scripts do
             // not break.
-            ScriptConnection connection = coScript->firstConnection();
+            auto connection = coScript->firstConnection();
 
             qWarning() << "Tried to make duplicate connection between (" +
                           group + ", " + name + ") and " + passedCallback.toString() +
@@ -875,15 +872,14 @@ QScriptValue ControllerEngine::connectControl(
         // wants to disconnect it, regardless of the disconnect parameter
         // and regardless of whether it is connected to the same ControlObject
         // specified by the first two parameters to this function.
-        QObject *qobject = passedCallback.toQObject();
-        const QMetaObject *qmeta = qobject->metaObject();
+        auto qobject = passedCallback.toQObject();
+        auto qmeta = qobject->metaObject();
 
         qWarning() << "QObject passed to engine.connectControl. Assuming it is"
                   << "a connection object to disconnect and returning false.";
         if (!strcmp(qmeta->className(),
                 "ScriptConnectionInvokableWrapper")) {
-            ScriptConnectionInvokableWrapper* proxy =
-                    (ScriptConnectionInvokableWrapper*)qobject;
+            auto proxy =(ScriptConnectionInvokableWrapper*)qobject;
             proxy->disconnect();
         }
         return QScriptValue(false);
@@ -931,7 +927,7 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
         return false;
     }
 
-    QString filename = "";
+    auto filename = QString{""};
     QFile input;
 
     if (scriptPaths.length() == 0) {
@@ -960,7 +956,7 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
                 .arg(filename, QString::number(input.error()), input.errorString());
         if (m_bPopups) {
             // Set up error dialog
-            ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+            auto  props = ErrorDialogHandler::instance()->newDialogProperties();
             props->setType(DLG_WARNING);
             props->setTitle("Controller script file problem");
             props->setText(QString("There was a problem opening the controller script file %1.").arg(filename));
@@ -972,14 +968,14 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
         return false;
     }
 
-    QString scriptCode = "";
+    auto scriptCode = QString{""};
     scriptCode.append(input.readAll());
     scriptCode.append('\n');
     input.close();
 
     // Check syntax
-    QScriptSyntaxCheckResult result = m_pEngine->checkSyntax(scriptCode);
-    QString error = "";
+    auto result = m_pEngine->checkSyntax(scriptCode);
+    auto error = QString{""};
     switch (result.state()) {
         case (QScriptSyntaxCheckResult::Valid): break;
         case (QScriptSyntaxCheckResult::Intermediate):
@@ -998,7 +994,7 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
 
         qWarning() << "ControllerEngine:" << error;
         if (m_bPopups) {
-            ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+            auto  props = ErrorDialogHandler::instance()->newDialogProperties();
             props->setType(DLG_WARNING);
             props->setTitle("Controller script file error");
             props->setText(QString("There was an error in the controller script file %1.").arg(filename));
@@ -1011,7 +1007,7 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
     }
 
     // Evaluate the code
-    QScriptValue scriptFunction = m_pEngine->evaluate(scriptCode, filename);
+    auto scriptFunction = m_pEngine->evaluate(scriptCode, filename);
 
     // Record errors
     if (checkException()) {
@@ -1022,13 +1018,11 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
 }
 
 bool ControllerEngine::hasErrors(const QString& filename) {
-    bool ret = m_scriptErrors.contains(filename);
-    return ret;
+    return m_scriptErrors.contains(filename);
 }
 
 const QStringList ControllerEngine::getErrors(const QString& filename) {
-    QStringList ret = m_scriptErrors.value(filename, QStringList());
-    return ret;
+    return  m_scriptErrors.value(filename, QStringList());
 }
 
 
@@ -1056,7 +1050,7 @@ int ControllerEngine::beginTimer(int interval, QScriptValue timerCallback,
     // This makes use of every QObject's internal timer mechanism. Nice, clean,
     // and simple. See http://doc.trolltech.com/4.6/qobject.html#startTimer for
     // details
-    int timerId = startTimer(interval);
+    auto timerId = startTimer(interval);
     TimerInfo info;
     info.callback = timerCallback;
     info.context = getThisObjectInFunctionCall();
@@ -1104,7 +1098,7 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
         return;
     }
 
-    QHash<int, TimerInfo>::const_iterator it = m_timers.find(timerId);
+    auto it = m_timers.find(timerId);
     if (it == m_timers.end()) {
         qWarning() << "Timer" << timerId << "fired but there's no function mapped to it!";
         return;
@@ -1114,7 +1108,7 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
     // why but this causes segfaults in ~QScriptValue while scratching if we
     // don't copy here -- even though internalExecute passes the QScriptValues
     // by value. *boggle*
-    const TimerInfo timerTarget = it.value();
+    auto timerTarget = it.value();
     if (timerTarget.oneShot) {
         stopTimer(timerId);
     }
@@ -1128,16 +1122,16 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
 }
 
 double ControllerEngine::getDeckRate(const QString& group) {
-    double rate = 0.0;
-    ControlObjectScript* pRate = getControlObjectScript(group, "rate");
+    auto rate = 0.0;
+    auto pRate = getControlObjectScript(group, "rate");
     if (pRate != nullptr) {
         rate = pRate->get();
     }
-    ControlObjectScript* pRateDir = getControlObjectScript(group, "rate_dir");
+    auto pRateDir = getControlObjectScript(group, "rate_dir");
     if (pRateDir != nullptr) {
         rate *= pRateDir->get();
     }
-    ControlObjectScript* pRateRange = getControlObjectScript(group, "rateRange");
+    auto  pRateRange = getControlObjectScript(group, "rateRange");
     if (pRateRange != nullptr) {
         rate *= pRateRange->get();
     }
@@ -1146,7 +1140,7 @@ double ControllerEngine::getDeckRate(const QString& group) {
     rate += 1.0;
 
     // See if we're in reverse play
-    ControlObjectScript* pReverse = getControlObjectScript(group, "reverse");
+    auto pReverse = getControlObjectScript(group, "reverse");
     if (pReverse != nullptr && pReverse->get() == 1) {
         rate = -rate;
     }
@@ -1154,10 +1148,10 @@ double ControllerEngine::getDeckRate(const QString& group) {
 }
 
 bool ControllerEngine::isDeckPlaying(const QString& group) {
-    ControlObjectScript* pPlay = getControlObjectScript(group, "play");
+    auto  pPlay = getControlObjectScript(group, "play");
 
     if (pPlay == nullptr) {
-      QString error = QString("Could not getControlObjectScript()");
+      auto error = QString("Could not getControlObjectScript()");
       scriptErrorDialog(error);
       return false;
     }
@@ -1180,14 +1174,14 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     // If we're already scratching this deck, override that with this request
     if (m_dx[deck]) {
         //qDebug() << "Already scratching deck" << deck << ". Overriding.";
-        int timerId = m_scratchTimers.key(deck);
+        auto timerId = m_scratchTimers.key(deck);
         killTimer(timerId);
         m_scratchTimers.remove(timerId);
     }
 
     // Controller resolution in intervals per second at normal speed.
     // (rev/min * ints/rev * mins/sec)
-    double intervalsPerSecond = (rpm * intervalsPerRev) / 60.0;
+    auto intervalsPerSecond = (rpm * intervalsPerRev) / 60.0;
 
     if (intervalsPerSecond == 0.0) {
         qWarning() << "Invalid rpm or intervalsPerRev supplied to scratchEnable. Ignoring request.";
@@ -1201,12 +1195,12 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     m_brakeActive[deck] = false;
 
     // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
+    auto group = PlayerManager::groupForDeck(deck - 1);
 
     // Ramp velocity, default to stopped.
-    double initVelocity = 0.0;
+    auto initVelocity = 0.0;
 
-    ControlObjectScript* pScratch2Enable =
+    auto pScratch2Enable =
             getControlObjectScript(group, "scratch2_enable");
 
     // If ramping is desired, figure out the deck's current speed
@@ -1264,14 +1258,14 @@ void ControllerEngine::scratchTick(int deck, int interval) {
 void ControllerEngine::scratchProcess(int timerId) {
     int deck = m_scratchTimers[timerId];
     // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
-    AlphaBetaFilter* filter = m_scratchFilters[deck];
+    auto group = PlayerManager::groupForDeck(deck - 1);
+    auto filter = m_scratchFilters[deck];
     if (!filter) {
         qWarning() << "Scratch filter pointer is null on deck" << deck;
         return;
     }
 
-    const double oldRate = filter->predictedVelocity();
+    auto oldRate = filter->predictedVelocity();
 
     // Give the filter a data point:
 
@@ -1291,10 +1285,10 @@ void ControllerEngine::scratchProcess(int timerId) {
         filter->observation(m_dx[deck] * m_intervalAccumulator[deck]);
     }
 
-    const double newRate = filter->predictedVelocity();
+    auto newRate = filter->predictedVelocity();
 
     // Actually do the scratching
-    ControlObjectScript* pScratch2 = getControlObjectScript(group, "scratch2");
+    auto pScratch2 = getControlObjectScript(group, "scratch2");
     if (pScratch2 == nullptr) {
         return; // abort and maybe it'll work on the next pass
     }
@@ -1323,8 +1317,7 @@ void ControllerEngine::scratchProcess(int timerId) {
         }
 
         // Clear scratch2_enable to end scratching.
-        ControlObjectScript* pScratch2Enable =
-                getControlObjectScript(group, "scratch2_enable");
+        auto  pScratch2Enable =getControlObjectScript(group, "scratch2_enable");
         if (pScratch2Enable == nullptr) {
             return; // abort and maybe it'll work on the next pass
         }
@@ -1347,15 +1340,14 @@ void ControllerEngine::scratchProcess(int timerId) {
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchDisable(int deck, bool ramp) {
     // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
+    auto group = PlayerManager::groupForDeck(deck - 1);
 
     m_rampTo[deck] = 0.0;
 
     // If no ramping is desired, disable scratching immediately
     if (!ramp) {
         // Clear scratch2_enable
-        ControlObjectScript* pScratch2Enable = getControlObjectScript(group, "scratch2_enable");
-        if (pScratch2Enable != nullptr) {
+        if(auto  pScratch2Enable = getControlObjectScript(group, "scratch2_enable")){
             pScratch2Enable->slotSet(0);
         }
         // Can't return here because we need scratchProcess to stop the timer.
@@ -1377,7 +1369,7 @@ void ControllerEngine::scratchDisable(int deck, bool ramp) {
     -------- ------------------------------------------------------ */
 bool ControllerEngine::isScratching(int deck) {
     // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
+    auto group = PlayerManager::groupForDeck(deck - 1);
     // Don't report that we are scratching if we're ramping.
     return getValue(group, "scratch2_enable") > 0 && !m_ramp[deck];
 }
@@ -1389,7 +1381,7 @@ bool ControllerEngine::isScratching(int deck) {
     Output:  -
     -------- ------------------------------------------------------ */
 void ControllerEngine::softTakeover(QString group, QString name, bool set) {
-    ControlObject* pControl = ControlObject::getControl(ConfigKey(group, name));
+    auto  pControl = ControlObject::getControl(ConfigKey(group, name));
     if (!pControl) {
         return;
     }
@@ -1410,12 +1402,9 @@ void ControllerEngine::softTakeover(QString group, QString name, bool set) {
      Output:  -
      -------- ------------------------------------------------------ */
 void ControllerEngine::softTakeoverIgnoreNextValue(QString group, const QString name) {
-    ControlObject* pControl = ControlObject::getControl(ConfigKey(group, name));
-    if (!pControl) {
-        return;
+    if(auto  pControl = ControlObject::getControl(ConfigKey(group, name))){
+        m_st.ignoreNext(pControl);
     }
-
-    m_st.ignoreNext(pControl);
 }
 
 /*  -------- ------------------------------------------------------
@@ -1437,22 +1426,21 @@ void ControllerEngine::spinback(int deck, bool activate, double factor, double r
     -------- ------------------------------------------------------ */
 void ControllerEngine::brake(int deck, bool activate, double factor, double rate) {
     // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
+    auto group = PlayerManager::groupForDeck(deck - 1);
 
     // kill timer when both enabling or disabling
-    int timerId = m_scratchTimers.key(deck);
+    auto  timerId = m_scratchTimers.key(deck);
     killTimer(timerId);
     m_scratchTimers.remove(timerId);
 
     // enable/disable scratch2 mode
-    ControlObjectScript* pScratch2Enable = getControlObjectScript(group, "scratch2_enable");
-    if (pScratch2Enable != nullptr) {
+    if(auto pScratch2Enable = getControlObjectScript(group, "scratch2_enable")){
         pScratch2Enable->slotSet(activate ? 1 : 0);
     }
 
     // used in scratchProcess for the different timer behavior we need
     m_brakeActive[deck] = activate;
-    double initRate = rate;
+    auto initRate = rate;
 
     if (activate) {
         // store the new values for this spinback/brake effect
@@ -1464,8 +1452,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
         // if softStart()ing, stop it
         if (m_softStartActive[deck]) {
             m_softStartActive[deck] = false;
-            AlphaBetaFilter* filter = m_scratchFilters[deck];
-            if (filter != nullptr) {
+            if(auto filter = m_scratchFilters[deck]) {
                 initRate = filter->predictedVelocity();
             }
         }
@@ -1474,20 +1461,18 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
         timerId = startTimer(kScratchTimerMs);
         m_scratchTimers[timerId] = deck;
 
-        ControlObjectScript* pScratch2 = getControlObjectScript(group, "scratch2");
-        if (pScratch2 != nullptr) {
+        if(auto pScratch2 = getControlObjectScript(group, "scratch2")){
             pScratch2->slotSet(initRate);
         }
 
         // setup the filter with default alpha and beta*factor
-        double alphaBrake = 1.0/512;
+        auto alphaBrake = 1.0/512;
         // avoid decimals for fine adjusting
         if (factor>1) {
             factor = ((factor-1)/10)+1;
         }
-        double betaBrake = ((1.0/512)/1024)*factor; // default*factor
-        AlphaBetaFilter* filter = m_scratchFilters[deck];
-        if (filter != nullptr) {
+        auto betaBrake = ((1.0/512)/1024)*factor; // default*factor
+        if(auto  filter = m_scratchFilters[deck]){
             filter->init(kAlphaBetaDt, initRate, alphaBrake, betaBrake);
         }
 

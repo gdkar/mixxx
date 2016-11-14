@@ -166,16 +166,11 @@ MixxxMainWindow::~MixxxMainWindow() {
 void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     ScopedTimer t("MixxxMainWindow::initialize");
 
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
-
+    auto pConfig = m_pSettingsManager->settings();
     Sandbox::initialize(QDir(pConfig->getSettingsPath()).filePath("sandbox.cfg"));
-
-    QString resourcePath = pConfig->getResourcePath();
-
+    auto resourcePath = pConfig->getResourcePath();
     FontUtils::initializeFonts(resourcePath); // takes a long time
-
     launchProgress(2);
-
     // Set the visibility of tooltips, default "1" = ON
     m_toolTipsCfg = static_cast<mixxx::TooltipsPreference>(
         pConfig->getValue(ConfigKey("[Controls]", "Tooltips"),
@@ -183,37 +178,26 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
 
     setAttribute(Qt::WA_AcceptTouchEvents);
     m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"));
-
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, pConfig);
-
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,
-                                 true, true);
-
+    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,true, true);
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
-    NativeBackend* pNativeBackend = new NativeBackend(m_pEffectsManager);
+    auto  pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
-
-    // Sets up the EffectChains and EffectRacks (long)
-    m_pEffectsManager->setup();
-
+    // Sets up the default EffectChains and EffectRacks (long)
+    m_pEffectsManager->setupDefaults();
     launchProgress(8);
-
     // Initialize player device
     // while this is created here, setupDevices needs to be called sometime
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
     m_pSoundManager = new SoundManager(pConfig, m_pEngine);
-
     m_pRecordingManager = new RecordingManager(pConfig, m_pEngine);
-
-
 #ifdef __BROADCAST__
     m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager);
 #endif
-
     launchProgress(11);
 
     // Needs to be created before CueControl (decks) and WTrackTableView.
@@ -318,7 +302,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     // but do not set up controllers until the end of the application startup
     // (long)
     qDebug() << "Creating ControllerManager";
-    m_pControllerManager = new ControllerManager(pConfig);
+    m_pControllerManager = new ControllerManager(pConfig, this);
 
     launchProgress(47);
 
@@ -927,37 +911,29 @@ void MixxxMainWindow::createMenuBar() {
     setMenuBar(m_pMenuBar);
 }
 
-void MixxxMainWindow::connectMenuBar() {
+void MixxxMainWindow::connectMenuBar()
+{
     ScopedTimer t("MixxxMainWindow::connectMenuBar");
-    connect(this, SIGNAL(newSkinLoaded()),
-            m_pMenuBar, SLOT(onNewSkinLoaded()));
+    connect(this, SIGNAL(newSkinLoaded()),m_pMenuBar, SLOT(onNewSkinLoaded()));
 
     // Misc
     connect(m_pMenuBar, SIGNAL(quit()), this, SLOT(close()));
-    connect(m_pMenuBar, SIGNAL(showPreferences()),
-            this, SLOT(slotOptionsPreferences()));
-    connect(m_pMenuBar, SIGNAL(loadTrackToDeck(int)),
-            this, SLOT(slotFileLoadSongPlayer(int)));
+    connect(m_pMenuBar, SIGNAL(showPreferences()),this, SLOT(slotOptionsPreferences()));
+    connect(m_pMenuBar, SIGNAL(loadTrackToDeck(int)),this, SLOT(slotFileLoadSongPlayer(int)));
 
     // Fullscreen
-    connect(m_pMenuBar, SIGNAL(toggleFullScreen(bool)),
-            this, SLOT(slotViewFullScreen(bool)));
-    connect(this, SIGNAL(fullScreenChanged(bool)),
-            m_pMenuBar, SLOT(onFullScreenStateChange(bool)));
+    connect(m_pMenuBar, SIGNAL(toggleFullScreen(bool)),this, SLOT(slotViewFullScreen(bool)));
+    connect(this, SIGNAL(fullScreenChanged(bool)),m_pMenuBar, SLOT(onFullScreenStateChange(bool)));
 
     // Keyboard shortcuts
-    connect(m_pMenuBar, SIGNAL(toggleKeyboardShortcuts(bool)),
-            this, SLOT(slotOptionsKeyboard(bool)));
+    connect(m_pMenuBar, SIGNAL(toggleKeyboardShortcuts(bool)),this, SLOT(slotOptionsKeyboard(bool)));
 
     // Help
-    connect(m_pMenuBar, SIGNAL(showAbout()),
-            this, SLOT(slotHelpAbout()));
+    connect(m_pMenuBar, SIGNAL(showAbout()),this, SLOT(slotHelpAbout()));
 
     // Developer
-    connect(m_pMenuBar, SIGNAL(reloadSkin()),
-            this, SLOT(rebootMixxxView()));
-    connect(m_pMenuBar, SIGNAL(toggleDeveloperTools(bool)),
-            this, SLOT(slotDeveloperTools(bool)));
+    connect(m_pMenuBar, SIGNAL(reloadSkin()),this, SLOT(rebootMixxxView()));
+    connect(m_pMenuBar, SIGNAL(toggleDeveloperTools(bool)),this, SLOT(slotDeveloperTools(bool)));
 
     if (m_pRecordingManager) {
         connect(m_pRecordingManager, SIGNAL(isRecording(bool)),
@@ -1007,7 +983,8 @@ void MixxxMainWindow::connectMenuBar() {
 
 }
 
-void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
+void MixxxMainWindow::slotFileLoadSongPlayer(int deck)
+{
     QString group = m_pPlayerManager->groupForDeck(deck-1);
 
     QString loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
@@ -1024,33 +1001,32 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
         if (ret != QMessageBox::Yes)
             return;
     }
-
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
-    QString trackPath =
-        QFileDialog::getOpenFileName(
+    auto pConfig = m_pSettingsManager->settings();
+    auto trackPath =
+        QFileDialog::getOpenFileUrl(
             this,
             loadTrackText,
-            pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR),
+            QUrl(pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR)),
             QString("Audio (%1)")
-                .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ")));
+                .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ") + ";; Anything (*)"));
 
 
-    if (!trackPath.isNull()) {
+    if (!trackPath.isEmpty() && trackPath.isValid()) {
         // The user has picked a file via a file dialog. This means the system
         // sandboxer (if we are sandboxed) has granted us permission to this
         // folder. Create a security bookmark while we have permission so that
         // we can access the folder on future runs. We need to canonicalize the
         // path so we first wrap the directory string with a QDir.
-        QFileInfo trackInfo(trackPath);
+        QFileInfo trackInfo(trackPath.toString());
         Sandbox::createSecurityToken(trackInfo);
-
-        m_pPlayerManager->slotLoadToDeck(trackPath, deck);
+        m_pPlayerManager->slotLoadToDeck(trackPath.toString(), deck);
     }
 }
 
 
-void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+void MixxxMainWindow::slotOptionsKeyboard(bool toggle)
+{
+    auto pConfig = m_pSettingsManager->settings();
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
@@ -1062,10 +1038,11 @@ void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     }
 }
 
-void MixxxMainWindow::slotDeveloperTools(bool visible) {
+void MixxxMainWindow::slotDeveloperTools(bool visible)
+{
     if (visible) {
         if (m_pDeveloperToolsDlg == nullptr) {
-            UserSettingsPointer pConfig = m_pSettingsManager->settings();
+            auto pConfig = m_pSettingsManager->settings();
             m_pDeveloperToolsDlg = new DlgDeveloperTools(this, pConfig);
             connect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),
                     this, SLOT(slotDeveloperToolsClosed()));

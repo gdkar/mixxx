@@ -9,7 +9,7 @@ EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
         : QWidget(parent),
           WaveformWidgetAbstract(group) {
     //Empty means just a background ;)
-    addRenderer<WaveformRenderBackground>();
+    addRenderer(std::make_unique<WaveformRenderBackground>(this));
 
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);

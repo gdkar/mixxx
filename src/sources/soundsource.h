@@ -19,8 +19,7 @@ public:
     Result parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
             QImage* pCoverArt) const override;
-    Result writeTrackMetadata(
-            const TrackMetadata& trackMetadata) const override;
+    Result writeTrackMetadata(const TrackMetadata& trackMetadata) const override;
 
     enum class OpenResult {
         SUCCEEDED,

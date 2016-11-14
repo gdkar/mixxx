@@ -24,17 +24,17 @@
 #ifndef CDFPROCESS_H
 #define CDFPROCESS_H
 
-#include <stdio.h>
+#include <cstdio>
 #include "FiltFilt.h"
 
 struct DFProcConfig{
-    unsigned int length; 
-    unsigned int LPOrd; 
-    double *LPACoeffs; 
-    double *LPBCoeffs; 
+    unsigned int length;
+    unsigned int LPOrd;
+    float *LPACoeffs;
+    float *LPBCoeffs;
     unsigned int winPre;
-    unsigned int winPost; 
-    double AlphaNormParam;
+    unsigned int winPost;
+    float AlphaNormParam;
     bool isMedianPositive;
     float delta; //delta threshold used as an offset when computing the smoothed detection function
 
@@ -52,20 +52,20 @@ struct DFProcConfig{
     }
 };
 
-class DFProcess  
+class DFProcess
 {
 public:
     DFProcess( DFProcConfig Config );
     virtual ~DFProcess();
 
-    void process( double* src, double* dst );
+    void process( float* src, float* dst );
 
-	
+
 private:
     void initialise( DFProcConfig Config );
     void deInitialise();
-    void removeDCNormalize( double *src, double*dst );
-    void medianFilter( double* src, double* dst );
+    void removeDCNormalize( float *src, float*dst );
+    void medianFilter( float* src, float* dst );
 
     int m_length;
     int m_FFOrd;
@@ -73,17 +73,17 @@ private:
     int m_winPre;
     int m_winPost;
 
-    double m_alphaNormParam;
+    float m_alphaNormParam;
 
-    double* filtSrc;
-    double* filtDst;
+    float* filtSrc;
+    float* filtDst;
 
-    double* m_filtScratchIn;
-    double* m_filtScratchOut;
+    float* m_filtScratchIn;
+    float* m_filtScratchOut;
 
     FilterConfig m_FilterConfigParams;
 
-    FiltFilt* m_FiltFilt;
+    FiltFilt<float> m_FiltFilt;
 
     bool m_isMedianPositive;
     float m_delta; //add delta threshold

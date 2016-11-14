@@ -38,7 +38,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
     // defines include the dot.
     QString extension = "." + scriptPathInfo.completeSuffix();
 
-    ControllerPresetFileHandler* pHandler = NULL;
+    ControllerPresetFileHandler* pHandler = nullptr;
     if (scriptPath.endsWith(MIDI_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new MidiControllerPresetFileHandler();
     } else if (scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive) ||
@@ -46,7 +46,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
         pHandler = new HidControllerPresetFileHandler();
     }
 
-    if (pHandler == NULL) {
+    if (pHandler == nullptr) {
         qDebug() << "Preset" << scriptPath << "has an unrecognized extension.";
         return ControllerPresetPointer();
     }
@@ -59,8 +59,8 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
 ControllerPresetPointer ControllerPresetFileHandler::load(const QString path,
                                                           const QString deviceName) {
     qDebug() << "Loading controller preset from" << path;
-    ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "controller"),
-                                           deviceName);
+    auto pPreset = ControllerPresetPointer(load(XmlParse::openXMLFile(path, "controller"),
+                                           deviceName));
     if (pPreset) {
         pPreset->setFilePath(path);
     }
@@ -73,25 +73,38 @@ void ControllerPresetFileHandler::parsePresetInfo(const QDomElement& root,
         return;
     }
 
-    QDomElement info = root.firstChildElement("info");
+    auto info = root.firstChildElement("info");
     if (info.isNull()) {
         return;
     }
-
-    QString mixxxVersion = root.attribute("mixxxVersion", "");
-    preset->setMixxxVersion(mixxxVersion);
-    QString schemaVersion = root.attribute("schemaVersion", "");
-    preset->setSchemaVersion(schemaVersion);
-    QDomElement name = info.firstChildElement("name");
-    preset->setName(name.isNull() ? "" : name.text());
-    QDomElement author = info.firstChildElement("author");
-    preset->setAuthor(author.isNull() ? "" : author.text());
-    QDomElement description = info.firstChildElement("description");
-    preset->setDescription(description.isNull() ? "" : description.text());
-    QDomElement forums = info.firstChildElement("forums");
-    preset->setForumLink(forums.isNull() ? "" : forums.text());
-    QDomElement wiki = info.firstChildElement("wiki");
-    preset->setWikiLink(wiki.isNull() ? "" : wiki.text());
+    {
+        auto mixxxVersion = root.attribute("mixxxVersion", "");
+        preset->setMixxxVersion(mixxxVersion);
+    }
+    {
+        auto schemaVersion = root.attribute("schemaVersion", "");
+        preset->setSchemaVersion(schemaVersion);
+    }
+    {
+        auto name = info.firstChildElement("name");
+        preset->setName(name.isNull() ? "" : name.text());
+    }
+    {
+        auto author = info.firstChildElement("author");
+        preset->setAuthor(author.isNull() ? "" : author.text());
+    }
+    {
+        auto description = info.firstChildElement("description");
+        preset->setDescription(description.isNull() ? "" : description.text());
+    }
+    {
+        auto forums = info.firstChildElement("forums");
+        preset->setForumLink(forums.isNull() ? "" : forums.text());
+    }
+    {
+        auto wiki = info.firstChildElement("wiki");
+        preset->setWikiLink(wiki.isNull() ? "" : wiki.text());
+    }
 }
 
 QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& root,
@@ -112,11 +125,11 @@ void ControllerPresetFileHandler::addScriptFilesToPreset(
     if (controller.isNull())
         return;
 
-    QString deviceId = controller.attribute("id", "");
+    auto deviceId = controller.attribute("id", "");
     preset->setDeviceId(deviceId);
 
     // Build a list of script files to load
-    QDomElement scriptFile = controller.firstChildElement("scriptfiles")
+    auto scriptFile = controller.firstChildElement("scriptfiles")
             .firstChildElement("file");
 
     // Default currently required file
@@ -124,8 +137,8 @@ void ControllerPresetFileHandler::addScriptFilesToPreset(
 
     // Look for additional ones
     while (!scriptFile.isNull()) {
-        QString functionPrefix = scriptFile.attribute("functionprefix","");
-        QString filename = scriptFile.attribute("filename","");
+        auto functionPrefix = scriptFile.attribute("functionprefix","");
+        auto filename = scriptFile.attribute("filename","");
         preset->addScriptFile(filename, functionPrefix);
         scriptFile = scriptFile.nextSiblingElement("file");
     }
@@ -158,8 +171,8 @@ bool ControllerPresetFileHandler::writeDocument(QDomDocument root,
 
 void addTextTag(QDomDocument& doc, QDomElement& holder,
                 QString tagName, QString tagText) {
-    QDomElement tag = doc.createElement(tagName);
-    QDomText textNode = doc.createTextNode(tagText);
+    auto tag = doc.createElement(tagName);
+    auto  textNode = doc.createTextNode(tagText);
     tag.appendChild(textNode);
     holder.appendChild(tag);
 }
@@ -167,16 +180,16 @@ void addTextTag(QDomDocument& doc, QDomElement& holder,
 QDomDocument ControllerPresetFileHandler::buildRootWithScripts(const ControllerPreset& preset,
                                                                const QString deviceName) const {
     QDomDocument doc("Preset");
-    QString blank = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    auto blank = QString{"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
         "<MixxxControllerPreset>\n"
-        "</MixxxControllerPreset>\n";
+        "</MixxxControllerPreset>\n"};
     doc.setContent(blank);
 
-    QDomElement rootNode = doc.documentElement();
+    auto rootNode = doc.documentElement();
     rootNode.setAttribute("schemaVersion", XML_SCHEMA_VERSION);
     rootNode.setAttribute("mixxxVersion", preset.mixxxVersion());
 
-    QDomElement info = doc.createElement("info");
+    auto info = doc.createElement("info");
     rootNode.appendChild(info);
     if (preset.name().length() > 0) {
         addTextTag(doc, info, "name", preset.name());
@@ -194,23 +207,23 @@ QDomDocument ControllerPresetFileHandler::buildRootWithScripts(const ControllerP
         addTextTag(doc, info, "wiki", preset.wikilink());
     }
 
-    QDomElement controller = doc.createElement("controller");
+    auto controller = doc.createElement("controller");
     // Strip off the serial number
     controller.setAttribute("id", rootDeviceName(deviceName));
     rootNode.appendChild(controller);
 
-    QDomElement scriptFiles = doc.createElement("scriptfiles");
+    auto scriptFiles = doc.createElement("scriptfiles");
     controller.appendChild(scriptFiles);
 
     foreach (const ControllerPreset::ScriptFileInfo& script, preset.scripts) {
-        QString filename = script.name;
+        auto filename = script.name;
         // Don't need to write anything for built-in files.
         if (script.builtin) {
             continue;
         }
         qDebug() << "writing script block for" << filename;
-        QString functionPrefix = script.functionPrefix;
-        QDomElement scriptFile = doc.createElement("file");
+        auto functionPrefix = script.functionPrefix;
+        auto scriptFile = doc.createElement("file");
 
         scriptFile.setAttribute("filename", filename);
         scriptFile.setAttribute("functionprefix", functionPrefix);

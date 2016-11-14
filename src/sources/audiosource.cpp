@@ -11,6 +11,7 @@ const Logger kLogger("AudioSource");
 
 } // anonymous namespace
 
+#if 0
 /*static*/ constexpr AudioSignal::SampleLayout AudioSource::kSampleLayout;
 
 /*static*/ constexpr SINT AudioSource::kFrameCountZero;
@@ -20,7 +21,7 @@ const Logger kLogger("AudioSource");
 
 /*static*/ constexpr SINT AudioSource::kBitrateZero;
 /*static*/ constexpr SINT AudioSource::kBitrateDefault;
-
+#endif
 void AudioSource::clampFrameInterval(
         SINT* pMinFrameIndexOfInterval,
         SINT* pMaxFrameIndexOfInterval,
@@ -55,7 +56,8 @@ void AudioSource::setBitrate(SINT bitrate) {
 
 SINT AudioSource::getSampleBufferSize(
         SINT numberOfFrames,
-        bool readStereoSamples) const {
+        bool readStereoSamples) const
+{
     if (readStereoSamples) {
         return numberOfFrames * kChannelCountStereo;
     } else {
@@ -66,13 +68,14 @@ SINT AudioSource::getSampleBufferSize(
 SINT AudioSource::readSampleFramesStereo(
         SINT numberOfFrames,
         CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+        SINT sampleBufferSize)
+{
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
 
     switch (getChannelCount()) {
         case 1: // mono channel
         {
-            const SINT readFrameCount = readSampleFrames(
+            auto readFrameCount = readSampleFrames(
                     numberOfFrames, sampleBuffer);
             SampleUtil::doubleMonoToDualMono(sampleBuffer, readFrameCount);
             return readFrameCount;
@@ -83,11 +86,10 @@ SINT AudioSource::readSampleFramesStereo(
         }
         default: // multiple (3 or more) channels
         {
-            const SINT numberOfSamplesToRead = frames2samples(numberOfFrames);
+            auto numberOfSamplesToRead = frames2samples(numberOfFrames);
             if (numberOfSamplesToRead <= sampleBufferSize) {
                 // efficient in-place transformation
-                const SINT readFrameCount = readSampleFrames(
-                        numberOfFrames, sampleBuffer);
+                auto readFrameCount = readSampleFrames(numberOfFrames, sampleBuffer);
                 SampleUtil::copyMultiToStereo(sampleBuffer, sampleBuffer,
                         readFrameCount, getChannelCount());
                 return readFrameCount;
@@ -99,7 +101,7 @@ SINT AudioSource::readSampleFramesStereo(
                         << "The size of the provided sample buffer is"
                         << sampleBufferSize;
                 SampleBuffer tempBuffer(numberOfSamplesToRead);
-                const SINT readFrameCount = readSampleFrames(
+                auto readFrameCount = readSampleFrames(
                         numberOfFrames, tempBuffer.data());
                 SampleUtil::copyMultiToStereo(sampleBuffer, tempBuffer.data(),
                         readFrameCount, getChannelCount());
@@ -109,8 +111,9 @@ SINT AudioSource::readSampleFramesStereo(
     }
 }
 
-bool AudioSource::verifyReadable() const {
-    bool result = AudioSignal::verifyReadable();
+bool AudioSource::verifyReadable() const
+{
+    auto result = AudioSignal::verifyReadable();
     if (hasBitrate()) {
         VERIFY_OR_DEBUG_ASSERT(isValidBitrate(m_bitrate)) {
             kLogger.warning() << "Invalid bitrate [kbps]:"
@@ -127,5 +130,4 @@ bool AudioSource::verifyReadable() const {
     }
     return result;
 }
-
 }

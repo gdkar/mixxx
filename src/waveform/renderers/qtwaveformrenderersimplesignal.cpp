@@ -15,18 +15,17 @@ QtWaveformRendererSimpleSignal::QtWaveformRendererSimpleSignal(WaveformWidgetRen
 
 }
 
-QtWaveformRendererSimpleSignal::~QtWaveformRendererSimpleSignal() {
-}
+QtWaveformRendererSimpleSignal::~QtWaveformRendererSimpleSignal() = default;
 
 void QtWaveformRendererSimpleSignal::onSetup(const QDomNode& node) {
     Q_UNUSED(node);
 
-    QColor borderColor = m_pColors->getSignalColor().lighter(125);
+    auto borderColor = m_pColors->getSignalColor().lighter(125);
     borderColor.setAlphaF(0.5);
     m_borderPen.setColor(borderColor);
     m_borderPen.setWidthF(1.25);
 
-    QColor signalColor = m_pColors->getSignalColor();
+    auto signalColor = m_pColors->getSignalColor();
     signalColor.setAlphaF(0.8);
     m_brush = QBrush(signalColor);
 }

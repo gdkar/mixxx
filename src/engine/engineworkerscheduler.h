@@ -33,7 +33,7 @@ class EngineWorkerScheduler : public QThread {
     FIFO<EngineWorker*> m_scheduleFIFO;
     QWaitCondition m_waitCondition;
     QMutex m_mutex;
-    volatile bool m_bQuit;
+    std::atomic<bool> m_bQuit;
 };
 
 #endif /* ENGINEWORKERSCHEDULER_H */

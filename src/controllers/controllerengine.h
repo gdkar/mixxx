@@ -179,7 +179,7 @@ class ControllerEngine : public QObject {
     // Stops and removes all timers (for shutdown).
     void stopAllTimers();
 
-    void callFunctionOnObjects(QList<QString>, const QString&, QScriptValueList args = QScriptValueList());
+    void callFunctionOnObjects(QScriptValueList, const QString&, QScriptValueList args = QScriptValueList());
     bool checkException();
     QScriptEngine *m_pEngine;
 
@@ -212,6 +212,7 @@ class ControllerEngine : public QObject {
     QVarLengthArray<bool> m_ramp, m_brakeActive, m_softStartActive;
     QVarLengthArray<AlphaBetaFilter*> m_scratchFilters;
     QHash<int, int> m_scratchTimers;
+    QScriptValueList m_prefixValues;
     QHash<QString, QScriptValue> m_scriptWrappedFunctionCache;
     // Filesystem watcher for script auto-reload
     QFileSystemWatcher m_scriptWatcher;

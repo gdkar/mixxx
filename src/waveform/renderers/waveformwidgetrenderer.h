@@ -55,12 +55,12 @@ class WaveformWidgetRenderer {
     // this "regulate" against visual sampling to make the position in widget
     // stable and deterministic
     // Transform sample index to pixel in track.
-    inline double transformSamplePositionInRendererWorld(double samplePosition) const {
+    double transformSamplePositionInRendererWorld(double samplePosition) const {
         const double relativePosition = samplePosition / m_trackSamples;
         return transformPositionInRendererWorld(relativePosition);
     }
     // Transform position (percentage of track) to pixel in track.
-    inline double transformPositionInRendererWorld(double position) const {
+    double transformPositionInRendererWorld(double position) const {
         return m_trackPixelCount * (position - m_firstDisplayedPosition);
     }
 
@@ -79,19 +79,27 @@ class WaveformWidgetRenderer {
     Qt::Orientation getOrientation() const { return m_orientation;}
     const WaveformSignalColors* getWaveformSignalColors() const { return &m_colors; };
 
-    template< class T_Renderer>
-    inline T_Renderer* addRenderer() {
-        T_Renderer* renderer = new T_Renderer(this);
-        m_rendererStack.push_back(renderer);
+    WaveformRendererAbstract *addRenderer(WaveformRendererAbstract *renderer)
+    {
+        m_rendererStack.emplace_back(renderer);
         return renderer;
     }
+    WaveformRendererAbstract *addRenderer(std::unique_ptr<WaveformRendererAbstract> renderer)
+    {
+        m_rendererStack.push_back(std::move(renderer));
+        return m_rendererStack.back().get();
+    }
+/*    template< class T_Renderer>
+    T* addRenderer() {
+        return addRenderer(std::make_unique<T>(this));
+    }*/
 
     void setTrack(TrackPointer track);
 
   protected:
     const char* m_group;
     TrackPointer m_pTrack;
-    QList<WaveformRendererAbstract*> m_rendererStack;
+    std::vector<std::unique_ptr<WaveformRendererAbstract> > m_rendererStack;
     Qt::Orientation m_orientation;
     int m_height;
     int m_width;

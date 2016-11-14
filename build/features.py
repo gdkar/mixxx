@@ -406,11 +406,16 @@ class Vamp(Feature):
 
         # FFTW3 support
         have_fftw3_h = conf.CheckHeader('fftw3.h')
-        have_fftw3 = conf.CheckLib('fftw3', autoadd=False)
+        have_fftw3 = conf.CheckLib('fftw3',   autoadd=False)
+        have_fftw3f = conf.CheckLib('fftw3f', autoadd=False)
         if have_fftw3_h and have_fftw3 and build.platform_is_linux:
             build.env.Append(CPPDEFINES='HAVE_FFTW3')
             build.env.ParseConfig(
                 'pkg-config fftw3 --silence-errors --cflags --libs')
+        if have_fftw3_h and have_fftw3f and build.platform_is_linux:
+            build.env.Append(CPPDEFINES='HAVE_FFTW3F')
+            build.env.ParseConfig(
+                'pkg-config fftw3f --silence-errors --cflags --libs')
 
     def sources(self, build):
         sources = ['analyzer/vamp/vampanalyzer.cpp',
@@ -421,17 +426,17 @@ class Vamp(Feature):
                    'preferences/dialog/dlgprefkey.cpp']
 
         if self.INTERNAL_LINK:
-            hostsdk_src_path = '%s/src/vamp-hostsdk' % self.INTERNAL_VAMP_PATH
-            sources.extend(path % hostsdk_src_path for path in
-                           ['%s/Files.cpp',
-                            '%s/PluginBufferingAdapter.cpp',
-                            '%s/PluginChannelAdapter.cpp',
-                            '%s/PluginHostAdapter.cpp',
-                            '%s/PluginInputDomainAdapter.cpp',
-                            '%s/PluginLoader.cpp',
-                            '%s/PluginSummarisingAdapter.cpp',
-                            '%s/PluginWrapper.cpp',
-                            '%s/RealTime.cpp'])
+            hostsdk_src_path = '{}/src/vamp-hostsdk'.format( self.INTERNAL_VAMP_PATH)
+            sources.extend(path.format( hostsdk_src_path) for path in
+                           ['{}/Files.cpp',
+                            '{}/PluginBufferingAdapter.cpp',
+                            '{}/PluginChannelAdapter.cpp',
+                            '{}/PluginHostAdapter.cpp',
+                            '{}/PluginInputDomainAdapter.cpp',
+                            '{}/PluginLoader.cpp',
+                            '{}/PluginSummarisingAdapter.cpp',
+                            '{}/PluginWrapper.cpp',
+                            '{}/RealTime.cpp'])
         return sources
 
 
@@ -899,6 +904,82 @@ class Opus(Feature):
         return ['sources/soundsourceopus.cpp']
 
 
+class FFMPEGSource(Feature):
+    def description(self):
+        return "FFmpeg/Avconv support"
+
+    def enabled(self, build):
+        build.flags['ffmpeg_source'] = util.get_flags(build.env, 'ffmpeg_source', 1)
+        if int(build.flags['ffmpeg_source']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('ffmpeg_source', 'Set to 1 to enable FFmpeg/Avconv source \
+                           (supported FFmpeg 0.11-2.x and Avconv 0.8.x-11.x)', 0)
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+
+        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
+        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
+        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx \
+                or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+
+            # Needed to build new FFmpeg
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            # Grabs the libs and cflags for FFmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
+
+            build.env.Append(CPPDEFINES='USE_FFMPEGSOURCE')
+            self.status = "Enabled"
+
+        else:
+            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
+            # libdts-dev
+            # Append some stuff to CFLAGS in Windows also
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            build.env.Append(LIBS='avcodec')
+            build.env.Append(LIBS='avformat')
+            build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='z')
+            build.env.Append(LIBS='swresample')
+            # build.env.Append(LIBS = 'a52')
+            # build.env.Append(LIBS = 'dts')
+            build.env.Append(LIBS='gsm')
+            # build.env.Append(LIBS = 'dc1394_control')
+            # build.env.Append(LIBS = 'dl')
+            build.env.Append(LIBS='vorbisenc')
+            # build.env.Append(LIBS = 'raw1394')
+            build.env.Append(LIBS='vorbis')
+            build.env.Append(LIBS='m')
+            build.env.Append(LIBS='ogg')
+            build.env.Append(CPPDEFINES='USE_FFMPEGSOURCE')
+
+        # Add new path for FFmpeg header files.
+        # Non-crosscompiled builds need this too, don't they?
+        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
+
+    def sources(self, build):
+        return ['sources/soundsourceffmpeg.cpp',]
+
 class FFMPEG(Feature):
     def description(self):
         return "FFmpeg/Avconv support"
@@ -925,14 +1006,6 @@ class FFMPEG(Feature):
                 or build.platform_is_bsd:
             # Check for libavcodec, libavformat
             # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
 
             # Needed to build new FFmpeg
             build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
@@ -940,14 +1013,14 @@ class FFMPEG(Feature):
             build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
 
             # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
-                                  --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors \
-                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
 
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGFILE')
             self.status = "Enabled"
 
         else:
@@ -973,18 +1046,16 @@ class FFMPEG(Feature):
             build.env.Append(LIBS='vorbis')
             build.env.Append(LIBS='m')
             build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGFILE')
 
         # Add new path for FFmpeg header files.
         # Non-crosscompiled builds need this too, don't they?
         if build.crosscompile and build.platform_is_windows \
                 and build.toolchain_is_gnu:
-            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
-                                                  'include', 'ffmpeg'))
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
 
     def sources(self, build):
-        return ['sources/soundsourceffmpeg.cpp',
-                'encoder/encoderffmpegresample.cpp',
+        return ['encoder/encoderffmpegresample.cpp',
                 'encoder/encoderffmpegcore.cpp',
                 'encoder/encoderffmpegmp3.cpp',
                 'encoder/encoderffmpegvorbis.cpp']
@@ -994,10 +1065,18 @@ class Optimize(Feature):
     LEVEL_OFF = 'off'
     LEVEL_PORTABLE = 'portable'
     LEVEL_NATIVE = 'native'
+    LEVEL_EXCESSIVE = 'excessive'
     LEVEL_LEGACY = 'legacy'
     LEVEL_FASTBUILD = 'fastbuild'
     LEVEL_DEFAULT = LEVEL_PORTABLE
-
+    LEVELS = (
+        LEVEL_OFF
+      , LEVEL_PORTABLE
+      , LEVEL_NATIVE
+      , LEVEL_EXCESSIVE
+      , LEVEL_LEGACY
+      , LEVEL_FASTBUILD
+    )
     def description(self):
         return "Optimization and Tuning"
 
@@ -1018,16 +1097,17 @@ class Optimize(Feature):
             elif optimize_integer in xrange(2, 10):
                 # Levels 2 through 9 map to portable.
                 optimize_level = Optimize.LEVEL_PORTABLE
+            elif optimize_integer == 10:
+                optimize_level = Optimize.LEVEL_NATIVE
+            elif optimize_integer >= 11:
+                optimize_level = Optimize.LEVEL_EXCESSIVE
         except:
             pass
 
         # Support common aliases for off.
         if optimize_level in ('none', 'disable', 'disabled'):
             optimize_level = Optimize.LEVEL_OFF
-
-        if optimize_level not in (Optimize.LEVEL_OFF, Optimize.LEVEL_PORTABLE,
-                                  Optimize.LEVEL_NATIVE, Optimize.LEVEL_LEGACY,
-                                  Optimize.LEVEL_FASTBUILD):
+        if optimize_level not in Optimize.LEVELS:
             raise Exception("optimize={} is not supported. "
                             "Use portable, native, legacy or off"
                             .format(optimize_level))
@@ -1043,6 +1123,7 @@ class Optimize(Feature):
                         '  portable: sse2 CPU (>= Pentium 4)\n' \
                         '  fastbuild: portable, but without costly optimization steps\n' \
                         '  native: optimized for the CPU of this system\n' \
+                        '  excessive: optimize for this CPU + LTO\n' \
                         '  legacy: pure i386 code' \
                         '  off: no optimization' \
                         , Optimize.LEVEL_DEFAULT)
@@ -1138,6 +1219,7 @@ class Optimize(Feature):
             build.env.Append(CCFLAGS='-O3')
             build.env.Append(CCFLAGS='-ffast-math')
             build.env.Append(CCFLAGS='-funroll-loops')
+            build.env.Append(LIBS='atomic')
 
             # set -fomit-frame-pointer when we don't profile and are not using
             # Clang sanitizers.
@@ -1176,9 +1258,8 @@ class Optimize(Feature):
                 # i386 compatible, so builds that claim 'i386' will crash.
                 # -- rryan 2/2011
                 # Note: SSE2 is a core part of x64 CPUs
-            elif optimize_level == Optimize.LEVEL_NATIVE:
-                self.status = self.build_status(
-                    optimize_level, "tuned for this CPU (%s)" % build.machine)
+            elif optimize_level == Optimize.LEVEL_NATIVE or optimize_level == Optimize.LEVEL_EXCESSIVE:
+                self.status = "native: tuned for this CPU (%s)" % build.machine
                 build.env.Append(CCFLAGS='-march=native')
                 # http://en.chys.info/2010/04/what-exactly-marchnative-means/
                 # Note: requires gcc >= 4.2.0
@@ -1194,6 +1275,14 @@ class Optimize(Feature):
                     self.status = self.build_status(optimize_level)
                     build.env.Append(CCFLAGS='-mfloat-abi=hard')
                     build.env.Append(CCFLAGS='-mfpu=neon')
+#                    build.env.Append(CCFLAGS='-mfloat-abi=hard -mfpu=neon')
+                if optimize_level == Optimize.LEVEL_EXCESSIVE:
+                    build.env.Append(CCFLAGS='-Ofast')
+                    build.env.Append(CCFLAGS='-flto')
+                    build.env.Append(CCFLAGS='-ffat-lto-objects')
+                    build.env.Append(LINKFLAGS='-Ofast')
+                    build.env.Append(LINKFLAGS='-flto')
+                    build.env.Append(LINKFLAGS='-ffat-lto-objects')
             elif optimize_level == Optimize.LEVEL_LEGACY:
                 if build.architecture_is_x86:
                     self.status = self.build_status(

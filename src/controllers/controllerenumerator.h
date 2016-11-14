@@ -16,10 +16,10 @@
 class ControllerEnumerator : public QObject {
     Q_OBJECT
   public:
-    ControllerEnumerator();
+    ControllerEnumerator(QObject *_parent = nullptr);
     // In this function, the inheriting class must delete the Controllers it
     // creates
-    virtual ~ControllerEnumerator();
+    ~ControllerEnumerator() override;
 
     virtual QList<Controller*> queryDevices() = 0;
 

@@ -20,7 +20,7 @@ EffectsManager::EffectsManager(QObject* pParent, UserSettingsPointer pConfig)
           m_pHiEqFreq(NULL),
           m_underDestruction(false) {
     qRegisterMetaType<EffectChain::InsertionType>("EffectChain::InsertionType");
-    QPair<EffectsRequestPipe*, EffectsResponsePipe*> requestPipes =
+    auto requestPipes =
             TwoWayMessagePipe<EffectsRequest*, EffectsResponse>::makeTwoWayMessagePipe(
                 2048, 2048, false, false);
 
@@ -173,7 +173,7 @@ QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBacke
 }
 
 EffectManifest EffectsManager::getEffectManifest(const QString& effectId) const {
-    QPair<EffectManifest, EffectsBackend*> manifestAndBackend =
+    auto manifestAndBackend =
             getEffectManifestAndBackend(effectId);
     return manifestAndBackend.first;
 }
@@ -218,7 +218,7 @@ EffectRackPointer EffectsManager::getEffectRack(const QString& group) {
     return m_pEffectChainManager->getEffectRack(group);
 }
 
-void EffectsManager::setup() {
+void EffectsManager::setupDefaults() {
     // These controls are used inside EQ Effects
     m_pLoEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "LoEQFrequency"), 0., 22040);
     m_pHiEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "HiEQFrequency"), 0., 22040);
@@ -243,7 +243,7 @@ void EffectsManager::setup() {
     EffectChainPointer pChain(new EffectChain(
            this, "org.mixxx.effectchain.flanger"));
     pChain->setName(tr("Flanger"));
-    EffectPointer pEffect = instantiateEffect(
+    auto pEffect = instantiateEffect(
            "org.mixxx.effects.flanger");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
@@ -284,6 +284,7 @@ void EffectsManager::setup() {
     pEffect = instantiateEffect("org.mixxx.effects.autopan");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
+
 }
 
 bool EffectsManager::writeRequest(EffectsRequest* request) {

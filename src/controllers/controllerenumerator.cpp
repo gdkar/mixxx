@@ -10,9 +10,9 @@
 
 #include "controllers/controllerenumerator.h"
 
-ControllerEnumerator::ControllerEnumerator()
-        : QObject() {
+ControllerEnumerator::ControllerEnumerator(QObject *p)
+        : QObject(p)
+{
 }
 
-ControllerEnumerator::~ControllerEnumerator() {
-}
+ControllerEnumerator::~ControllerEnumerator() = default;

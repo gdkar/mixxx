@@ -18,14 +18,13 @@
 GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
         : QGLWidget(parent, SharedGLContext::getWidget()),
           WaveformWidgetAbstract(group) {
-
-    addRenderer<WaveformRenderBackground>();
-    addRenderer<WaveformRendererEndOfTrack>();
-    addRenderer<WaveformRendererPreroll>();
-    addRenderer<WaveformRenderMarkRange>();
-    addRenderer<GLWaveformRendererFilteredSignal>();
-    addRenderer<WaveformRenderBeat>();
-    addRenderer<WaveformRenderMark>();
+    addRenderer(std::make_unique<WaveformRenderBackground>(this));
+    addRenderer(std::make_unique<WaveformRendererEndOfTrack>(this));
+    addRenderer(std::make_unique<WaveformRendererPreroll>(this));
+    addRenderer(std::make_unique<WaveformRenderMarkRange>(this));
+    addRenderer(std::make_unique<GLWaveformRendererFilteredSignal>(this));
+    addRenderer(std::make_unique<WaveformRenderBeat>(this));
+    addRenderer(std::make_unique<WaveformRenderMark>(this));
 
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);

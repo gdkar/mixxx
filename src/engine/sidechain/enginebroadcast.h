@@ -5,7 +5,6 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QObject>
-#include <QSemaphore>
 #include <QTextCodec>
 #include <QThread>
 #include <QVector>
@@ -20,6 +19,7 @@
 #include "track/track.h"
 #include "util/fifo.h"
 #include "preferences/broadcastsettings.h"
+#include "util/semaphore.hpp"
 
 class ControlPushButton;
 
@@ -145,8 +145,8 @@ class EngineBroadcast
     bool m_protocol_is_icecast2;
     bool m_protocol_is_shoutcast;
     bool m_ogg_dynamic_update;
-    QAtomicInt m_threadWaiting;
-    QSemaphore m_readSema;
+    std::atomic<int> m_threadWaiting;
+    mixxx::MSemaphore m_readSema;
     FIFO<CSAMPLE>* m_pOutputFifo;
 
     QString m_lastErrorStr;

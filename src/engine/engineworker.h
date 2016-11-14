@@ -6,8 +6,8 @@
 
 #include <QAtomicInt>
 #include <QObject>
-#include <QSemaphore>
 #include <QThread>
+#include "util/semaphore.hpp"
 
 // EngineWorker is an interface for running background processing work when the
 // audio callback is not active. While the audio callback is active, an
@@ -29,10 +29,8 @@ class EngineWorker : public QThread {
     void wake() {
         m_semaRun.release();
     }
-
   protected:
-    QSemaphore m_semaRun;
-
+    mixxx::MSemaphore m_semaRun;
   private:
     EngineWorkerScheduler* m_pScheduler;
 };

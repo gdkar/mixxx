@@ -32,18 +32,20 @@ class AudioInput;
 
 const QString kNetworkDeviceInternalName = "Network stream";
 
-class SoundDevice {
+class SoundDevice : public QObject{
+
+    Q_OBJECT
   public:
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();
 
-    inline const QString& getInternalName() const {
+    const QString& getInternalName() const {
         return m_strInternalName;
     }
-    inline const QString& getDisplayName() const {
+    const QString& getDisplayName() const {
         return m_strDisplayName;
     }
-    inline const QString& getHostAPI() const {
+    const QString& getHostAPI() const {
         return m_hostAPI;
     }
     void setSampleRate(double sampleRate);
@@ -73,17 +75,17 @@ class SoundDevice {
 
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
-                             const unsigned int iFramesPerBuffer,
-                             const unsigned int readOffset,
-                             const unsigned int iFrameSize);
+                             unsigned int iFramesPerBuffer,
+                             unsigned int readOffset,
+                             unsigned int iFrameSize);
 
     void composeInputBuffer(const CSAMPLE* inputBuffer,
-                            const unsigned int framesToPush,
-                            const unsigned int framesWriteOffset,
-                            const unsigned int iFrameSize);
+                            unsigned int framesToPush,
+                            unsigned int framesWriteOffset,
+                            unsigned int iFrameSize);
 
-    void clearInputBuffer(const unsigned int framesToPush,
-                          const unsigned int framesWriteOffset);
+    void clearInputBuffer(unsigned int framesToPush,
+                          unsigned int framesWriteOffset);
 
     UserSettingsPointer m_pConfig;
     // Pointer to the SoundManager object which we'll request audio from.

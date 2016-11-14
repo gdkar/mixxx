@@ -49,10 +49,11 @@ void Controller::stopEngine() {
     m_pEngine = NULL;
 }
 
-bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts) {
+bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
+{
     qDebug() << "Applying controller preset...";
 
-    const ControllerPreset* pPreset = preset();
+    auto pPreset = preset();
 
     // Load the script code into the engine
     if (m_pEngine == NULL) {
@@ -82,6 +83,70 @@ void Controller::stopLearning() {
     m_bLearning = false;
 
 }
+
+bool Controller::isOpen() const {
+    return m_bIsOpen;
+}
+bool Controller::isOutputDevice() const {
+    return m_bIsOutputDevice;
+}
+bool Controller::isInputDevice() const {
+    return m_bIsInputDevice;
+}
+QString Controller::getName() const {
+    return m_sDeviceName;
+}
+QString Controller::getCategory() const {
+    return m_sDeviceCategory;
+}
+bool Controller::isMappable() const {
+    return false;
+}
+bool Controller::isLearning() const {
+    return m_bLearning;
+}
+void Controller::accept(ControllerVisitor* visitor)
+{
+    void(sizeof(visitor));
+}
+bool Controller::savePreset(QString filename) const
+{
+    return false;
+}
+bool Controller::matchPreset(const PresetInfo & preset)
+{
+    Q_UNUSED(preset);
+    return false;
+}
+void Controller::setDeviceName(QString deviceName) {
+    m_sDeviceName = deviceName;
+}
+void Controller::setDeviceCategory(QString deviceCategory) {
+    m_sDeviceCategory = deviceCategory;
+}
+void Controller::setOutputDevice(bool outputDevice) {
+    m_bIsOutputDevice = outputDevice;
+}
+void Controller::setInputDevice(bool inputDevice) {
+    m_bIsInputDevice = inputDevice;
+}
+void Controller::setOpen(bool open) {
+    m_bIsOpen = open;
+}
+ControllerEngine* Controller::getEngine() const {
+    return m_pEngine;
+}
+void Controller::setPreset(const ControllerPreset& preset) {
+    // We don't know the specific type of the preset so we need to ask
+    // the preset to call our visitor methods with its type.
+    preset.accept(this);
+}
+bool Controller::poll() { return false; }
+
+    // Returns true if this device should receive polling signals via calls to
+    // its poll() method.
+bool Controller::isPolling()const  {return false;}
+
 
 void Controller::send(QList<int> data, unsigned int length) {
     // If you change this implementation, also change it in HidController (That
@@ -141,4 +206,19 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
             qWarning() << "Controller: Invalid script function" << function;
         }
     }
+}
+    // Returns a clone of the Controller's loaded preset.
+ControllerPresetPointer Controller::getPreset() const
+{
+    return {};
+};
+
+ControllerPreset* Controller::preset()
+{
+    return nullptr;
+}
+
+void Controller::send(QByteArray data)
+{
+    Q_UNUSED(data);
 }

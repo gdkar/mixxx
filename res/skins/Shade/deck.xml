@@ -145,60 +145,6 @@
 										<TextColor>#FFFFFF</TextColor>
 									</Mark>
 								</Visual>
-
-								<!-- Spinning Vinyl & VinylControl -->
-								<WidgetGroup>
-									<Style>
-										QGroupBox {
-											border: 0px solid yellow;
-										}
-										QWidget { margin: 0; padding: 0; }
-									</Style>
-									<Layout>vertical</Layout>
-									<Children>
-										<WidgetGroup>
-											<Style>QGroupBox { border: 0px solid green; } QWidget { margin: 0; padding: 0;}
-											</Style>
-											<Size>f,e</Size>
-										 </WidgetGroup>
-										<!-- Spinning Vinyl sub-widget -->
-										<WidgetGroup>
-											<!--<Pos>296,0</Pos>-->
-											<Style>QGroupBox { border: 0px solid green; } QWidget { margin: 0; padding: 0;} </Style>
-											<Size>82,82</Size>
-											<Children>
-												<!--
-												**********************************************
-												Visual- Spinning vinyl
-												**********************************************
-												-->
-												<Spinny>
-													<TooltipId>spinny</TooltipId>
-													<Style></Style>
-													<Channel><Variable name="channum"/></Channel>
-													<Pos>0,0</Pos>
-													<Size>82f,82f</Size>
-													<PathBackground>vinyl_spinny1_background.png</PathBackground>
-													<PathForeground>vinyl_spinny1_foreground.png</PathForeground>
-													<PathGhost>vinyl_spinny1_foreground_ghost.png</PathGhost>
-												</Spinny>
-											</Children>
-											<Connection>
-												<ConfigKey>[Spinny<Variable name="channum"/>],show_spinny</ConfigKey>
-												<BindProperty>visible</BindProperty>
-											</Connection>
-										</WidgetGroup>
-										<WidgetGroup>
-											<Style>QGroupBox { border: 0px solid green; } QWidget { margin: 0; padding: 0;}
-											</Style>
-											<Size>f,e</Size>
-										 </WidgetGroup>
-				 						<Template src="skin:vinylcontrol.xml">
-											<SetVariable name="channum"><Variable name="channum"/></SetVariable>
-										</Template>
-									</Children>
-								</WidgetGroup>
-	
 							</Children>
 						</WidgetGroup>
 	

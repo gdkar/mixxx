@@ -58,7 +58,21 @@ class PortMIDI(Dependence):
     def sources(self, build):
         return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
 
+class RtMidi(Dependence):
+    def configure(self, build, conf):
+        # Check for PortTime
+        libs = ['rtmidi', 'librtmidi']
+        # Depending on the library configuration PortTime might be statically
+        # linked with PortMidi. We treat either presence of the lib or the
+        # header as success.
+        build.env.ParseConfig('pkg-config rtmidi --silence-errors --cflags --libs')
+        if not conf.CheckLib(libs) :
+            raise Exception("Did not find RtMidi or its development headers.")
 
+    def sources(self, build):
+        return ['controllers/midi/rtmidienumerator.cpp',
+                'controllers/midi/rtmidicontroller.cpp',
+                ]
 class OpenGL(Dependence):
 
     def configure(self, build, conf):
@@ -432,7 +446,7 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=c++11')
+            build.env.Append(CXXFLAGS='-std=gnu++14')
 
 
 class TestHeaders(Dependence):
@@ -742,7 +756,6 @@ class MixxxCore(Feature):
                    "engine/enginefilterbutterworth8.cpp",
                    "engine/enginefilterlinkwitzriley4.cpp",
                    "engine/enginefilterlinkwitzriley8.cpp",
-                   "engine/enginefilter.cpp",
                    "engine/engineobject.cpp",
                    "engine/enginepregain.cpp",
                    "engine/enginechannel.cpp",
@@ -756,7 +769,7 @@ class MixxxCore(Feature):
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
-                   "engine/channelmixer_autogen.cpp",
+                   "engine/channelmixer.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
@@ -1080,6 +1093,7 @@ class MixxxCore(Feature):
                    "mixer/samplerbank.cpp",
 
                    "soundio/sounddevice.cpp",
+                   "soundio/sounddevicenotfound.cpp",
                    "soundio/sounddevicenetwork.cpp",
                    "engine/sidechain/enginenetworkstream.cpp",
                    "soundio/soundmanager.cpp",
@@ -1112,6 +1126,7 @@ class MixxxCore(Feature):
                    "util/valuetransformer.cpp",
                    "util/sandbox.cpp",
                    "util/file.cpp",
+                   "util/intrusive_fifo.cpp",
                    "util/mac.cpp",
                    "util/task.cpp",
                    "util/experiment.cpp",
@@ -1133,7 +1148,6 @@ class MixxxCore(Feature):
                    "util/sample.cpp",
                    "util/samplebuffer.cpp",
                    "util/singularsamplebuffer.cpp",
-                   "util/circularsamplebuffer.cpp",
                    "util/rotary.cpp",
                    "util/logger.cpp",
                    "util/logging.cpp",
@@ -1417,7 +1431,7 @@ class MixxxCore(Feature):
                 CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
 
     def depends(self, build):
-        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
+        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, RtMidi, Qt, TestHeaders,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices, IOKit,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]

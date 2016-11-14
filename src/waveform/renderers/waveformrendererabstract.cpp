@@ -6,5 +6,4 @@ WaveformRendererAbstract::WaveformRendererAbstract(WaveformWidgetRenderer* wavef
           m_scaleFactor(1.0) {
 }
 
-WaveformRendererAbstract::~WaveformRendererAbstract() {
-}
+WaveformRendererAbstract::~WaveformRendererAbstract() = default;

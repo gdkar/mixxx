@@ -36,40 +36,21 @@ class ControlProxy : public QObject {
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
     // Called from update();
-    virtual void emitValueChanged() {
-        emit(valueChanged(get()));
-    }
-
-    inline bool valid() const { return m_pControl != NULL; }
-
+    virtual void emitValueChanged();
+    bool valid() const;
     // Returns the value of the object. Thread safe, non-blocking.
-    inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    double get() const;
     // Returns the bool interpretation of the value
-    inline bool toBool() const {
-        return get() > 0.0;
-    }
-
+    bool toBool() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    inline double getParameter() const {
-        return m_pControl ? m_pControl->getParameter() : 0.0;
-    }
-
+    double getParameter() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    inline double getParameterForValue(double value) const {
-        return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
-    }
-
+    double getParameterForValue(double value) const;
     // Returns the normalized parameter of the object. Thread safe, non-blocking.
-    inline double getDefault() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
-
+    double getDefault() const;
   public slots:
     // Set the control to a new value. Non-blocking.
-    inline void slotSet(double v) {
+    void slotSet(double v) {
         set(v);
     }
     // Sets the control value to v. Thread safe, non-blocking.

@@ -14,13 +14,13 @@
 SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* parent)
     : QWidget(parent),
       WaveformWidgetAbstract(group) {
-    addRenderer<WaveformRenderBackground>();
-    addRenderer<WaveformRendererEndOfTrack>();
-    addRenderer<WaveformRendererPreroll>();
-    addRenderer<WaveformRenderMarkRange>();
-    addRenderer<WaveformRendererFilteredSignal>();
-    addRenderer<WaveformRenderBeat>();
-    addRenderer<WaveformRenderMark>();
+    addRenderer(std::make_unique<WaveformRenderBackground>(this));
+    addRenderer(std::make_unique<WaveformRendererEndOfTrack>(this));
+    addRenderer(std::make_unique<WaveformRendererPreroll>(this));
+    addRenderer(std::make_unique<WaveformRenderMarkRange>(this));
+    addRenderer(std::make_unique<WaveformRendererFilteredSignal>(this));
+    addRenderer(std::make_unique<WaveformRenderBeat>(this));
+    addRenderer(std::make_unique<WaveformRenderMark>(this));
 
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -28,8 +28,7 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
     m_initSuccess = init();
 }
 
-SoftwareWaveformWidget::~SoftwareWaveformWidget() {
-}
+SoftwareWaveformWidget::~SoftwareWaveformWidget() = default;
 
 void SoftwareWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(this);

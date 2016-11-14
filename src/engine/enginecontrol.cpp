@@ -84,7 +84,7 @@ double EngineControl::getTotalSamples() const {
 }
 
 bool EngineControl::atEndPosition() const {
-    SampleOfTrack sot = m_sampleOfTrack.getValue();
+    auto sot = m_sampleOfTrack.getValue();
     return (sot.current >= sot.total);
 }
 

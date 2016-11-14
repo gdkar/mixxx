@@ -89,7 +89,8 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
           m_iSampleRate(0),
           m_pCrossfadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
           m_bCrossfadeReady(false),
-          m_iLastBufferSize(0) {
+          m_iLastBufferSize(0)
+{
     // zero out crossfade buffer
     SampleUtil::clear(m_pCrossfadeBuffer, MAX_BUFFER_LEN);
 
@@ -238,13 +239,14 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
     addControl(m_pCueControl);
 
     m_pReadAheadManager = new ReadAheadManager(m_pReader,
-                                               m_pLoopingControl);
+                                               m_pLoopingControl,
+                                               this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager);
+    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager, this);
+    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager, this);
+    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
     if (m_pKeylockEngine->get() == SOUNDTOUCH) {
         m_pScaleKeylock = m_pScaleST;
     } else {
@@ -272,7 +274,8 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
     setEngineMaster(pMixingEngine);
 }
 
-EngineBuffer::~EngineBuffer() {
+EngineBuffer::~EngineBuffer()
+{
 #ifdef __SCALER_DEBUG__
     //close the writer
     df.close();
@@ -321,7 +324,8 @@ double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
 }
 
 void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
-                                                      const int iBufferSize) {
+                                                      const int iBufferSize)
+{
     // MUST ACQUIRE THE PAUSE MUTEX BEFORE CALLING THIS METHOD
 
     // When no time-stretching or pitch-shifting is needed we use our own linear
@@ -330,8 +334,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
 
     // m_pScaleKeylock and m_pScaleVinyl could change out from under us,
     // so cache it.
-    EngineBufferScale* keylock_scale = m_pScaleKeylock;
-    EngineBufferScale* vinyl_scale = m_pScaleVinyl;
+    auto keylock_scale = m_pScaleKeylock;
+    auto vinyl_scale = m_pScaleVinyl;
 
     if (bEnable && m_pScale != keylock_scale) {
         if (m_speed_old != 0.0) {
@@ -364,13 +368,14 @@ double EngineBuffer::getLocalBpm() {
     return m_pBpmControl->getLocalBpm();
 }
 
-void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
-    foreach (EngineControl* pControl, m_engineControls) {
+void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster)
+{
+    for(auto  pControl: as_const(m_engineControls))
         pControl->setEngineMaster(pEngineMaster);
-    }
 }
 
-void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
+void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType)
+{
     // All seeks need to be done in the Engine thread so queue it up.
     // Write the position before the seek type, to reduce a possible race
     // condition effect
@@ -414,7 +419,8 @@ void EngineBuffer::requestEnableSync(bool enabled) {
     }
 }
 
-void EngineBuffer::requestSyncMode(SyncMode mode) {
+void EngineBuffer::requestSyncMode(SyncMode mode)
+{
     // If we're not playing, the queued event won't get processed so do it now.
     if (m_playButton->get() == 0.0) {
         m_pEngineSync->requestSyncMode(m_pSyncControl, mode);
@@ -423,7 +429,8 @@ void EngineBuffer::requestSyncMode(SyncMode mode) {
     }
 }
 
-void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize) {
+void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize)
+{
     if (!m_bCrossfadeReady) {
         // Read buffer, as if there where no parameter change
         // (Must be called only once per callback)
@@ -436,11 +443,10 @@ void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize) {
 
 // WARNING: This method is not thread safe and must not be called from outside
 // the engine callback!
-void EngineBuffer::setNewPlaypos(double newpos) {
+void EngineBuffer::setNewPlaypos(double newpos)
+{
     //qDebug() << m_group << "engine new pos " << newpos;
-
     m_filepos_play = newpos;
-
     if (m_rate_old != 0.0) {
         // Before seeking, read extra buffer for crossfading
         // this also sets m_pReadAheadManager to newpos
@@ -454,11 +460,8 @@ void EngineBuffer::setNewPlaypos(double newpos) {
     m_iSamplesCalculated = 1000000;
 
     // Must hold the engineLock while using m_engineControls
-    for (QList<EngineControl*>::iterator it = m_engineControls.begin();
-         it != m_engineControls.end(); ++it) {
-        EngineControl *pControl = *it;
+    for (auto pControl : as_const(m_engineControls))
         pControl->notifySeek(m_filepos_play);
-    }
 
     verifyPlay(); // verify or update play button and indicator
 }
@@ -502,9 +505,10 @@ void EngineBuffer::loadFakeTrack(TrackPointer pTrack, bool bPlay) {
 // WARNING: Always called from the EngineWorker thread pool
 void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,
                                    int iTrackSampleRate,
-                                   int iTrackNumSamples) {
+                                   int iTrackNumSamples)
+{
     //qDebug() << getGroup() << "EngineBuffer::slotTrackLoaded";
-    TrackPointer pOldTrack = m_pCurrentTrack;
+    auto pOldTrack = m_pCurrentTrack;
 
     m_pause.lock();
     m_visualPlayPos->setInvalid();
@@ -532,7 +536,8 @@ void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,
 
 // WARNING: Always called from the EngineWorker thread pool
 void EngineBuffer::slotTrackLoadFailed(TrackPointer pTrack,
-                                       QString reason) {
+                                       QString reason)
+{
     m_iTrackLoading = 0;
     // Loading of a new track failed.
     // eject the currently loaded track (the old Track) as well
@@ -791,7 +796,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
 
         // TODO(owen): Maybe change this so that rubberband doesn't disable
         // keylock on scratch. (just check m_pScaleKeylock == m_pScaleST)
-        if (is_scratching || fabs(speed) > 1.9) {
+        if (is_scratching || std::abs(speed) > 6) {
             // Scratching and high speeds with always disables keylock
             // because Soundtouch sounds terrible in these conditions.  Rubberband
             // sounds better, but still has some problems (it may reallocate in
@@ -802,7 +807,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             // Force pitchRatio to the linear pitch set by speed
             pitchRatio = speed;
             // This is for the natural speed pitch found on turn tables
-        } else if (fabs(speed) < 0.1) {
+        } else if (std::abs(speed) < 0.05) {
             // We have pre-allocated big buffers in Rubberband and Soundtouch for
             // a minimum speed of 0.1. Slower speeds will re-allocate much bigger
             // buffers which may cause underruns.
@@ -1331,7 +1336,8 @@ void EngineBuffer::setReader(CachingReader* pReader) {
 */
 
 void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
-                                    EngineBufferScale* pScaleKeylock) {
+                                    EngineBufferScale* pScaleKeylock)
+{
     m_pScaleVinyl = pScaleVinyl;
     m_pScaleKeylock = pScaleKeylock;
     m_pScale = m_pScaleVinyl;
@@ -1341,7 +1347,8 @@ void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
     m_bScalerOverride = true;
 }
 
-void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {
+void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const
+{
     pGroupFeatures->has_current_position = true;
     pGroupFeatures->current_position = m_filepos_play;
 

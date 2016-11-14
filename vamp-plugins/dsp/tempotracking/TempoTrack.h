@@ -17,11 +17,10 @@
 #define TEMPOTRACK_H
 
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include "dsp/signalconditioning/DFProcess.h"
-#include "maths/Correlation.h"
 #include "dsp/signalconditioning/Framer.h"
 
 
@@ -46,7 +45,7 @@ struct TTParams
 };
 
 
-class TempoTrack  
+class TempoTrack
 {
 public:
     TempoTrack( TTParams Params );
@@ -54,7 +53,7 @@ public:
 
     vector<int> process( vector <double> DF, vector <double> *tempoReturn = 0);
 
-	
+
 private:
     void initialise( TTParams Params );
     void deInitialise();
@@ -67,7 +66,7 @@ private:
     void stepDetect( double* periodP, double* periodG, int currentIdx, int* flag );
     void createCombFilter( double* Filter, unsigned int winLength, unsigned int TSig, double beatLag );
     double tempoMM( double* ACF, double* weight, int sig );
-	
+
     unsigned int m_dataLength;
     unsigned int m_winLength;
     unsigned int m_lagLength;
@@ -82,24 +81,23 @@ private:
 
     double* m_tempoScratch;
     double* m_smoothRCF; // Smoothed Output of Comb Filterbank (m_tempoScratch)
-	
-    // Processing Buffers 
+
+    // Processing Buffers
     double* m_rawDFFrame; // Original Detection Function Analysis Frame
     double* m_smoothDFFrame; // Smoothed Detection Function Analysis Frame
-    double* m_frameACF; // AutoCorrelation of Smoothed Detection Function 
+    double* m_frameACF; // AutoCorrelation of Smoothed Detection Function
 
     //Low Pass Coefficients for DF Smoothing
     double* m_ACoeffs;
     double* m_BCoeffs;
-	
+
     // Objetcs/operators declaration
-    Framer m_DFFramer;
+    Framer<double> m_DFFramer;
     DFProcess* m_DFConditioning;
-    Correlation m_correlator;
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
 
-	// also want to smooth m_tempoScratch 
+	// also want to smooth m_tempoScratch
     DFProcess* m_RCFConditioning;
     // Config structure for RCFProcess
     DFProcConfig m_RCFPParams;

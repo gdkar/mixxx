@@ -7,8 +7,8 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : m_pReadAheadManager(pReadAheadManager),
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *p)
+    : EngineBufferScale(pReadAheadManager, p),
       m_bufferInt(SampleUtil::alloc(kiLinearScaleReadAheadLength)),
       m_bufferIntSize(0),
       m_bClear(false),

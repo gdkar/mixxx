@@ -63,8 +63,8 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
 WaveformWidgetRenderer::~WaveformWidgetRenderer() {
     //qDebug() << "~WaveformWidgetRenderer";
 
-    for (int i = 0; i < m_rendererStack.size(); ++i)
-        delete m_rendererStack[i];
+//    for (int i = 0; i < m_rendererStack.size(); ++i)
+//        delete m_rendererStack[i];
 
     delete m_pRateControlObject;
     delete m_pRateRangeControlObject;

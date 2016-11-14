@@ -22,7 +22,7 @@
 #include "util/math.h"
 
 // this (7) represents latency values from 1 ms to about 80 ms -- bkgood
-const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 7;
+const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 31;
 
 const QString SoundManagerConfig::kDefaultAPI = QString("None");
 // Sample Rate even the cheap sound Devices will support most likely
@@ -52,7 +52,8 @@ SoundManagerConfig::~SoundManagerConfig() {
  * path
  * @returns false if the file can't be read or is invalid XML, true otherwise
  */
-bool SoundManagerConfig::readFromDisk() {
+bool SoundManagerConfig::readFromDisk()
+{
     QFile file(m_configFile.absoluteFilePath());
     QDomDocument doc;
     QDomElement rootElement;
@@ -118,7 +119,8 @@ bool SoundManagerConfig::readFromDisk() {
     return true;
 }
 
-bool SoundManagerConfig::writeToDisk() const {
+bool SoundManagerConfig::writeToDisk() const
+{
     QDomDocument doc("SoundManagerConfig");
     QDomElement docElement(doc.createElement("SoundManagerConfig"));
     docElement.setAttribute("api", m_api);
@@ -154,11 +156,13 @@ bool SoundManagerConfig::writeToDisk() const {
     return true;
 }
 
-QString SoundManagerConfig::getAPI() const {
+QString SoundManagerConfig::getAPI() const
+{
     return m_api;
 }
 
-void SoundManagerConfig::setAPI(const QString &api) {
+void SoundManagerConfig::setAPI(const QString &api)
+{
     // SoundManagerConfig doesn't necessarily have access to a SoundManager
     // instance, so I can't check for input validity here -- bkgood
     m_api = api;
@@ -170,28 +174,33 @@ void SoundManagerConfig::setAPI(const QString &api) {
  * @returns false if the API is not found in SoundManager's list, otherwise
  *          true
  */
-bool SoundManagerConfig::checkAPI(const SoundManager &soundManager) {
+bool SoundManagerConfig::checkAPI(const SoundManager &soundManager)
+{
     if (!soundManager.getHostAPIList().contains(m_api) && m_api != "None") {
         return false;
     }
     return true;
 }
 
-unsigned int SoundManagerConfig::getSampleRate() const {
+unsigned int SoundManagerConfig::getSampleRate() const
+{
     return m_sampleRate;
 }
 
-void SoundManagerConfig::setSampleRate(unsigned int sampleRate) {
+void SoundManagerConfig::setSampleRate(unsigned int sampleRate)
+{
     // making sure we don't divide by zero elsewhere
     m_sampleRate = sampleRate != 0 ? sampleRate : kFallbackSampleRate;
 }
 
 
-unsigned int SoundManagerConfig::getSyncBuffers() const {
+unsigned int SoundManagerConfig::getSyncBuffers() const
+{
     return m_syncBuffers;
 }
 
-void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers) {
+void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers)
+{
     // making sure we don't divide by zero elsewhere
     m_syncBuffers = qMin(syncBuffers, (unsigned int)2);
 }
@@ -246,25 +255,33 @@ void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
     }
 }
 
-unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const {
+unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const
+{
     return m_audioBufferSizeIndex;
 }
 
-unsigned int SoundManagerConfig::getFramesPerBuffer() const {
+unsigned int SoundManagerConfig::getFramesPerBuffer() const
+{
     // endless loop otherwise
-    unsigned int audioBufferSizeIndex = m_audioBufferSizeIndex;
+    auto audioBufferSizeIndex = m_audioBufferSizeIndex;
     VERIFY_OR_DEBUG_ASSERT(audioBufferSizeIndex > 0) {
         audioBufferSizeIndex = kDefaultAudioBufferSizeIndex;
     }
-    unsigned int framesPerBuffer = 1;
-    double sampleRate = m_sampleRate; // need this to avoid int division
+    auto framesPerBuffer = 1u;
+    auto sampleRate = double(m_sampleRate); // need this to avoid int division
     // first, get to the framesPerBuffer value corresponding to latency index 1
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {
+    for (; framesPerBuffer / sampleRate < 0.5e-3; framesPerBuffer *= 2) {
+        /* nothing */
     }
-    // then, keep going until we get to our desired latency index (if not 1)
-    for (unsigned int latencyIndex = 1; latencyIndex < audioBufferSizeIndex; ++latencyIndex) {
-        framesPerBuffer <<= 1; // *= 2
-    }
+    framesPerBuffer <<= (audioBufferSizeIndex /4ul);
+    framesPerBuffer  *= 4 + (audioBufferSizeIndex % 4);
+    framesPerBuffer /= 4;
+/*    // then, keep going until we get to our desired latency index (if not 1)
+    framesPerBuffer <<= ((audioBufferSizeIndex - 1u) >> 1);
+    if((audioBufferSizeIndex - 1u) % 2) {
+        framesPerBuffer *= 3;
+        framesPerBuffer >>= 1;
+    }*/
     return framesPerBuffer;
 }
 
@@ -312,9 +329,10 @@ void SoundManagerConfig::clearInputs() {
  *              like SoundManagerConfig::API | SoundManagerConfig::DEVICES to
  *              load default API and master device.
  */
-void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int flags) {
+void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int flags)
+{
     if (flags & SoundManagerConfig::API) {
-        QList<QString> apiList = soundManager->getHostAPIList();
+        auto apiList = soundManager->getHostAPIList();
         if (!apiList.isEmpty()) {
 #ifdef __LINUX__
             //Check for JACK and use that if it's available, otherwise use ALSA
@@ -347,13 +365,13 @@ void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int f
     if (flags & SoundManagerConfig::DEVICES) {
         clearOutputs();
         clearInputs();
-        QList<SoundDevice*> outputDevices = soundManager->getDeviceList(m_api, true, false);
+        auto outputDevices = soundManager->getDeviceList(m_api, true, false);
         if (!outputDevices.isEmpty()) {
-            foreach (SoundDevice *device, outputDevices) {
+            for(auto device: as_const(outputDevices)) {
                 if (device->getNumOutputChannels() < 2) {
                     continue;
                 }
-                AudioOutput masterOut(AudioPath::MASTER, 0, 2, 0);
+                auto masterOut = AudioOutput (AudioPath::MASTER, 0, 2, 0);
                 addOutput(device->getInternalName(), masterOut);
                 defaultSampleRate = device->getDefaultSampleRate();
                 break;
@@ -361,7 +379,7 @@ void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int f
         }
     }
     if (flags & SoundManagerConfig::OTHER) {
-        QList<unsigned int> sampleRates = soundManager->getSampleRates(m_api);
+        auto sampleRates = soundManager->getSampleRates(m_api);
         if (sampleRates.contains(defaultSampleRate)) {
             m_sampleRate = defaultSampleRate;
         } else if (sampleRates.contains(kFallbackSampleRate)) {

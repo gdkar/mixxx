@@ -13,7 +13,7 @@ class ControlObject;
 class QtWaveformRendererSimpleSignal : public WaveformRendererSignalBase {
 public:
     explicit QtWaveformRendererSimpleSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~QtWaveformRendererSimpleSignal();
+   ~QtWaveformRendererSimpleSignal() override;
 
     virtual void onSetup(const QDomNode &node);
     virtual void draw(QPainter* painter, QPaintEvent* event);

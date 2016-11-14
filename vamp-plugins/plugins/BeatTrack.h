@@ -16,6 +16,7 @@
 #define _BEAT_TRACK_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
+#include <memory>
 
 class BeatTrackerData;
 
@@ -28,7 +29,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const { return FrequencyDomain; }
+    InputDomain getInputDomain() const;
 
     std::string getIdentifier() const;
     std::string getName() const;
@@ -52,7 +53,7 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    BeatTrackerData *m_d;
+    std::unique_ptr<BeatTrackerData> m_d;
     int m_method;
     int m_dfType;
 

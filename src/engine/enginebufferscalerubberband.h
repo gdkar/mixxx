@@ -15,7 +15,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     Q_OBJECT
   public:
     explicit EngineBufferScaleRubberBand(
-            ReadAheadManager* pReadAheadManager);
+            ReadAheadManager* pReadAheadManager, QObject *pParent = nullptr);
     ~EngineBufferScaleRubberBand() override;
 
     void setScaleParameters(double base_rate,
@@ -36,10 +36,8 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     void initRubberBand();
 
     void deinterleaveAndProcess(const CSAMPLE* pBuffer, SINT frames, bool flush);
-    SINT retrieveAndDeinterleave(CSAMPLE* pBuffer, SINT frames);
-
+    SINT retrieveAndInterleave(CSAMPLE* pBuffer, SINT frames);
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
 
     std::unique_ptr<RubberBand::RubberBandStretcher> m_pRubberBand;
 
@@ -48,6 +46,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
 
     // Holds the playback direction
     bool m_bBackwards;
+    int  m_preroll{0};
 };
 
 

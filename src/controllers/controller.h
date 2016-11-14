@@ -24,47 +24,31 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     Q_OBJECT
   public:
     Controller();
-    ~Controller() override;  // Subclass should call close() at minimum.
+   ~Controller() override;  // Subclass should call close() at minimum.
 
     // Returns the extension for the controller (type) preset files.  This is
     // used by the ControllerManager to display only relevant preset files for
     // the controller (type.)
     virtual QString presetExtension() = 0;
 
-    void setPreset(const ControllerPreset& preset) {
+    void setPreset(const ControllerPreset& preset);
         // We don't know the specific type of the preset so we need to ask
         // the preset to call our visitor methods with its type.
-        preset.accept(this);
-    }
 
-    virtual void accept(ControllerVisitor* visitor) = 0;
-
-    virtual bool savePreset(const QString filename) const = 0;
+    virtual void accept(ControllerVisitor* visitor);
+    virtual bool savePreset(QString filename) const;
 
     // Returns a clone of the Controller's loaded preset.
-    virtual ControllerPresetPointer getPreset() const = 0;
+    virtual ControllerPresetPointer getPreset() const;
 
-    inline bool isOpen() const {
-        return m_bIsOpen;
-    }
-    inline bool isOutputDevice() const {
-        return m_bIsOutputDevice;
-    }
-    inline bool isInputDevice() const {
-        return m_bIsInputDevice;
-    }
-    inline const QString& getName() const {
-        return m_sDeviceName;
-    }
-    inline const QString& getCategory() const {
-        return m_sDeviceCategory;
-    }
-    virtual bool isMappable() const = 0;
-    inline bool isLearning() const {
-        return m_bLearning;
-    }
-
-    virtual bool matchPreset(const PresetInfo& preset) = 0;
+    bool isOpen() const;
+    bool isOutputDevice() const;
+    bool isInputDevice() const;
+    QString getName() const;
+    QString getCategory() const;
+    virtual bool isMappable() const;
+    virtual bool isLearning() const;
+    virtual bool matchPreset(const PresetInfo& preset);
 
   signals:
     // Emitted when a new preset is loaded. pPreset is a /clone/ of the loaded
@@ -97,32 +81,18 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // To be called in sub-class' open() functions after opening the device but
     // before starting any input polling/processing.
     void startEngine();
-
     // To be called in sub-class' close() functions after stopping any input
     // polling/processing but before closing the device.
     void stopEngine();
-    
     // To be called when receiving events
     void triggerActivity();
 
-    inline ControllerEngine* getEngine() const {
-        return m_pEngine;
-    }
-    inline void setDeviceName(QString deviceName) {
-        m_sDeviceName = deviceName;
-    }
-    inline void setDeviceCategory(QString deviceCategory) {
-        m_sDeviceCategory = deviceCategory;
-    }
-    inline void setOutputDevice(bool outputDevice) {
-        m_bIsOutputDevice = outputDevice;
-    }
-    inline void setInputDevice(bool inputDevice) {
-        m_bIsInputDevice = inputDevice;
-    }
-    inline void setOpen(bool open) {
-        m_bIsOpen = open;
-    }
+    ControllerEngine* getEngine() const;
+    void setDeviceName(QString deviceName);
+    void setDeviceCategory(QString deviceCategory);
+    void setOutputDevice(bool outputDevice);
+    void setInputDevice(bool inputDevice);
+    void setOpen(bool open);
 
   private: // but used by ControllerManager
 
@@ -130,22 +100,20 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     virtual int close() = 0;
     // Requests that the device poll if it is a polling device. Returns true
     // if events were handled.
-    virtual bool poll() { return false; }
+    virtual bool poll();
 
     // Returns true if this device should receive polling signals via calls to
     // its poll() method.
-    virtual bool isPolling() const {
-        return false;
-    }
+    virtual bool isPolling() const;
 
   private:
     // This must be reimplemented by sub-classes desiring to send raw bytes to a
     // controller.
-    virtual void send(QByteArray data) = 0;
+    virtual void send(QByteArray data);
 
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() = 0;
+    virtual ControllerPreset* preset();
     ControllerEngine* m_pEngine;
 
     // Verbose and unique device name suitable for display.

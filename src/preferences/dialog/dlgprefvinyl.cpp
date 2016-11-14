@@ -122,7 +122,8 @@ DlgPrefVinyl::~DlgPrefVinyl() {
     qDeleteAll(m_signalWidgets);
 }
 
-void DlgPrefVinyl::slotNumDecksChanged(double dNumDecks) {
+void DlgPrefVinyl::slotNumDecksChanged(double dNumDecks)
+{
     int num_decks = static_cast<int>(dNumDecks);
 
     if (num_decks < 0 || num_decks > kMaxNumberOfDecks) {
@@ -136,24 +137,29 @@ void DlgPrefVinyl::slotNumDecksChanged(double dNumDecks) {
     }
 }
 
-void DlgPrefVinyl::slotVinylType1Changed(QString text) {
+void DlgPrefVinyl::slotVinylType1Changed(QString text)
+{
     LeadinTime1->setText(QString("%1").arg(getDefaultLeadIn(text)));
 }
 
-void DlgPrefVinyl::slotVinylType2Changed(QString text) {
+void DlgPrefVinyl::slotVinylType2Changed(QString text)
+{
     LeadinTime2->setText(QString("%1").arg(getDefaultLeadIn(text)));
 }
 
-void DlgPrefVinyl::slotVinylType3Changed(QString text) {
+void DlgPrefVinyl::slotVinylType3Changed(QString text)
+{
     LeadinTime3->setText(QString("%1").arg(getDefaultLeadIn(text)));
 }
 
-void DlgPrefVinyl::slotVinylType4Changed(QString text) {
+void DlgPrefVinyl::slotVinylType4Changed(QString text)
+{
     LeadinTime4->setText(QString("%1").arg(getDefaultLeadIn(text)));
 }
 
 /** @brief Performs any necessary actions that need to happen when the prefs dialog is opened */
-void DlgPrefVinyl::slotShow() {
+void DlgPrefVinyl::slotShow()
+{
     if (m_pVCManager) {
         for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
             m_pVCManager->addSignalQualityListener(m_signalWidgets[i]);
@@ -167,7 +173,8 @@ void DlgPrefVinyl::slotShow() {
 }
 
 /** @brief Performs any necessary actions that need to happen when the prefs dialog is closed */
-void DlgPrefVinyl::slotHide() {
+void DlgPrefVinyl::slotHide()
+{
     if (m_pVCManager) {
         for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
             m_pVCManager->removeSignalQualityListener(m_signalWidgets[i]);
@@ -270,7 +277,8 @@ void DlgPrefVinyl::slotUpdate() {
     }
 }
 
-void DlgPrefVinyl::verifyAndSaveLeadInTime(QLineEdit* widget, QString group, QString vinyl_type) {
+void DlgPrefVinyl::verifyAndSaveLeadInTime(QLineEdit* widget, QString group, QString vinyl_type)
+{
     QString strLeadIn = widget->text();
     bool isInteger;
     strLeadIn.toInt(&isInteger);
@@ -282,7 +290,8 @@ void DlgPrefVinyl::verifyAndSaveLeadInTime(QLineEdit* widget, QString group, QSt
     }
 }
 
-int DlgPrefVinyl::getDefaultLeadIn(QString vinyl_type) const {
+int DlgPrefVinyl::getDefaultLeadIn(QString vinyl_type) const
+{
     if (vinyl_type == MIXXX_VINYL_SERATOCV02VINYLSIDEA) {
         return MIXXX_VINYL_SERATOCV02VINYLSIDEA_LEADIN;
     } else if (vinyl_type == MIXXX_VINYL_SERATOCV02VINYLSIDEB) {
@@ -371,6 +380,8 @@ void DlgPrefVinyl::VinylTypeSlotApply()
         } else if (ComboBoxVinylSpeed1->currentText() == MIXXX_VINYL_SPEED_45) {
             m_COSpeeds[0]->slotSet(MIXXX_VINYL_SPEED_45_NUM);
         }
+        M_FALLTHROUGH_INTENDED;
+    case 0:
         break;
     default:
         qWarning() << "Unexpected number of vinyl speed preference items";
