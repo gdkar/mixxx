@@ -447,18 +447,16 @@ void EngineMaster::process(const int iBufferSize) {
         // with the channel gains and overall master gain.
         if (!m_pMasterTalkoverMix->toBool()) {
             // Add Talkover to Master output
-            SampleUtil::copy4WithGain(m_pMaster,
+            SampleUtil::copyWithGain(m_pMaster,iBufferSize,
                     m_pOutputBusBuffers[EngineChannel::LEFT], 1.0,
                     m_pOutputBusBuffers[EngineChannel::CENTER], 1.0,
                     m_pOutputBusBuffers[EngineChannel::RIGHT], 1.0,
-                    m_pTalkover, 1.0,
-                    iBufferSize);
+                    m_pTalkover, 1.0);
         } else {
-            SampleUtil::copy3WithGain(m_pMaster,
+            SampleUtil::copyWithGain(m_pMaster,iBufferSize,
                     m_pOutputBusBuffers[EngineChannel::LEFT], 1.0,
                     m_pOutputBusBuffers[EngineChannel::CENTER], 1.0,
-                    m_pOutputBusBuffers[EngineChannel::RIGHT], 1.0,
-                    iBufferSize);
+                    m_pOutputBusBuffers[EngineChannel::RIGHT], 1.0);
         }
 
         // Process master channel effects
