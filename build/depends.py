@@ -399,7 +399,7 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=c++11')
+            build.env.Append(CXXFLAGS='-std=gnu++14')
 
 
 class TestHeaders(Dependence):
@@ -720,7 +720,7 @@ class MixxxCore(Feature):
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
-                   "engine/channelmixer_autogen.cpp",
+                   "engine/channelmixer.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
