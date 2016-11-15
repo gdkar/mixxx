@@ -10,6 +10,7 @@ namespace mixxx {
 
 // DTO for track metadata properties. Must not be subclassed (no virtual destructor)!
 class TrackMetadata {
+    Q_GADGET
 public:
     TrackMetadata();
 
