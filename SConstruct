@@ -62,6 +62,7 @@ available_features = [features.Mad,
                       features.AsmLib,
                       features.IPod,
                       features.FFMPEG,
+                      features.FFMPEGSource,
 
 		     # Experimental features
 		     features.OpenGLES
