@@ -24,9 +24,10 @@ public:
             const TrackMetadata& trackMetadata) const = 0;
 
 protected:
-    virtual ~MetadataSource() {}
+    virtual ~MetadataSource() = 0;
 };
 
+inline MetadataSource::~MetadataSource(){}
 } //namespace mixxx
 
 #endif // MIXXX_METADATASOURCE_H
