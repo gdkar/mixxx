@@ -29,7 +29,7 @@ QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     }
     return list;
 }
-SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
+SoundSourceFFmpeg::SoundSourceFFmpeg(const QUrl& url)
     : SoundSource(url)
 {
     av_register_all();
@@ -77,13 +77,13 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     }
     if ( config.getChannelCount() <= 0 ) setChannelCount( m_codec_ctx->channels );
     else                                setChannelCount( config.getChannelCount());
-    if ( config.getSamplingRate() < 8000 )  setSampleRate( m_codec_ctx->sample_rate );
+    if ( config.getSamplingRate() < 8000 )  setSamplingRate( m_codec_ctx->sample_rate );
     else                                setSamplingRate( config.getSamplingRate());
     m_output_tb = AVRational{1,static_cast<int>(getSamplingRate())};
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
     m_frame->format         = AV_SAMPLE_FMT_FLT;
-    m_frame->sample_rate    = getSamplingRat();
+    m_frame->sample_rate    = getSamplingRate();
     auto discarded = size_t{0};
     auto total_size= size_t{0};
     do {
@@ -386,7 +386,7 @@ bool SoundSourceProviderFFmpeg::canOpen(QUrl url)
     }
     return true;
 }
-SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(QUrl url)
+SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
 {
     return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
 }
