@@ -50,6 +50,6 @@ class SoundSourceProviderFFmpeg: public SoundSourceProvider {
     QStringList getSupportedFileExtensions() const override;
     bool canOpen(QUrl url) ;
     bool canOpen(QString path) ;
-    SoundSourcePointer newSoundSource(const QUrl& url) const override;
+    SoundSourcePointer newSoundSource(const QUrl& url) override;
 };
 } // namespace mixxx
