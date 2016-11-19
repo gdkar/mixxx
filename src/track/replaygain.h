@@ -37,21 +37,25 @@ public:
             "The maximum peak amplitude value is stored as a floating number, "
             "where 1.0 represents digital full scale");
 
-    ReplayGain()
+    constexpr ReplayGain()
         : ReplayGain(kRatioUndefined, kPeakUndefined) {
     }
-    ReplayGain(double ratio, CSAMPLE peak)
+    constexpr ReplayGain(double ratio, CSAMPLE peak)
         : m_ratio(ratio)
         , m_peak(peak) {
     }
+    constexpr ReplayGain(const ReplayGain&) noexcept = default;
+    constexpr ReplayGain&operator=(const ReplayGain&) noexcept = default;
+    constexpr ReplayGain(ReplayGain&&) noexcept = default;
+    constexpr ReplayGain&operator=(ReplayGain&&) noexcept = default;
 
-    static bool isValidRatio(double ratio) {
+    static constexpr bool isValidRatio(double ratio) {
         return kRatioMin < ratio;
     }
-    bool hasRatio() const {
+    constexpr bool hasRatio() const {
         return isValidRatio(m_ratio);
     }
-    double getRatio() const {
+    constexpr double getRatio() const {
         return m_ratio;
     }
     void setRatio(double ratio) {
@@ -69,13 +73,13 @@ public:
     static double normalizeRatio(double ratio);
 
     // The peak amplitude of the track or signal.
-    static bool isValidPeak(CSAMPLE peak) {
+    static constexpr bool isValidPeak(CSAMPLE peak) {
         return kPeakMin <= peak;
     }
-    bool hasPeak() const {
+    bool constexpr hasPeak() const {
         return isValidPeak(m_peak);
     }
-    CSAMPLE getPeak() const {
+    CSAMPLE constexpr getPeak() const {
         return m_peak;
     }
     void setPeak(CSAMPLE peak) {
@@ -96,20 +100,15 @@ private:
     double m_ratio;
     CSAMPLE m_peak;
 };
-
 inline
-bool operator==(const ReplayGain& lhs, const ReplayGain& rhs) {
+constexpr bool operator==(const ReplayGain& lhs, const ReplayGain& rhs) {
     return (lhs.getRatio() == rhs.getRatio()) && (lhs.getPeak() == rhs.getPeak());
 }
-
 inline
-bool operator!=(const ReplayGain& lhs, const ReplayGain& rhs) {
+constexpr bool operator!=(const ReplayGain& lhs, const ReplayGain& rhs) {
     return !(lhs == rhs);
 }
-
 }
-
-Q_DECLARE_TYPEINFO(mixxx::ReplayGain, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(mixxx::ReplayGain)
-
+Q_DECLARE_TYPEINFO(mixxx::ReplayGain, Q_MOVABLE_TYPE);
 #endif // MIXXX_REPLAYGAIN_H
