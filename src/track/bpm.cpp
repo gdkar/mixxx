@@ -36,7 +36,8 @@ double Bpm::valueFromString(const QString& str, bool* pValid) {
     return kValueUndefined;
 }
 
-QString Bpm::valueToString(double value) {
+QString Bpm::valueToString(double value)
+{
     if (isValidValue(value)) {
         //TODO: Shouldn't this be formatted in some way, instead of letting it output in scientific notation?
         return QString::number(value);
@@ -45,14 +46,21 @@ QString Bpm::valueToString(double value) {
     }
 }
 
-void Bpm::normalizeValue() {
+void Bpm::normalizeValue()
+{
     if (isValidValue(m_value)) {
-        const double normalizedValue = valueFromString(valueToString(m_value));
+        auto normalizedValue = valueFromString(valueToString(m_value));
         // NOTE(uklotzde): Subsequently formatting and parsing the
         // normalized value should not alter it anymore!
         DEBUG_ASSERT(normalizedValue == valueFromString(valueToString(normalizedValue)));
         m_value = normalizedValue;
     }
 }
-
+Bpm::Bpm(const QString &str)
+: Bpm()
+{
+    auto valid = false;
+    auto val = valueFromString(str,&valid);
+    if(valid) m_value = val;
+}
 } //namespace mixxx

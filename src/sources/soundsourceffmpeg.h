@@ -20,9 +20,9 @@ class SoundSourceFFmpeg : public SoundSource {
     void close() override;
     SINT seekSampleFrame(SINT frameIndex) override;
     SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
-/*    Result parseTrackMetadataAndCoverArt(
+    Result parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
-            QImage* pCoverArt) const override;*/
+            QImage* pCoverArt) const override;
 
   private:
     OpenResult tryOpen(const AudioSourceConfig &audioSrcCfg) override;
