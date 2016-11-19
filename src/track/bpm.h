@@ -13,57 +13,59 @@ public:
     // TODO(uklotzde): Replace 'const' with 'constexpr'
     // (and copy initialization from .cpp file) after switching to
     // Visual Studio 2015 on Windows.
-    static const double kValueUndefined;
-    static const double kValueMin; // lower bound (exclusive)
+    static constexpr double kValueUndefined = 0.;
+    static constexpr double kValueMin = 0.; // lower bound (exclusive)
 
-    Bpm()
-        : Bpm(kValueUndefined) {
-    }
-    explicit Bpm(double value)
-        : m_value(value) {
-    }
+    constexpr Bpm() = default;
+    constexpr Bpm(const Bpm &) noexcept = default;
+    constexpr Bpm&operator=(const Bpm &) noexcept = default;
+    constexpr Bpm(Bpm &&) noexcept = default;
+    constexpr Bpm&operator=(Bpm &&) noexcept = default;
 
-    static bool isValidValue(double value) {
-        return kValueMin < value;
-    }
+    explicit constexpr Bpm(double value) : m_value(value) { }
+    explicit Bpm(const QString &str);
 
-    bool hasValue() const {
-        return isValidValue(m_value);
-    }
-    double getValue() const {
-        return m_value;
-    }
-    void setValue(double value) {
-        m_value = value;
-    }
-    void resetValue() {
-        m_value = kValueUndefined;
-    }
+    static constexpr bool isValidValue(double value) { return kValueMin < value; }
+
+    constexpr bool hasValue() const {return isValidValue(m_value);}
+    constexpr double getValue() const { return m_value; }
+    void setValue(double value) { m_value = value; }
+    void resetValue() { m_value = kValueUndefined; }
     void normalizeValue();
 
     static double valueFromString(const QString& str, bool* pValid = nullptr);
     static QString valueToString(double value);
-    static int valueToInteger(double value) {
-        return std::round(value);
+    static constexpr int valueToInteger(double value) { return std::round(value); }
+
+    friend constexpr bool operator==(const Bpm&lhs, const Bpm&rhs)
+    {
+        return lhs.getValue() == rhs.getValue();
     }
-
+    friend constexpr bool operator!=(const Bpm&lhs, const Bpm&rhs)
+    {
+        return !(lhs==rhs);
+    }
+    friend constexpr bool operator <(const Bpm&lhs, const Bpm&rhs)
+    {
+        return lhs.getValue() < rhs.getValue();
+    }
+    friend constexpr bool operator >(const Bpm&lhs, const Bpm&rhs)
+    {
+        return lhs.getValue() > rhs.getValue();
+    }
+    friend constexpr bool operator<=(const Bpm&lhs, const Bpm&rhs)
+    {
+        return lhs.getValue() <= rhs.getValue();
+    }
+    friend constexpr bool operator>=(const Bpm&lhs, const Bpm&rhs)
+    {
+        return lhs.getValue() >= rhs.getValue();
+    }
 private:
-    double m_value;
+    double m_value{};
 };
-
-inline
-bool operator==(const Bpm& lhs, const Bpm& rhs) {
-    return lhs.getValue() == rhs.getValue();
 }
-
-inline
-bool operator!=(const Bpm& lhs, const Bpm& rhs) {
-    return !(lhs == rhs);
-}
-
-}
-
-Q_DECLARE_TYPEINFO(mixxx::Bpm, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(mixxx::Bpm)
+Q_DECLARE_TYPEINFO(mixxx::Bpm, Q_MOVABLE_TYPE);
 
 #endif // MIXXX_BPM_H
