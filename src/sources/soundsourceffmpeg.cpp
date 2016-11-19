@@ -390,7 +390,7 @@ SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
 {
     return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
 }
-/*Result SoundSourceFFmpeg::parseTrackMetadataAndCoverArt(
+Result SoundSourceFFmpeg::parseTrackMetadataAndCoverArt(
         TrackMetadata* pTrackMetadata,
         QImage* pCoverArt) const
 {
@@ -433,7 +433,7 @@ SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
         pTrackMetadata->setChannels( dec_ctx->channels );
         pTrackMetadata->setSampleRate( dec_ctx->sample_rate );
 
-        auto output_tb = AVRational{1,static_cast<int>(getSampleRate())};
+        auto output_tb = AVRational{1,static_cast<int>(getSamplingRate())};
         pTrackMetadata->setDuration( av_rescale_q( fmt_ctx->duration, stream_tb, output_tb)*1./pTrackMetadata->getSampleRate() );
 //    SoundSource::parseTrackMetadataAndCoverArt(pTrackMetadata, pCoverArt);;
         {
@@ -463,5 +463,5 @@ SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
         }
     }
     return OK;
-}*/
+}
 } // namespace Mixxx

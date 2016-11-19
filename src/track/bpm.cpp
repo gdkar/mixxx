@@ -5,10 +5,8 @@ namespace mixxx {
 // TODO(uklotzde): Replace 'const' with 'constexpr' and remove
 // initialization after switching to Visual Studio 2015.
 
-/*static*/ const double Bpm::kValueUndefined = 0.0;
-/*static*/ const double Bpm::kValueMin = 0.0; // lower bound (exclusive)
-
-double Bpm::valueFromString(const QString& str, bool* pValid) {
+double Bpm::valueFromString(const QString& str, bool* pValid)
+{
     if (pValid) {
         *pValid = false;
     }
@@ -39,7 +37,8 @@ double Bpm::valueFromString(const QString& str, bool* pValid) {
     return kValueUndefined;
 }
 
-QString Bpm::valueToString(double value) {
+QString Bpm::valueToString(double value)
+{
     if (isValidValue(value)) {
         return QString::number(value);
     } else {
@@ -47,14 +46,21 @@ QString Bpm::valueToString(double value) {
     }
 }
 
-void Bpm::normalizeValue() {
+void Bpm::normalizeValue()
+{
     if (isValidValue(m_value)) {
-        const double normalizedValue = valueFromString(valueToString(m_value));
+        auto normalizedValue = valueFromString(valueToString(m_value));
         // NOTE(uklotzde): Subsequently formatting and parsing the
         // normalized value should not alter it anymore!
         DEBUG_ASSERT(normalizedValue == valueFromString(valueToString(normalizedValue)));
         m_value = normalizedValue;
     }
 }
-
+Bpm::Bpm(const QString &str)
+: Bpm()
+{
+    auto valid = false;
+    auto val = valueFromString(str,&valid);
+    if(valid) m_value = val;
+}
 } //namespace mixxx
