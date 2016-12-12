@@ -1094,6 +1094,7 @@ class MixxxCore(Feature):
                    "util/valuetransformer.cpp",
                    "util/sandbox.cpp",
                    "util/file.cpp",
+                   "util/intrusive_fifo.cpp",
                    "util/mac.cpp",
                    "util/task.cpp",
                    "util/experiment.cpp",
