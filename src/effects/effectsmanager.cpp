@@ -20,7 +20,7 @@ EffectsManager::EffectsManager(QObject* pParent, UserSettingsPointer pConfig)
           m_pHiEqFreq(NULL),
           m_underDestruction(false) {
     qRegisterMetaType<EffectChain::InsertionType>("EffectChain::InsertionType");
-    QPair<EffectsRequestPipe*, EffectsResponsePipe*> requestPipes =
+    auto requestPipes =
             TwoWayMessagePipe<EffectsRequest*, EffectsResponse>::makeTwoWayMessagePipe(
                 2048, 2048, false, false);
 
@@ -36,11 +36,10 @@ EffectsManager::~EffectsManager() {
     // the queue
     processEffectsResponses();
     while (!m_effectsBackends.isEmpty()) {
-        EffectsBackend* pBackend = m_effectsBackends.takeLast();
+        auto pBackend = m_effectsBackends.takeLast();
         delete pBackend;
     }
-    for (QHash<qint64, EffectsRequest*>::iterator it = m_activeRequests.begin();
-         it != m_activeRequests.end();) {
+    for (auto it = m_activeRequests.begin(); it != m_activeRequests.end();) {
         delete it.value();
         it = m_activeRequests.erase(it);
     }
@@ -53,37 +52,13 @@ EffectsManager::~EffectsManager() {
     delete m_pEngineEffectsManager;
 }
 
-bool alphabetizeEffectManifests(const EffectManifest& manifest1,
-                                const EffectManifest& manifest2) {
-    return QString::localeAwareCompare(manifest1.displayName(), manifest2.displayName()) < 0;
-}
-
 void EffectsManager::addEffectsBackend(EffectsBackend* pBackend) {
     VERIFY_OR_DEBUG_ASSERT(pBackend) {
         return;
     }
     m_effectsBackends.append(pBackend);
-
-    QList<QString> backendEffects = pBackend->getEffectIds();
-    for (const QString& effectId : backendEffects) {
-        m_availableEffectManifests.append(pBackend->getManifest(effectId));
-    }
-
-    qSort(m_availableEffectManifests.begin(), m_availableEffectManifests.end(),
-          alphabetizeEffectManifests);
-
-    connect(pBackend, SIGNAL(effectRegistered(EffectManifest)),
-            this, SLOT(slotBackendRegisteredEffect(EffectManifest)));
-
-    connect(pBackend, SIGNAL(effectRegistered(EffectManifest)),
-            this, SIGNAL(availableEffectsUpdated(EffectManifest)));
-}
-
-void EffectsManager::slotBackendRegisteredEffect(EffectManifest manifest) {
-    auto insertion_point = qLowerBound(m_availableEffectManifests.begin(),
-                                       m_availableEffectManifests.end(),
-                                       manifest, alphabetizeEffectManifests);
-    m_availableEffectManifests.insert(insertion_point, manifest);
+    connect(pBackend, SIGNAL(effectRegistered()),
+            this, SIGNAL(availableEffectsUpdated()));
 }
 
 void EffectsManager::registerChannel(const ChannelHandleAndGroup& handle_group) {
@@ -94,19 +69,40 @@ const QSet<ChannelHandleAndGroup>& EffectsManager::registeredChannels() const {
     return m_pEffectChainManager->registeredChannels();
 }
 
-const QList<EffectManifest> EffectsManager::getAvailableEffectManifestsFiltered(
-        EffectManifestFilterFnc filter) const {
-    if (filter == nullptr) {
-        return m_availableEffectManifests;
-    }
+const QList<QString> EffectsManager::getAvailableEffects() const {
+    QList<QString> availableEffects;
 
-    QList<EffectManifest> list;
-    for (const auto& manifest : m_availableEffectManifests) {
-        if (filter(manifest)) {
-            list.append(manifest);
+    foreach (EffectsBackend* pBackend, m_effectsBackends) {
+        const QList<QString>& backendEffects = pBackend->getEffectIds();
+        foreach (QString effectId, backendEffects) {
+            if (availableEffects.contains(effectId)) {
+                qWarning() << "WARNING: Duplicate effect ID" << effectId;
+                continue;
+            }
+            availableEffects.append(effectId);
         }
     }
-    return list;
+
+    return availableEffects;
+}
+
+const QList<QPair<QString, QString> > EffectsManager::getEffectNamesFiltered(
+        EffectManifestFilterFnc filter) const {
+    QList<QPair<QString, QString> > filteredEQEffectNames;
+    QString currentEffectName;
+    foreach (EffectsBackend* pBackend, m_effectsBackends) {
+        auto backendEffects = pBackend->getEffectIds();
+        foreach (QString effectId, backendEffects) {
+            auto manifest = pBackend->getManifest(effectId);
+            if (filter && !filter(&manifest)) {
+                continue;
+            }
+            currentEffectName = manifest.name();
+            filteredEQEffectNames.append({effectId, currentEffectName});
+        }
+    }
+
+    return filteredEQEffectNames;
 }
 
 bool EffectsManager::isEQ(const QString& effectId) const {
@@ -114,43 +110,40 @@ bool EffectsManager::isEQ(const QString& effectId) const {
 }
 
 QString EffectsManager::getNextEffectId(const QString& effectId) {
-    if (m_availableEffectManifests.isEmpty()) {
+    auto effects = getAvailableEffects();
+
+    if (effects.isEmpty()) {
         return QString();
     }
+
     if (effectId.isNull()) {
-        return m_availableEffectManifests.first().id();
+        return effects.first();
     }
 
-    int index;
-    for (index = 0; index < m_availableEffectManifests.size(); ++index) {
-        if (effectId == m_availableEffectManifests.at(index).id()) {
-            break;
-        }
-    }
-    if (++index >= m_availableEffectManifests.size()) {
+    auto index = effects.indexOf(effectId);
+    if (++index >= effects.size()) {
         index = 0;
     }
-    return m_availableEffectManifests.at(index).id();
+    return effects.at(index);
 }
 
 QString EffectsManager::getPrevEffectId(const QString& effectId) {
-    if (m_availableEffectManifests.isEmpty()) {
+    auto effects = getAvailableEffects();
+
+    if (effects.isEmpty()) {
         return QString();
     }
+
     if (effectId.isNull()) {
-        return m_availableEffectManifests.last().id();
+        return effects.last();
     }
 
-    int index;
-    for (index = 0; index < m_availableEffectManifests.size(); ++index) {
-        if (effectId == m_availableEffectManifests.at(index).id()) {
-            break;
-        }
-    }
+    auto index = effects.indexOf(effectId);
     if (--index < 0) {
-        index = m_availableEffectManifests.size() - 1;
+        index = effects.size() - 1;
     }
-    return m_availableEffectManifests.at(index).id();
+    return effects.at(index);
+
 }
 
 QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBackend(
@@ -166,15 +159,11 @@ QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBacke
 }
 
 EffectManifest EffectsManager::getEffectManifest(const QString& effectId) const {
-    QPair<EffectManifest, EffectsBackend*> manifestAndBackend =
-            getEffectManifestAndBackend(effectId);
+    auto manifestAndBackend = getEffectManifestAndBackend(effectId);
     return manifestAndBackend.first;
 }
 
 EffectPointer EffectsManager::instantiateEffect(const QString& effectId) {
-    if (effectId.isEmpty()) {
-        return EffectPointer();
-    }
     foreach (EffectsBackend* pBackend, m_effectsBackends) {
         if (pBackend->canInstantiateEffect(effectId)) {
             return pBackend->instantiateEffect(this, effectId);
@@ -215,22 +204,21 @@ void EffectsManager::setupDefaults() {
     //m_pEffectChainManager->loadEffectChains();
 
     // Add a general purpose rack
-    StandardEffectRackPointer pStandardRack = addStandardEffectRack();
+    auto pStandardRack = addStandardEffectRack();
     pStandardRack->addEffectChainSlot();
     pStandardRack->addEffectChainSlot();
     pStandardRack->addEffectChainSlot();
     pStandardRack->addEffectChainSlot();
 
-    EffectChainPointer pChain = EffectChainPointer(new EffectChain(
+    auto pChain = EffectChainPointer(new EffectChain(
            this, "org.mixxx.effectchain.flanger"));
     pChain->setName(tr("Flanger"));
-    EffectPointer pEffect = instantiateEffect(
+    auto pEffect = instantiateEffect(
            "org.mixxx.effects.flanger");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
 
-    pChain = EffectChainPointer(new EffectChain(
-            this, "org.mixxx.effectchain.bitcrusher"));
+    pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.bitcrusher"));
     pChain->setName(tr("BitCrusher"));
     pEffect = instantiateEffect("org.mixxx.effects.bitcrusher");
     pChain->addEffect(pEffect);
