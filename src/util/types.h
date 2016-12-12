@@ -9,6 +9,8 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <type_traits>
+#include <functional>
 #include <utility>
 
 #include "util/math.h"
@@ -67,4 +69,9 @@ constexpr CSAMPLE_GAIN CSAMPLE_GAIN_clamp(CSAMPLE_GAIN in) {
     return math_clamp(in, CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX);
 }
 
+template<class T>
+constexpr typename std::add_const<T>::type & as_const( T & t ) noexcept
+{
+    return t;
+}
 #endif /* TYPES_H */

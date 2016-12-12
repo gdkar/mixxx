@@ -494,6 +494,8 @@ public:
 template<class T>
 using FIFO = fifo<T>;
 
+using ring_buffer_size_t = std::size_t;
+
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
 // pipe is with respect to the owner so send and recv are
 // perspective-dependent. If serializeWrites is true then calls to writeMessages

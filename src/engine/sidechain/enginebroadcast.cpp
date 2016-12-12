@@ -870,7 +870,7 @@ void EngineBroadcast::run() {
             CSAMPLE* dataPtr2;
             ring_buffer_size_t size2;
             // We use size1 and size2, so we can ignore the return value
-            (void)m_pOutputFifo->aquireReadRegions(readAvailable, &dataPtr1, &size1,
+            (void)m_pOutputFifo->acquireReadRegions(readAvailable, &dataPtr1, &size1,
                     &dataPtr2, &size2);
             process(dataPtr1, size1);
             if (size2 > 0) {
