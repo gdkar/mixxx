@@ -143,7 +143,7 @@ void EngineNetworkStream::writeSilence(int frames) {
         ring_buffer_size_t size1;
         CSAMPLE* dataPtr2;
         ring_buffer_size_t size2;
-        (void)m_pOutputFifo->aquireWriteRegions(clearCount,
+        (void)m_pOutputFifo->acquireWriteRegions(clearCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         SampleUtil::clear(dataPtr1,size1);
         if (size2 > 0) {
