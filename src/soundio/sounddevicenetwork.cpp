@@ -106,7 +106,7 @@ void SoundDeviceNetwork::readProcess() {
         ring_buffer_size_t size1;
         CSAMPLE* dataPtr2;
         ring_buffer_size_t size2;
-        (void)m_inputFifo->aquireWriteRegions(copyCount,
+        (void)m_inputFifo->acquireWriteRegions(copyCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         // Fetch fresh samples and write to the the input buffer
         m_pNetworkStream->read(dataPtr1,
@@ -135,7 +135,7 @@ void SoundDeviceNetwork::readProcess() {
                 // duplicate one frame
                 //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
                 //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                (void) m_inputFifo->aquireWriteRegions(
+                (void) m_inputFifo->acquireWriteRegions(
                         m_iNumInputChannels, &dataPtr1, &size1,
                         &dataPtr2, &size2);
                 if (size1) {
@@ -163,7 +163,7 @@ void SoundDeviceNetwork::readProcess() {
         CSAMPLE* dataPtr2;
         ring_buffer_size_t size2;
         // We use size1 and size2, so we can ignore the return value
-        (void) m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1,
+        (void) m_inputFifo->acquireReadRegions(readCount, &dataPtr1, &size1,
                 &dataPtr2, &size2);
         // Fetch fresh samples and write to the the output buffer
         composeInputBuffer(dataPtr1,
@@ -203,7 +203,7 @@ void SoundDeviceNetwork::writeProcess() {
         CSAMPLE* dataPtr2;
         ring_buffer_size_t size2;
         // We use size1 and size2, so we can ignore the return value
-        (void)m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1,
+        (void)m_outputFifo->acquireWriteRegions(writeCount, &dataPtr1,
                 &size1, &dataPtr2, &size2);
         // Fetch fresh samples and write to the the output buffer
         composeOutputBuffer(dataPtr1, size1 / m_iNumOutputChannels, 0,
@@ -226,7 +226,7 @@ void SoundDeviceNetwork::writeProcess() {
         ring_buffer_size_t size1;
         CSAMPLE* dataPtr2;
         ring_buffer_size_t size2;
-        m_outputFifo->aquireReadRegions(copyCount,
+        m_outputFifo->acquireReadRegions(copyCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         if (writeAvailable >= outChunkSize * 2) {
             // Underflow
