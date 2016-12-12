@@ -89,7 +89,7 @@ namespace
                                            &encoded,
                                            &encoded_size, 1);
 
-            fingerprint.append(reinterpret_cast<char*>(encoded), encoded_size);
+            fingerprint.append(encoded, encoded_size);
 
             chromaprint_dealloc(fprint);
             chromaprint_dealloc(encoded);

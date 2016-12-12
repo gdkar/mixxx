@@ -460,7 +460,7 @@ void SoundDevicePortAudio::readProcess() {
                 ring_buffer_size_t size1;
                 CSAMPLE* dataPtr2;
                 ring_buffer_size_t size2;
-                (void)m_inputFifo->aquireWriteRegions(copyCount,
+                (void)m_inputFifo->acquireWriteRegions(copyCount,
                         &dataPtr1, &size1, &dataPtr2, &size2);
                 // Fetch fresh samples and write to the the input buffer
                 PaError err = Pa_ReadStream(pStream, dataPtr1,
@@ -503,7 +503,7 @@ void SoundDevicePortAudio::readProcess() {
                         // duplicate one frame
                         //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
                         //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        (void) m_inputFifo->aquireWriteRegions(
+                        (void) m_inputFifo->acquireWriteRegions(
                                 m_inputParams.channelCount, &dataPtr1, &size1,
                                 &dataPtr2, &size2);
                         if (size1) {
@@ -532,7 +532,7 @@ void SoundDevicePortAudio::readProcess() {
             CSAMPLE* dataPtr2;
             ring_buffer_size_t size2;
             // We use size1 and size2, so we can ignore the return value
-            (void) m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1,
+            (void) m_inputFifo->acquireReadRegions(readCount, &dataPtr1, &size1,
                     &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
             composeInputBuffer(dataPtr1,
@@ -573,7 +573,7 @@ void SoundDevicePortAudio::writeProcess() {
             CSAMPLE* dataPtr2;
             ring_buffer_size_t size2;
             // We use size1 and size2, so we can ignore the return value
-            (void) m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1,
+            (void) m_outputFifo->acquireWriteRegions(writeCount, &dataPtr1,
                     &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
             composeOutputBuffer(dataPtr1, size1 / m_outputParams.channelCount, 0,
@@ -599,7 +599,7 @@ void SoundDevicePortAudio::writeProcess() {
                 ring_buffer_size_t size1;
                 CSAMPLE* dataPtr2;
                 ring_buffer_size_t size2;
-                m_outputFifo->aquireReadRegions(copyCount,
+                m_outputFifo->acquireReadRegions(copyCount,
                         &dataPtr1, &size1, &dataPtr2, &size2);
                 if (writeAvailable == outChunkSize * 2) {
                     // Underflow
