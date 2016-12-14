@@ -37,10 +37,11 @@ class EngineChannel : public EngineObject {
         CENTER,
         RIGHT,
     };
+    Q_ENUM(ChannelOrientation);
 
     EngineChannel(const ChannelHandleAndGroup& handle_group,
                   ChannelOrientation defaultOrientation = CENTER);
-    virtual ~EngineChannel();
+   ~EngineChannel() override;
 
     virtual ChannelOrientation getOrientation() const;
 
