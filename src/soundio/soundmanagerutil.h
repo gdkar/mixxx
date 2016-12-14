@@ -31,15 +31,32 @@
  */
 class ChannelGroup {
 public:
-    ChannelGroup(unsigned char channelBase, unsigned char channels);
-    unsigned char getChannelBase() const;
-    unsigned char getChannelCount() const;
-    bool operator==(const ChannelGroup &other) const;
+    constexpr ChannelGroup()
+    : m_channelBase(0)
+    , m_channels(0)
+    {}
+    constexpr ChannelGroup(uint8_t channelBase, uint8_t channels)
+    : m_channelBase(channelBase)
+    , m_channels(channels) {}
+    constexpr ChannelGroup(const ChannelGroup&) noexcept = default;
+    constexpr ChannelGroup(ChannelGroup&&) noexcept = default;
+    ChannelGroup&operator=(const ChannelGroup&) noexcept = default;
+    ChannelGroup&operator=(ChannelGroup&&) noexcept = default;
+
+    constexpr uint8_t  getChannelBase() const { return m_channelBase;}
+    constexpr uint8_t  getChannelCount() const{ return m_channels;}
+    constexpr bool operator==(const ChannelGroup &other) const
+    {
+        return m_channelBase == other.m_channelBase && m_channels == other.m_channels;
+    }
     bool clashesWith(const ChannelGroup &other) const;
-    unsigned int getHash() const;
+    constexpr uint32_t  getHash() const
+    {
+        return (uint32_t(m_channels)<<8)|m_channelBase;
+    }
 private:
-    unsigned char m_channelBase; // base (first) channel used on device
-    unsigned char m_channels; // number of channels used (s/b 2 in most cases)
+    uint8_t m_channelBase; // base (first) channel used on device
+    uint8_t m_channels; // number of channels used (s/b 2 in most cases)
 };
 
 /**
@@ -49,6 +66,7 @@ private:
  *       feel free to rename as necessary.
  */
 class AudioPath {
+    Q_GADGET
 public:
     // XXX if you add a new type here, be sure to add it to the various
     // methods including getStringFromType, isIndexed, getTypeFromInt,
@@ -65,33 +83,52 @@ public:
         SIDECHAIN,
         INVALID, // if this isn't last bad things will happen -bkgood
     };
-    AudioPath(unsigned char channelBase, unsigned char channels);
-    AudioPathType getType() const;
-    ChannelGroup getChannelGroup() const;
-    unsigned char getIndex() const;
-    bool operator==(const AudioPath &other) const;
-    unsigned int getHash() const;
+    Q_ENUM(AudioPathType);
+    constexpr AudioPath(uint8_t  channelBase, uint8_t channels)
+    :  m_type(INVALID)
+    ,  m_channelGroup(channelBase,channels)
+    ,  m_index(0)
+    {}
+    constexpr AudioPathType getType() const { return m_type;}
+    constexpr ChannelGroup getChannelGroup() const { return m_channelGroup;}
+    constexpr uint8_t getIndex() const { return m_index;}
+    constexpr bool operator==(const AudioPath &other) const
+    {
+        return m_type == other.m_type && m_index == other.m_index;
+    }
+    constexpr uint32_t getHash() const
+    {
+        return (uint32_t(m_type) << 8)|m_index;
+    }
     bool channelsClash(const AudioPath &other) const;
     QString getString() const;
     static QString getStringFromType(AudioPathType type);
-    static QString getTrStringFromType(AudioPathType type, unsigned char index);
+    static QString getTrStringFromType(AudioPathType type, uint8_t index);
     static AudioPathType getTypeFromString(QString string);
-    static bool isIndexed(AudioPathType type);
+    static constexpr bool isIndexed(AudioPathType type)
+    {
+        switch(type) {
+            case BUS: case DECK: case VINYLCONTROL: case AUXILIARY: case MICROPHONE:
+                return true;
+            default:
+                return false;
+        }
+    }
     static AudioPathType getTypeFromInt(int typeInt);
 
     // Returns the minimum number of channels needed on a sound device for an
     // AudioPathType.
-    static unsigned char minChannelsForType(AudioPathType type);
+    static uint8_t minChannelsForType(AudioPathType type);
 
     // Returns the maximum number of channels needed on a sound device for an
     // AudioPathType.
-    static unsigned char maxChannelsForType(AudioPathType type);
+    static uint8_t maxChannelsForType(AudioPathType type);
 
 protected:
     virtual void setType(AudioPathType type) = 0;
-    AudioPathType m_type;
-    ChannelGroup m_channelGroup;
-    unsigned char m_index;
+    AudioPathType m_type{INVALID};
+    ChannelGroup  m_channelGroup{};
+    uint8_t       m_index{};
 };
 
 /**
@@ -102,9 +139,9 @@ protected:
  */
 class AudioOutput : public AudioPath {
   public:
-    AudioOutput(AudioPathType type, unsigned char channelBase,
-                unsigned char channels,
-                unsigned char index = 0);
+    AudioOutput(AudioPathType type, uint8_t channelBase,
+                uint8_t channels,
+                uint8_t index = 0);
     virtual ~AudioOutput();
     QDomElement toXML(QDomElement *element) const;
     static AudioOutput fromXML(const QDomElement &xml);
@@ -135,8 +172,8 @@ class AudioOutputBuffer : public AudioOutput {
  */
 class AudioInput : public AudioPath {
   public:
-    AudioInput(AudioPathType type = INVALID, unsigned char channelBase = 0,
-               unsigned char channels = 0, unsigned char index = 0);
+    AudioInput(AudioPathType type = INVALID, uint8_t channelBase = 0,
+               uint8_t channels = 0, uint8_t index = 0);
     virtual ~AudioInput();
     QDomElement toXML(QDomElement *element) const;
     static AudioInput fromXML(const QDomElement &xml);
@@ -151,16 +188,15 @@ class AudioInputBuffer : public AudioInput {
   public:
     AudioInputBuffer(const AudioInput& id, CSAMPLE* pBuffer)
             : AudioInput(id),
-              m_pBuffer(pBuffer) {
-
-    }
-    inline CSAMPLE* getBuffer() const { return m_pBuffer; }
+              m_pBuffer(pBuffer)
+    { }
+    CSAMPLE* getBuffer() const { return m_pBuffer; }
   private:
     CSAMPLE* m_pBuffer;
 };
 
 
-class AudioSource {
+class AudioOrigin {
 public:
     virtual const CSAMPLE* buffer(AudioOutput output) const = 0;
 
@@ -181,7 +217,7 @@ public:
     // configured input to be processed. This is run in the clock reference
     // callback thread
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int iNumFrames) = 0;
+                               uint32_t iNumFrames) = 0;
 
     // This is called by SoundManager whenever an input is configured for this
     // destination. When this is called it is guaranteed that no callback is
@@ -197,8 +233,8 @@ public:
 typedef AudioPath::AudioPathType AudioPathType;
 
 // globals for QHash
-unsigned int qHash(const ChannelGroup &group);
-unsigned int qHash(const AudioOutput &output);
-unsigned int qHash(const AudioInput &input);
+uint32_t qHash(const ChannelGroup &group);
+uint32_t qHash(const AudioOutput &output);
+uint32_t qHash(const AudioInput &input);
 
 #endif
