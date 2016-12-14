@@ -163,7 +163,7 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
 #ifdef __LINUX__
         // Sleep for 5 sec to allow asynchronously sound APIs like "pulse" to free
         // its resources as well
-        sleep(kSleepSecondsAfterClosingDevice);
+//        sleep(kSleepSecondsAfterClosingDevice);
 #endif
     }
 
