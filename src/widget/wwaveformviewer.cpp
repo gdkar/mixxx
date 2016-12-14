@@ -62,7 +62,7 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
 
     m_mouseAnchor = event->pos();
 
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::RightButton) {
         // If we are pitch-bending then disable and reset because the two
         // shouldn't be used at once.
         if (m_bBending) {
@@ -70,13 +70,13 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
             m_bBending = false;
         }
         m_bScratching = true;
-        int eventPosValue = m_waveformWidget->getOrientation() == Qt::Horizontal ?
+        auto eventPosValue = m_waveformWidget->getOrientation() == Qt::Horizontal ?
                     event->pos().x() : event->pos().y();
-        double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
-        double targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
+        auto audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
+        auto targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
         m_pScratchPosition->set(targetPosition);
         m_pScratchPositionEnable->slotSet(1.0);
-    } else if (event->button() == Qt::RightButton) {
+    } else if (event->button() == Qt::LeftButton) {
         // If we are scratching then disable and reset because the two shouldn't
         // be used at once.
         if (m_bScratching) {
