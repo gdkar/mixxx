@@ -51,7 +51,7 @@ class EngineDelay;
 // engine. Prevents memory allocation in EngineMaster::addChannel.
 static const int kPreallocatedChannels = 64;
 
-class EngineMaster : public QObject, public AudioSource {
+class EngineMaster : public QObject, public AudioOrigin {
     Q_OBJECT
   public:
     EngineMaster(UserSettingsPointer pConfig,
