@@ -16,6 +16,7 @@
 ***************************************************************************/
 
 #include <QThread>
+#include <QSurfaceFormat>
 #include <QDir>
 #include <QtDebug>
 #include <QApplication>
@@ -75,7 +76,39 @@ int main(int argc, char * argv[]) {
 
     QCoreApplication::setApplicationName(Version::applicationName());
     QCoreApplication::setApplicationVersion(Version::version());
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    {
+        auto glFormat = QSurfaceFormat::defaultFormat();
+        glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        glFormat.setDepthBufferSize(0);
+        glFormat.setAlphaBufferSize(8);
+        glFormat.setRedBufferSize(8);
+        glFormat.setGreenBufferSize(8);
+        glFormat.setBlueBufferSize(8);
+    //    QGLFormat glFormat;
+    //    glFormat.setDirectRendering(true);
+        // Disable waiting for vertical Sync
+        // This can be enabled when using a single Threads for each QGLContext
+        // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
+#if defined(__APPLE__)
+        // On OS X, syncing to vsync has good performance FPS-wise and
+        // eliminates tearing.
+        glFormat.setSwapInterval(1);
+#else
+        // Otherwise, turn VSync off because it could cause horrible FPS on
+        // Linux.
+        // TODO(XXX): Make this configurable.
+        // TOOD(XXX): What should we do on Windows?
+        glFormat.setSwapInterval(0);
+#endif
 
+
+    //    glFormat.setRgba(true);
+    //    QGLFormat::setDefaultFormat(glFormat);
+        glFormat.setVersion(3,3);
+        glFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
+        QSurfaceFormat::setDefaultFormat(glFormat);
+    }
     // Construct a list of strings based on the command line arguments
     CmdlineArgs& args = CmdlineArgs::Instance();
     if (!args.Parse(argc, argv)) {
