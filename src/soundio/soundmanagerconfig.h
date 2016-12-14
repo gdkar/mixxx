@@ -30,6 +30,7 @@ class SoundDevice;
 class SoundManager;
 
 class SoundManagerConfig {
+    Q_GADGET
 public:
     enum Defaults {
         API = (1 << 0),
@@ -45,7 +46,7 @@ public:
     static const int kDefaultSyncBuffers;
 
     SoundManagerConfig();
-    ~SoundManagerConfig();
+   ~SoundManagerConfig();
 
     bool readFromDisk();
     bool writeToDisk() const;
