@@ -52,7 +52,8 @@ SoundManagerConfig::~SoundManagerConfig() {
  * path
  * @returns false if the file can't be read or is invalid XML, true otherwise
  */
-bool SoundManagerConfig::readFromDisk() {
+bool SoundManagerConfig::readFromDisk()
+{
     QFile file(m_configFile.absoluteFilePath());
     QDomDocument doc;
     QDomElement rootElement;
@@ -118,7 +119,8 @@ bool SoundManagerConfig::readFromDisk() {
     return true;
 }
 
-bool SoundManagerConfig::writeToDisk() const {
+bool SoundManagerConfig::writeToDisk() const
+{
     QDomDocument doc("SoundManagerConfig");
     QDomElement docElement(doc.createElement("SoundManagerConfig"));
     docElement.setAttribute("api", m_api);
@@ -154,11 +156,13 @@ bool SoundManagerConfig::writeToDisk() const {
     return true;
 }
 
-QString SoundManagerConfig::getAPI() const {
+QString SoundManagerConfig::getAPI() const
+{
     return m_api;
 }
 
-void SoundManagerConfig::setAPI(const QString &api) {
+void SoundManagerConfig::setAPI(const QString &api)
+{
     // SoundManagerConfig doesn't necessarily have access to a SoundManager
     // instance, so I can't check for input validity here -- bkgood
     m_api = api;
@@ -170,28 +174,33 @@ void SoundManagerConfig::setAPI(const QString &api) {
  * @returns false if the API is not found in SoundManager's list, otherwise
  *          true
  */
-bool SoundManagerConfig::checkAPI(const SoundManager &soundManager) {
+bool SoundManagerConfig::checkAPI(const SoundManager &soundManager)
+{
     if (!soundManager.getHostAPIList().contains(m_api) && m_api != "None") {
         return false;
     }
     return true;
 }
 
-unsigned int SoundManagerConfig::getSampleRate() const {
+unsigned int SoundManagerConfig::getSampleRate() const
+{
     return m_sampleRate;
 }
 
-void SoundManagerConfig::setSampleRate(unsigned int sampleRate) {
+void SoundManagerConfig::setSampleRate(unsigned int sampleRate)
+{
     // making sure we don't divide by zero elsewhere
     m_sampleRate = sampleRate != 0 ? sampleRate : kFallbackSampleRate;
 }
 
 
-unsigned int SoundManagerConfig::getSyncBuffers() const {
+unsigned int SoundManagerConfig::getSyncBuffers() const
+{
     return m_syncBuffers;
 }
 
-void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers) {
+void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers)
+{
     // making sure we don't divide by zero elsewhere
     m_syncBuffers = qMin(syncBuffers, (unsigned int)2);
 }

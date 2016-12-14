@@ -20,9 +20,10 @@
 
 #include <portaudio.h>
 
+#include <atomic>
 #include <QString>
 #include "util/performancetimer.h"
-
+#include "util/semaphore.hpp"
 #include "soundio/sounddevice.h"
 #include "util/duration.h"
 
@@ -69,6 +70,7 @@ class SoundDevicePortAudio : public SoundDevice {
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
 
+    void callbackFinished();
     virtual unsigned int getDefaultSampleRate() const {
         return m_deviceInfo ? static_cast<unsigned int>(
             m_deviceInfo->defaultSampleRate) : 44100;
@@ -94,6 +96,8 @@ class SoundDevicePortAudio : public SoundDevice {
     bool m_outputDrift;
     bool m_inputDrift;
 
+    mixxx::MSemaphore m_finishedSema;
+
     // A string describing the last PortAudio error to occur.
     QString m_lastError;
     // Whether we have set the thread priority to realtime or not.
@@ -102,7 +106,7 @@ class SoundDevicePortAudio : public SoundDevice {
     ControlProxy* m_pMasterAudioLatencyUsage;
     ControlProxy* m_pMasterAudioLatencyOverload;
     int m_underflowUpdateCount;
-    static volatile int m_underflowHappened;
+    std::atomic<int> m_underflowHappened;
     mixxx::Duration m_timeInAudioCallback;
     int m_framesSinceAudioLatencyUsageUpdate;
     int m_syncBuffers;

@@ -149,8 +149,8 @@ QList<QString> SoundManager::getHostAPIList() const {
 void SoundManager::closeDevices(bool sleepAfterClosing) {
     //qDebug() << "SoundManager::closeDevices()";
 
-    bool closed = false;
-    foreach (SoundDevice* pDevice, m_devices) {
+    auto closed = false;
+    for(auto && pDevice: as_const(m_devices)) {
         if (pDevice->isOpen()) {
             // NOTE(rryan): As of 2009 (?) it has been safe to close() a SoundDevice
             // while callbacks are active.
@@ -181,10 +181,9 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
             }
         }
         foreach (AudioOutput out, pDevice->outputs()) {
-            // Need to tell all registered AudioSources for this AudioOutput
+            // Need to tell all registered AudioOrigin for this AudioOutput
             // that the output was disconnected.
-            for (QHash<AudioOutput, AudioSource*>::const_iterator it =
-                         m_registeredSources.find(out);
+            for (auto it = m_registeredSources.find(out);
                  it != m_registeredSources.end() && it.key() == out; ++it) {
                 it.value()->onOutputDisconnected(out);
             }
@@ -418,8 +417,7 @@ Result SoundManager::setupDevices() {
 
             // Check if any AudioSource is registered for this AudioOutput and
             // call the onOutputConnected method.
-            for (QHash<AudioOutput, AudioSource*>::const_iterator it =
-                         m_registeredSources.find(out);
+            for (auto it = m_registeredSources.find(out);
                  it != m_registeredSources.end() && it.key() == out; ++it) {
                 it.value()->onOutputConnected(out);
             }
@@ -582,7 +580,7 @@ void SoundManager::readProcess() {
 }
 
 
-void SoundManager::registerOutput(AudioOutput output, AudioSource *src) {
+void SoundManager::registerOutput(AudioOutput output, AudioOrigin *src) {
     if (m_registeredSources.contains(output)) {
         qDebug() << "WARNING: AudioOutput already registered!";
     }
