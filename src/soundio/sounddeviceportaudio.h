@@ -55,30 +55,31 @@ class SoundDevicePortAudio : public SoundDevice {
 
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)
-    int callbackProcess(const unsigned int framesPerBuffer,
+    int callbackProcess(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // Same as above but with drift correction
-    int callbackProcessDrift(const unsigned int framesPerBuffer,
+    int callbackProcessDrift(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // The same as above but drives the MixxEngine
-    int callbackProcessClkRef(const unsigned int framesPerBuffer,
+    int callbackProcessClkRef(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
 
     void callbackFinished();
-    virtual unsigned int getDefaultSampleRate() const {
+    unsigned int getDefaultSampleRate() const override
+    {
         return m_deviceInfo ? static_cast<unsigned int>(
             m_deviceInfo->defaultSampleRate) : 44100;
     }
 
   private:
     void updateCallbackEntryToDacTime(const PaStreamCallbackTimeInfo* timeInfo);
-    void updateAudioLatencyUsage(const unsigned int framesPerBuffer);
+    void updateAudioLatencyUsage(unsigned int framesPerBuffer);
 
     // PortAudio stream for this device.
     PaStream* volatile m_pStream;
