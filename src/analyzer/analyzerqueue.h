@@ -4,7 +4,6 @@
 #include <QThread>
 #include <QQueue>
 #include <QWaitCondition>
-#include <QSemaphore>
 
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "util/db/dbconnectionpool.h"
 #include "util/samplebuffer.h"
 #include "util/memory.h"
+#include "util/semaphore.hpp"
 
 class Analyzer;
 class AnalysisDao;
@@ -56,7 +56,7 @@ class AnalyzerQueue : public QThread {
         TrackPointer current_track;
         int track_progress; // in 0.1 %
         int queue_size;
-        QSemaphore sema;
+        mixxx::MSemaphore sema;
     };
 
     mixxx::DbConnectionPoolPtr m_pDbConnectionPool;

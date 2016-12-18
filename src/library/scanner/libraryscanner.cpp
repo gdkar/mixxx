@@ -355,7 +355,8 @@ void LibraryScanner::slotFinishUnhashedScan() {
     emit(scanFinished());
 }
 
-void LibraryScanner::scan() {
+void LibraryScanner::scan()
+{
     if (changeScannerState(STARTING)) {
         emit(startScan());
     }
@@ -363,7 +364,8 @@ void LibraryScanner::scan() {
 
 // this is called after pressing the cancel button in the scanner
 // progress dialog
-void LibraryScanner::slotCancel() {
+void LibraryScanner::slotCancel()
+{
     // Wait until there is no scan starting.
     // All pending scan start request are canceled
     // as well until the scanner is idle again.
@@ -372,7 +374,8 @@ void LibraryScanner::slotCancel() {
     changeScannerState(IDLE);
 }
 
-void LibraryScanner::cancelAndQuit() {
+void LibraryScanner::cancelAndQuit()
+{
     changeScannerState(CANCELING);
     cancel();
     // Quit the event loop gracefully and stay in CANCELING state until all
@@ -383,7 +386,8 @@ void LibraryScanner::cancelAndQuit() {
 }
 
 // be sure we hold the m_stateSema and we are in CANCELING state
-void LibraryScanner::cancel() {
+void LibraryScanner::cancel()
+{
     DEBUG_ASSERT(m_state == CANCELING);
 
 
@@ -430,7 +434,8 @@ void LibraryScanner::queueTask(ScannerTask* pTask) {
 }
 
 void LibraryScanner::slotDirectoryHashedAndScanned(const QString& directoryPath,
-                                               bool newDirectory, int hash) {
+                                               bool newDirectory, int hash)
+{
     ScopedTimer timer("LibraryScanner::slotDirectoryHashedAndScanned");
     //kLogger.debug() << "sloDirectoryHashedAndScanned" << directoryPath
     //          << newDirectory << hash;
@@ -449,7 +454,8 @@ void LibraryScanner::slotDirectoryHashedAndScanned(const QString& directoryPath,
     emit(progressHashing(directoryPath));
 }
 
-void LibraryScanner::slotDirectoryUnchanged(const QString& directoryPath) {
+void LibraryScanner::slotDirectoryUnchanged(const QString& directoryPath)
+{
     ScopedTimer timer("LibraryScanner::slotDirectoryUnchanged");
     //kLogger.debug() << "slotDirectoryUnchanged" << directoryPath;
     if (m_scannerGlobal) {
