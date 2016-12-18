@@ -29,7 +29,6 @@
 #include <QRegExp>
 #include <QFileInfo>
 #include <QLinkedList>
-#include <QSemaphore>
 #include <QScopedPointer>
 
 #include "library/dao/cuedao.h"
@@ -41,6 +40,7 @@
 #include "library/scanner/scannerglobal.h"
 #include "library/scanner/scannertask.h"
 #include "util/sandbox.h"
+#include "util/semaphore.hpp"
 #include "track/track.h"
 #include <gtest/gtest.h>
 
@@ -143,7 +143,7 @@ class LibraryScanner : public QThread {
     // The Semaphore guards the state transitions queued to the
     // Qt even Queue in the way, that you cannot start a
     // new scan while the old one is canceled
-    QSemaphore m_stateSema;
+    mixxx::MSemaphore m_stateSema;
     // this is accessed main and LibraryScanner thread
     volatile ScannerState m_state;
 

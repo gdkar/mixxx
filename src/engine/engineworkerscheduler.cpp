@@ -10,11 +10,13 @@
 EngineWorkerScheduler::EngineWorkerScheduler(QObject* pParent)
         : m_bWakeScheduler(false),
           m_scheduleFIFO(MAX_ENGINE_WORKERS),
-          m_bQuit(false) {
+          m_bQuit(false)
+{
     Q_UNUSED(pParent);
 }
 
-EngineWorkerScheduler::~EngineWorkerScheduler() {
+EngineWorkerScheduler::~EngineWorkerScheduler()
+{
     m_mutex.lock();
     m_bQuit = true;
     m_waitCondition.wakeAll();
@@ -22,7 +24,8 @@ EngineWorkerScheduler::~EngineWorkerScheduler() {
     wait();
 }
 
-void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
+void EngineWorkerScheduler::workerReady(EngineWorker* pWorker)
+{
     if (pWorker) {
         // If the write fails, we really can't do much since we should not block
         // in this slot. Write the address of the variable pWorker, since it is
@@ -32,7 +35,8 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
     }
 }
 
-void EngineWorkerScheduler::runWorkers() {
+void EngineWorkerScheduler::runWorkers()
+{
     // Wake the scheduler if we have written a worker-ready message to the
     // scheduler. There is no race condition in accessing this boolean because
     // both workerReady and runWorkers are called from the callback thread.
@@ -42,7 +46,8 @@ void EngineWorkerScheduler::runWorkers() {
     }
 }
 
-void EngineWorkerScheduler::run() {
+void EngineWorkerScheduler::run()
+{
     while (!m_bQuit) {
         Event::start("EngineWorkerScheduler");
         EngineWorker* pWorker = NULL;
