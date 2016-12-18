@@ -9,47 +9,48 @@
 #include <numeric>
 #include <type_traits>
 
+namespace intrusive {
 
-struct intrusive_node {
-    std::atomic<intrusive_node *> m_next{};
-    constexpr intrusive_node() = default;
-    constexpr intrusive_node(intrusive_node *_next)
+struct node {
+    std::atomic<node *> m_next{};
+    constexpr node() = default;
+    constexpr node(node *_next)
     : m_next(_next) {}
-    virtual ~intrusive_node()  = default;
-    intrusive_node *next(std::memory_order ord = std::memory_order_seq_cst) const
+    virtual ~node()  = default;
+    node *next(std::memory_order ord = std::memory_order_seq_cst) const
     {
         return m_next.load(ord);
     }
-    intrusive_node *exchange(intrusive_node *with, std::memory_order ord = std::memory_order_seq_cst)
+    node *exchange(node *with, std::memory_order ord = std::memory_order_seq_cst)
     {
         return m_next.exchange(with,ord);
     }
     bool compare_exchange_strong(
-        intrusive_node *&expected
-      , intrusive_node *desired
+        node *&expected
+      , node *desired
       , std::memory_order ord_success = std::memory_order_seq_cst
       , std::memory_order ord_failure = std::memory_order_seq_cst)
     {
         return m_next.compare_exchange_strong(expected,desired,ord_success,ord_failure);
     }
-    void set_next(intrusive_node *_next,std::memory_order ord = std::memory_order_seq_cst)
+    void set_next(node *_next,std::memory_order ord = std::memory_order_seq_cst)
     {
         m_next.store(_next,ord);
     }
 };
 namespace impl {
-class intrusive_fifo_base {
+class fifo_base {
 protected:
-    intrusive_node                m_stub{nullptr};
-    std::atomic<intrusive_node *> m_head{&m_stub};
-    intrusive_node               *m_tail{&m_stub};
-    intrusive_node *skip_stub(void);
+    intrusive::node                m_stub{nullptr};
+    std::atomic<node *> m_head{&m_stub};
+    intrusive::node               *m_tail{&m_stub};
+    intrusive::node *skip_stub(void);
 public:
-    using node_type = intrusive_node;
+    using node_type = intrusive::node;
     template<class T>
     struct iterator_base {
         node_type *m_node{};
-        const intrusive_fifo_base* m_fifo{};
+        const fifo_base* m_fifo{};
         using iterator_category = std::forward_iterator_tag;
         using difference_type = std::ptrdiff_t;
         using value_type = T;
@@ -68,7 +69,7 @@ public:
             m_node = static_cast<T*>(other.m_node);
             m_fifo = other.m_fifo;
         }
-        iterator_base(const intrusive_fifo_base &_fifo, node_type *_node)
+        iterator_base(const fifo_base &_fifo, node_type *_node)
         : m_node(_node)
         , m_fifo(&_fifo)
         {
@@ -82,7 +83,7 @@ public:
                 }
             }
         }
-        iterator_base(const intrusive_fifo_base &_fifo)
+        iterator_base(const fifo_base &_fifo)
         : m_node(_fifo.m_tail )
         , m_fifo(&_fifo)
         {
@@ -96,7 +97,7 @@ public:
                 }
             }
         }
-        iterator_base(intrusive_fifo_base &_fifo)
+        iterator_base(fifo_base &_fifo)
         : m_node(_fifo.skip_stub())
         , m_fifo(&_fifo)
         {
@@ -161,8 +162,8 @@ public:
     };
     using iterator = iterator_base<node_type>;
     using const_iterator = iterator_base<const node_type>;
-    intrusive_fifo_base();
-    virtual ~intrusive_fifo_base();
+    fifo_base();
+    virtual ~fifo_base();
     bool empty();
     bool empty() const;
     iterator        begin();
@@ -172,22 +173,22 @@ public:
     const_iterator end() const  { return const_iterator();}
     const_iterator cend() const { return const_iterator();}
 
-    intrusive_node &front();
-    const intrusive_node &front() const;
-    intrusive_node *take();
+    node_type &front();
+    const node_type &front() const;
+    node_type *take();
     bool            pop();
-    void            push(intrusive_node *node);
-    void            push_back(intrusive_node *node);
-    void            push_front(intrusive_node *node);
+    void            push(node_type *node);
+    void            push_back(node_type*node);
+    void            push_front(node_type*node);
 };
 }
 template<class T>
-class intrusive_fifo : public impl::intrusive_fifo_base {
+class fifo : public impl::fifo_base {
 public:
     using node_type = T;
-    using super = impl::intrusive_fifo_base;
-             intrusive_fifo() = default;
-    virtual ~intrusive_fifo() = default;
+    using super = impl::fifo_base;
+             fifo() = default;
+    virtual ~fifo() = default;
     using super::empty;
     using super::pop;
     using iterator = super::iterator_base<node_type>;
@@ -201,6 +202,7 @@ public:
     T &front() { return static_cast<T&>(super::front());}
     const T &front() const { return static_cast<const T&>(super::front());}
     T *take() { return static_cast<T*>(super::take());}
-    void push(T *node) { super::push(static_cast<intrusive_node*>(node));}
+    void push(T *node) { super::push(static_cast<super::node_type*>(node));}
 };
+}
 #endif
