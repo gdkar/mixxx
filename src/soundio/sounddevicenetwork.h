@@ -25,7 +25,8 @@ class SoundDeviceNetwork : public SoundDevice {
     virtual void writeProcess();
     virtual QString getError() const;
 
-    virtual unsigned int getDefaultSampleRate() const {
+    unsigned int getDefaultSampleRate() const override
+    {
         return 44100;
     }
 
