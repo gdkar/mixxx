@@ -468,10 +468,19 @@ void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex) {
     }
     audioBufferComboBox->clear();
     for (unsigned int i = 0; i < SoundManagerConfig::kMaxAudioBufferSizeIndex; ++i) {
-        float latency = framesPerBuffer / sampleRate * 1000;
+        auto fpb = framesPerBuffer << (i >> 1);
+        if(i % 2) {
+            fpb *= 3;
+            fpb /= 2;
+        }
+        float latency = fpb / sampleRate * 1000.0f;
         // i + 1 in the next line is a latency index as described in SSConfig
-        audioBufferComboBox->addItem(tr("%1 ms").arg(latency,0,'g',3), i + 1);
-        framesPerBuffer <<= 1; // *= 2
+        audioBufferComboBox->addItem(tr("%1 samples ( %2 ms, %3 ms latency )")
+            .arg(fpb,4)
+            .arg(latency,0,'g',3)
+            .arg(latency * 3 ,0,'g',3)
+            , i + 1);
+//        framesPerBuffer <<= 1; // *= 2
     }
     if (oldSizeIndex < audioBufferComboBox->count() && oldSizeIndex >= 0) {
         audioBufferComboBox->setCurrentIndex(oldSizeIndex);
@@ -546,12 +555,14 @@ void DlgPrefSound::slotResetToDefaults() {
     settingChanged(); // force the apply button to enable
 }
 
-void DlgPrefSound::bufferUnderflow(double count) {
+void DlgPrefSound::bufferUnderflow(double count)
+{
     bufferUnderflowCount->setText(QString::number(count));
     update();
 }
 
-void DlgPrefSound::masterLatencyChanged(double latency) {
+void DlgPrefSound::masterLatencyChanged(double latency)
+{
     currentLatency->setText(QString("%1 ms").arg(latency));
     update();
 }
