@@ -3,7 +3,6 @@
 
 #include <QtDebug>
 #include <QMutex>
-#include <QSemaphore>
 #include <QThread>
 #include <QString>
 
@@ -12,6 +11,7 @@
 #include "engine/engineworker.h"
 #include "sources/audiosource.h"
 #include "util/fifo.h"
+#include "util/semaphore.hpp"
 #include "util/intrusive_fifo.hpp"
 
 
@@ -24,10 +24,11 @@ enum ReaderStatus {
     CHUNK_READ_INVALID
 };
 
-typedef struct ReaderStatusUpdate {
+struct ReaderStatusUpdate {
     ReaderStatus status;
     CachingReaderChunk* chunk;
     SINT maxReadableFrameIndex;
+    TrackId trackId{};
     ReaderStatusUpdate()
         : status(INVALID)
         , chunk(nullptr)
@@ -36,12 +37,18 @@ typedef struct ReaderStatusUpdate {
     ReaderStatusUpdate(
             ReaderStatus statusArg,
             CachingReaderChunk* chunkArg,
-            SINT maxReadableFrameIndexArg)
+            SINT maxReadableFrameIndexArg,
+            TrackId tid = TrackId{})
         : status(statusArg)
         , chunk(chunkArg)
-        , maxReadableFrameIndex(maxReadableFrameIndexArg) {
-    }
-} ReaderStatusUpdate;
+        , maxReadableFrameIndex(maxReadableFrameIndexArg)
+        , trackId(tid)
+    { }
+    ReaderStatusUpdate(const ReaderStatusUpdate&) noexcept = default;
+    ReaderStatusUpdate(ReaderStatusUpdate&&) noexcept = default;
+    ReaderStatusUpdate&operator=(ReaderStatusUpdate&&) noexcept = default;
+    ReaderStatusUpdate&operator=(const ReaderStatusUpdate&) noexcept = default;
+};
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
@@ -81,8 +88,9 @@ class CachingReaderWorker : public EngineWorker {
     // lock to touch.
     QMutex m_newTrackMutex;
     bool m_newTrackAvailable;
-    TrackPointer m_pNewTrack;
 
+    TrackPointer m_newTrack;
+    TrackId      m_id;
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
 
