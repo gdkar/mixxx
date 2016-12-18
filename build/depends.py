@@ -56,7 +56,21 @@ class PortMIDI(Dependence):
     def sources(self, build):
         return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
 
+class RtMidi(Dependence):
+    def configure(self, build, conf):
+        # Check for PortTime
+        libs = ['rtmidi', 'librtmidi']
+        # Depending on the library configuration PortTime might be statically
+        # linked with PortMidi. We treat either presence of the lib or the
+        # header as success.
+        build.env.ParseConfig('pkg-config rtmidi --silence-errors --cflags --libs')
+        if not conf.CheckLib(libs) :
+            raise Exception("Did not find RtMidi or its development headers.")
 
+    def sources(self, build):
+        return ['controllers/midi/rtmidienumerator.cpp',
+                'controllers/midi/rtmidicontroller.cpp',
+                ]
 class OpenGL(Dependence):
 
     def configure(self, build, conf):
@@ -1349,7 +1363,7 @@ class MixxxCore(Feature):
                 CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
 
     def depends(self, build):
-        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
+        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, RtMidi, Qt, TestHeaders,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
