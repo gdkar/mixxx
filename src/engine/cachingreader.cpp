@@ -34,19 +34,17 @@ const int CachingReader::maximumCachingReaderChunksInMemory = 80;
 CachingReader::CachingReader(QString group,
                              UserSettingsPointer config)
         : m_pConfig(config),
-          m_chunkReadRequestFIFO(1024),
+          m_chunkReadRequestFIFO(),
           m_readerStatusFIFO(1024),
           m_readerStatus(INVALID),
           m_mruCachingReaderChunk(nullptr),
           m_lruCachingReaderChunk(nullptr),
           m_sampleBuffer(CachingReaderChunk::kSamples * maximumCachingReaderChunksInMemory),
           m_maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()),
-          m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO) {
-
+          m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO)
+{
     m_allocatedCachingReaderChunks.reserve(maximumCachingReaderChunksInMemory);
-
-    CSAMPLE* bufferStart = m_sampleBuffer.data();
-
+    auto bufferStart = m_sampleBuffer.data();
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
@@ -417,17 +415,10 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
                 }
                 // Do not insert the allocated chunk into the MRU/LRU list,
                 // because it will be handed over to the worker immediately
-                CachingReaderChunkReadRequest request(pChunk);
                 pChunk->giveToWorker();
+                m_chunkReadRequestFIFO.push(pChunk);
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
-                if (m_chunkReadRequestFIFO.write(&request, 1) != 1) {
-                    qWarning() << "ERROR: Could not submit read request for "
-                             << chunkIndex;
-                    // Revoke the chunk from the worker and free it
-                    pChunk->takeFromWorker();
-                    freeChunk(pChunk);
-                }
                 //qDebug() << "Checking chunk " << current << " shouldWake:" << shouldWake << " chunksToRead" << m_chunksToRead.size();
             } else if (pChunk->getState() == CachingReaderChunkForOwner::READY) {
                 // This will cause the chunk to be 'freshened' in the cache. The
@@ -436,7 +427,6 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
             }
         }
     }
-
     // If there are chunks to be read, wake up.
     if (shouldWake) {
         m_worker.workReady();
