@@ -118,7 +118,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Stat::ComputeFlags);
 
 QDebug operator<<(QDebug dbg, const Stat &stat);
 
-struct StatReport : public intrusive_node {
+struct StatReport : public intrusive::node {
     QString tag;
     QString thread_id;
 //    char* tag;
