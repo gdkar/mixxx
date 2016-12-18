@@ -2,6 +2,7 @@
 #define ENGINE_CACHINGREADERCHUNK_H
 
 #include "sources/audiosource.h"
+#include "track/trackid.h"
 #include "util/intrusive_fifo.hpp"
 // A Chunk is a memory-resident section of audio that has been cached.
 // Each chunk holds a fixed number kFrames of frames with samples for
@@ -87,14 +88,23 @@ public:
             SINT sampleOffset,
             SINT sampleCount) const;
 
+    TrackId id() const
+    {
+        return m_id;
+    }
+    void setId(TrackId _id)
+    {
+        m_id = _id;
+    }
 protected:
     explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
     virtual ~CachingReaderChunk();
 
     void init(SINT index);
 
+    TrackId m_id{};
 private:
-    volatile SINT m_index;
+    SINT m_index;
 
     // The worker thread will fill the sample buffer and
     // set the frame count.
