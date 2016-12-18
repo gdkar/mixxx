@@ -47,7 +47,7 @@ typedef struct Hint {
 //    reallocate on every callback. resize(0) should work but a future developer
 //    may see a resize(0) and say "that's a silly way of writing clear()!" and
 //    replace it without realizing.
-typedef QVarLengthArray<Hint, 512> HintVector;
+typedef QVarLengthArray<Hint, 128> HintVector;
 
 // CachingReader provides a layer on top of a SoundSource for reading samples
 // from a file. Since we cannot do file I/O in the audio callback thread
@@ -138,6 +138,7 @@ class CachingReader : public QObject {
     CachingReaderChunkForOwner* allocateChunkExpireLRU(SINT chunkIndex);
 
     ReaderStatus m_readerStatus;
+    TrackId      m_id{};
 
     // Keeps track of all CachingReaderChunks we've allocated.
     QVector<CachingReaderChunkForOwner*> m_chunks;
