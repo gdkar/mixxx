@@ -5,7 +5,6 @@
 #include <QThread>
 #include <QQueue>
 #include <QWaitCondition>
-#include <QSemaphore>
 
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "sources/audiosource.h"
 #include "track/track.h"
 #include "util/samplebuffer.h"
+#include "util/semaphore.hpp"
 
 class TrackCollection;
 
@@ -52,7 +52,7 @@ class AnalyzerQueue : public QThread {
         TrackPointer current_track;
         int track_progress; // in 0.1 %
         int queue_size;
-        QSemaphore sema;
+        mixxx::MSemaphore sema;
     };
 
     void addAnalyzer(Analyzer* an);

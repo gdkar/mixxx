@@ -7,7 +7,6 @@
 #include <QThread>
 #include <QtDebug>
 #include <QMutex>
-#include <QWaitCondition>
 #include <QThreadStorage>
 #include <QList>
 
