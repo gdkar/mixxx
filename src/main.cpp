@@ -130,31 +130,23 @@ int main(int argc, char * argv[]) {
         QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
     }
 #endif
-
-    MixxxMainWindow* mixxx = new MixxxMainWindow(&a, args);
-
-    // When the last window is closed, terminate the Qt event loop.
-    QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-
     int result = -1;
-
-    // If startup produced a fatal error, then don't even start the Qt event
-    // loop.
-    if (ErrorDialogHandler::instance()->checkError()) {
-        mixxx->finalize();
-    } else {
-        qDebug() << "Displaying mixxx";
-        mixxx->show();
-
-        qDebug() << "Running Mixxx";
-        result = a.exec();
+    {
+        MixxxMainWindow m(&a, args);
+        // When the last window is closed, terminate the Qt event loop.
+        QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+        // If startup produced a fatal error, then don't even start the Qt event
+        // loop.
+        if (ErrorDialogHandler::instance()->checkError()) {
+            m.finalize();
+        } else {
+            qDebug() << "Displaying mixxx";
+            m.show();
+            qDebug() << "Running Mixxx";
+            result = a.exec();
+        }
     }
-
-    delete mixxx;
-
     qDebug() << "Mixxx shutdown complete with code" << result;
-
     mixxx::Logging::shutdown();
-
     return result;
 }
