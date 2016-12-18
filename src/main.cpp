@@ -158,8 +158,6 @@ int main(int argc, char * argv[]) {
     int result = runMixxx(&app, args);
 
     qDebug() << "Mixxx shutdown complete with code" << result;
-
     mixxx::Logging::shutdown();
-
     return result;
 }
