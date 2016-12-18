@@ -2,7 +2,7 @@
 #define ENGINE_CACHINGREADERCHUNK_H
 
 #include "sources/audiosource.h"
-
+#include "util/intrusive_fifo.hpp"
 // A Chunk is a memory-resident section of audio that has been cached.
 // Each chunk holds a fixed number kFrames of frames with samples for
 // kChannels.
@@ -14,7 +14,7 @@
 //
 // This is the common (abstract) base class for both the cache (as the owner)
 // and the worker.
-class CachingReaderChunk {
+class CachingReaderChunk : public intrusive::node {
 public:
     static const SINT kInvalidIndex;
     static const SINT kChannels;
@@ -22,24 +22,24 @@ public:
     static const SINT kSamples;
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT indexForFrame(SINT frameIndex) {
+    static SINT indexForFrame(SINT frameIndex) {
         DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
         const SINT chunkIndex = frameIndex / kFrames;
         return chunkIndex;
     }
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT frameForIndex(SINT chunkIndex) {
+    static SINT frameForIndex(SINT chunkIndex) {
         DEBUG_ASSERT(0 <= chunkIndex);
         return chunkIndex * kFrames;
     }
 
     // Converts frames to samples
-    inline static SINT frames2samples(SINT frames) {
+    static SINT frames2samples(SINT frames) {
         return frames * kChannels;
     }
     // Converts samples to frames
-    inline static SINT samples2frames(SINT samples) {
+    static SINT samples2frames(SINT samples) {
         DEBUG_ASSERT(0 == (samples % kChannels));
         return samples / kChannels;
     }
@@ -153,6 +153,4 @@ private:
     CachingReaderChunkForOwner* m_pPrev; // previous item in double-linked list
     CachingReaderChunkForOwner* m_pNext; // next item in double-linked list
 };
-
-
 #endif // ENGINE_CACHINGREADERCHUNK_H

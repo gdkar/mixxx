@@ -12,16 +12,8 @@
 #include "engine/engineworker.h"
 #include "sources/audiosource.h"
 #include "util/fifo.h"
+#include "util/intrusive_fifo.hpp"
 
-
-typedef struct CachingReaderChunkReadRequest {
-    CachingReaderChunk* chunk;
-
-    explicit CachingReaderChunkReadRequest(
-            CachingReaderChunk* chunkArg = nullptr)
-        : chunk(chunkArg) {
-    }
-} CachingReaderChunkReadRequest;
 
 enum ReaderStatus {
     INVALID,
@@ -57,7 +49,7 @@ class CachingReaderWorker : public EngineWorker {
   public:
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
-            FIFO<CachingReaderChunkReadRequest>* pChunkReadRequestFIFO,
+            intrusive::fifo<CachingReaderChunk>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();
 
@@ -82,7 +74,7 @@ class CachingReaderWorker : public EngineWorker {
 
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunkReadRequest>* m_pChunkReadRequestFIFO;
+    intrusive::fifo<CachingReaderChunk>* m_pChunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
 
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
@@ -94,8 +86,7 @@ class CachingReaderWorker : public EngineWorker {
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
 
-    ReaderStatusUpdate processReadRequest(
-            const CachingReaderChunkReadRequest& request);
+    ReaderStatusUpdate processReadRequest(CachingReaderChunk *);
 
     // The current audio source of the track loaded
     mixxx::AudioSourcePointer m_pAudioSource;
@@ -106,9 +97,6 @@ class CachingReaderWorker : public EngineWorker {
     // This frame index references the frame that follows the
     // last frame with readable sample data.
     SINT m_maxReadableFrameIndex;
-
     QAtomicInt m_stop;
 };
-
-
 #endif /* ENGINE_CACHINGREADERWORKER_H */
