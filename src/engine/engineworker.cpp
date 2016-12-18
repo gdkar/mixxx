@@ -5,23 +5,30 @@
 #include "engine/engineworkerscheduler.h"
 
 EngineWorker::EngineWorker()
-    : m_pScheduler(NULL) {
+    : m_pScheduler(nullptr)
+{
 }
 
-EngineWorker::~EngineWorker() {
+EngineWorker::~EngineWorker()
+{
 }
 
-void EngineWorker::run() {
+void EngineWorker::run()
+{
 }
 
-void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler) {
+void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler)
+{
     m_pScheduler = pScheduler;
 }
 
-bool EngineWorker::workReady() {
-    if (m_pScheduler) {
+bool EngineWorker::workReady()
+{
+    wake();
+    return true;
+/*    if (m_pScheduler) {
         m_pScheduler->workerReady(this);
         return true;
     }
-    return false;
+    return false;*/
 }
