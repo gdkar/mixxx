@@ -4,12 +4,12 @@
 #include <QHash>
 #include <QString>
 #include <QObject>
-#include <QAtomicPointer>
-
+#include <QSharedPointer>
+#include <atomic>
 #include "control/controlbehavior.h"
-#include "control/controlvalue.h"
 #include "preferences/usersettings.h"
 #include "util/mutex.h"
+#include "util/assert.h"
 
 class ControlObject;
 
@@ -43,21 +43,10 @@ class ControlDoublePrivate : public QObject {
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
 
-    const QString& name() const {
-        return m_name;
-    }
-
-    void setName(const QString& name) {
-        m_name = name;
-    }
-
-    const QString& description() const {
-        return m_description;
-    }
-
-    void setDescription(const QString& description) {
-        m_description = description;
-    }
+    QString name() const;
+    void setName(const QString& name);
+    QString description() const;
+    void setDescription(const QString& description);
 
     // Sets the control value.
     void set(double value, QObject* pSender);
@@ -65,12 +54,9 @@ class ControlDoublePrivate : public QObject {
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
     // Gets the control value.
-    inline double get() const {
-        return m_value.getValue();
-    }
+    double get() const;
     // Resets the control value to its default.
     void reset();
-
     // Set the behavior to be used when setting values and translating between
     // parameter and value space. Returns the previously set behavior (if any).
     // The caller must not delete the behavior at any time. The memory is managed
@@ -85,29 +71,12 @@ class ControlDoublePrivate : public QObject {
     void setMidiParameter(MidiOpCode opcode, double dParam);
     double getMidiParameter() const;
 
-    inline bool ignoreNops() const {
-        return m_bIgnoreNops;
-    }
-
-    inline void setDefaultValue(double dValue) {
-        m_defaultValue.setValue(dValue);
-    }
-
-    inline double defaultValue() const {
-        return m_defaultValue.getValue();
-    }
-
-    inline ControlObject* getCreatorCO() const {
-        return m_pCreatorCO;
-    }
-
-    inline void removeCreatorCO() {
-        m_pCreatorCO = NULL;
-    }
-
-    inline ConfigKey getKey() {
-        return m_key;
-    }
+    bool ignoreNops() const;
+    void setDefaultValue(double dValue);
+    double defaultValue() const;
+    ControlObject* getCreatorCO() const;
+    void removeCreatorCO();
+    ConfigKey getKey() const;
 
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can
@@ -154,9 +123,9 @@ class ControlDoublePrivate : public QObject {
     bool m_confirmRequired;
 
     // The control value.
-    ControlValueAtomic<double> m_value;
+    std::atomic<double> m_value;
     // The default control value.
-    ControlValueAtomic<double> m_defaultValue;
+    std::atomic<double> m_defaultValue;
 
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
 

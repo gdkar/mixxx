@@ -54,8 +54,8 @@ void ControlDoublePrivate::initialize() {
             value = pConfig->getValueString(m_key).toDouble();
         }
     }
-    m_defaultValue.setValue(0);
-    m_value.setValue(value);
+    m_defaultValue.store(0);
+    m_value.store(value);
 
     //qDebug() << "Creating:" << m_trackKey << "at" << &m_value << sizeof(m_value);
 
@@ -64,7 +64,7 @@ void ControlDoublePrivate::initialize() {
         m_trackKey = "control " + m_key.group + "," + m_key.item;
         Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
                     static_cast<Stat::ComputeFlags>(m_trackFlags),
-                    m_value.getValue());
+                    m_value.load());
     }
 }
 
@@ -151,27 +151,28 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
 
 // static
 void ControlDoublePrivate::getControls(
-        QList<QSharedPointer<ControlDoublePrivate> >* pControlList) {
-    s_qCOHashMutex.lock();
+        QList<QSharedPointer<ControlDoublePrivate> >* pControlList)
+{
     pControlList->clear();
-    for (QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> >::const_iterator it = s_qCOHash.begin();
-             it != s_qCOHash.end(); ++it) {
-        QSharedPointer<ControlDoublePrivate> pControl = it.value();
-        if (!pControl.isNull()) {
+    s_qCOHashMutex.lock();
+    for (auto it = s_qCOHash.constBegin();
+             it != s_qCOHash.constEnd(); ++it) {
+        if(auto pControl = it.value().lock()) {
             pControlList->push_back(pControl);
         }
     }
     s_qCOHashMutex.unlock();
 }
-
 // static
-QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases() {
+QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases()
+{
     MMutexLocker locker(&s_qCOHashMutex);
     return s_qCOAliasHash;
 }
 
-void ControlDoublePrivate::reset() {
-    double defaultValue = m_defaultValue.getValue();
+void ControlDoublePrivate::reset()
+{
+    auto defaultValue = m_defaultValue.load();
     // NOTE: pSender = NULL is important. The originator of this action does
     // not know the resulting value so it makes sense that we should emit a
     // general valueChanged() signal even though we know the originator.
@@ -199,7 +200,7 @@ void ControlDoublePrivate::setInner(double value, QObject* pSender) {
     if (m_bIgnoreNops && get() == value) {
         return;
     }
-    m_value.setValue(value);
+    m_value.store(value);
     emit(valueChanged(value, pSender));
 
     if (m_bTrack) {
@@ -227,44 +228,98 @@ double ControlDoublePrivate::getParameter() const {
     return getParameterForValue(get());
 }
 
-double ControlDoublePrivate::getParameterForValue(double value) const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
+double ControlDoublePrivate::getParameterForValue(double value) const
+{
+    if(auto pBehavior = m_pBehavior){
         value = pBehavior->valueToParameter(value);
     }
     return value;
 }
 
-double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
+double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const
+{
+    if(auto pBehavior = m_pBehavior){
         return pBehavior->midiValueToParameter(midiValue);
     }
     return midiValue;
 }
 
-void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
+void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam)
+{
+    if(auto pBehavior = m_pBehavior) {
         pBehavior->setValueFromMidiParameter(opcode, dParam, this);
     } else {
         set(dParam, NULL);
     }
 }
 
-double ControlDoublePrivate::getMidiParameter() const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    double value = get();
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToMidiParameter(value);
-    }
-    return value;
+double ControlDoublePrivate::getMidiParameter() const
+{
+    if(auto pBehavior = m_pBehavior)
+        return pBehavior->valueToMidiParameter(get());
+    else
+        return get();
 }
 
 bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
-        const char* method, Qt::ConnectionType type) {
+        const char* method, Qt::ConnectionType type)
+{
     // confirmation is only required if connect was successful
     m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),
                 receiver, method, type);
     return m_confirmRequired;
+}
+
+QString ControlDoublePrivate::name() const
+{
+    return m_name;
+}
+
+void ControlDoublePrivate::setName(const QString& name)
+{
+    m_name = name;
+}
+
+QString ControlDoublePrivate::description() const
+{
+    return m_description;
+}
+
+void ControlDoublePrivate::setDescription(const QString& description)
+{
+    m_description = description;
+}
+double ControlDoublePrivate::get() const
+{
+    return m_value.load();
+}
+
+bool ControlDoublePrivate::ignoreNops() const
+{
+    return m_bIgnoreNops;
+}
+
+void ControlDoublePrivate::setDefaultValue(double dValue)
+{
+    m_defaultValue.store(dValue);
+}
+
+double ControlDoublePrivate::defaultValue() const
+{
+    return m_defaultValue.load();
+}
+
+ControlObject* ControlDoublePrivate::getCreatorCO() const
+{
+    return m_pCreatorCO;
+}
+
+void ControlDoublePrivate::removeCreatorCO()
+{
+    m_pCreatorCO = NULL;
+}
+
+ConfigKey ControlDoublePrivate::getKey() const
+{
+    return m_key;
 }

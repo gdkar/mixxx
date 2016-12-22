@@ -105,3 +105,37 @@ bool ControlProxy::connectValueChanged(
     DEBUG_ASSERT(parent() != NULL);
     return connectValueChanged(parent(), method, type);
 }
+
+// Called from update();
+void ControlProxy::emitValueChanged()
+{
+    emit(valueChanged(get()));
+}
+
+bool ControlProxy:: valid() const { return m_pControl != NULL; }
+
+// Returns the value of the object. Thread safe, non-blocking.
+double ControlProxy::get() const {
+    return m_pControl ? m_pControl->get() : 0.0;
+}
+
+// Returns the bool interpretation of the value
+bool ControlProxy::toBool() const {
+    return get() > 0.0;
+}
+
+// Returns the parameterized value of the object. Thread safe, non-blocking.
+double ControlProxy::getParameter() const {
+    return m_pControl ? m_pControl->getParameter() : 0.0;
+}
+
+// Returns the parameterized value of the object. Thread safe, non-blocking.
+double ControlProxy::getParameterForValue(double value) const {
+    return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
+}
+
+// Returns the normalized parameter of the object. Thread safe, non-blocking.
+double ControlProxy::getDefault() const {
+    return m_pControl ? m_pControl->defaultValue() : 0.0;
+}
+

@@ -144,3 +144,97 @@ void ControlObject::setReadOnly() {
 void ControlObject::readOnlyHandler(double v) {
     qWarning() << m_key << "is read-only. Ignoring set of value:" << v;
 }
+
+
+
+QString ControlObject::name() const
+{
+    return m_pControl ?  m_pControl->name() : QString();
+}
+
+void ControlObject::setName(const QString& name)
+{
+    if (m_pControl) {
+        m_pControl->setName(name);
+    }
+}
+
+QString ControlObject::description() const
+{
+    return m_pControl ?  m_pControl->description() : QString();
+}
+
+void ControlObject::setDescription(const QString& description)
+{
+    if (m_pControl) {
+        m_pControl->setDescription(description);
+    }
+}
+
+// Return the key of the object
+ConfigKey ControlObject::getKey() const
+{
+    return m_key;
+}
+
+// Returns the value of the ControlObject
+double ControlObject::get() const
+{
+    return m_pControl ? m_pControl->get() : 0.0;
+}
+
+// Returns the bool interpretation of the ControlObject
+bool ControlObject::toBool() const
+{
+    return get() > 0.0;
+}
+
+// Sets the ControlObject value. May require confirmation by owner.
+void ControlObject::set(double value) {
+    if (m_pControl) {
+        m_pControl->set(value, this);
+    }
+}
+
+// Sets the ControlObject value and confirms it.
+void ControlObject::setAndConfirm(double value) {
+    if (m_pControl) {
+        m_pControl->setAndConfirm(value, this);
+    }
+}
+
+// Forces the control to 'value', regardless of whether it has a change
+// request handler attached (identical to setAndConfirm).
+void ControlObject::forceSet(double value)
+{
+    setAndConfirm(value);
+}
+ControlObject* ControlObject::getControl(const QString& group, const QString& item, bool warn ) {
+    ConfigKey key(group, item);
+    return getControl(key, warn);
+}
+ControlObject* ControlObject::getControl(const char* group, const char* item, bool warn ) {
+    ConfigKey key(group, item);
+    return getControl(key, warn);
+}
+void ControlObject::reset()
+{
+    if (m_pControl) {
+        m_pControl->reset();
+    }
+}
+
+void ControlObject::setDefaultValue(double dValue)
+{
+    if (m_pControl) {
+        m_pControl->setDefaultValue(dValue);
+    }
+}
+double ControlObject::defaultValue() const
+{
+    return m_pControl ? m_pControl->defaultValue() : 0.0;
+}
+bool ControlObject::ignoreNops() const
+{
+    return m_pControl ? m_pControl->ignoreNops() : true;
+}
