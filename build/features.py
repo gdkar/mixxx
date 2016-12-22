@@ -406,11 +406,16 @@ class Vamp(Feature):
 
         # FFTW3 support
         have_fftw3_h = conf.CheckHeader('fftw3.h')
-        have_fftw3 = conf.CheckLib('fftw3', autoadd=False)
+        have_fftw3 = conf.CheckLib('fftw3',   autoadd=False)
+        have_fftw3f = conf.CheckLib('fftw3f', autoadd=False)
         if have_fftw3_h and have_fftw3 and build.platform_is_linux:
             build.env.Append(CPPDEFINES='HAVE_FFTW3')
             build.env.ParseConfig(
                 'pkg-config fftw3 --silence-errors --cflags --libs')
+        if have_fftw3_h and have_fftw3f and build.platform_is_linux:
+            build.env.Append(CPPDEFINES='HAVE_FFTW3F')
+            build.env.ParseConfig(
+                'pkg-config fftw3f --silence-errors --cflags --libs')
 
     def sources(self, build):
         sources = ['analyzer/vamp/vampanalyzer.cpp',
@@ -421,17 +426,17 @@ class Vamp(Feature):
                    'preferences/dialog/dlgprefkey.cpp']
 
         if self.INTERNAL_LINK:
-            hostsdk_src_path = '%s/src/vamp-hostsdk' % self.INTERNAL_VAMP_PATH
-            sources.extend(path % hostsdk_src_path for path in
-                           ['%s/Files.cpp',
-                            '%s/PluginBufferingAdapter.cpp',
-                            '%s/PluginChannelAdapter.cpp',
-                            '%s/PluginHostAdapter.cpp',
-                            '%s/PluginInputDomainAdapter.cpp',
-                            '%s/PluginLoader.cpp',
-                            '%s/PluginSummarisingAdapter.cpp',
-                            '%s/PluginWrapper.cpp',
-                            '%s/RealTime.cpp'])
+            hostsdk_src_path = '{}/src/vamp-hostsdk'.format( self.INTERNAL_VAMP_PATH)
+            sources.extend(path.format( hostsdk_src_path) for path in
+                           ['{}/Files.cpp',
+                            '{}/PluginBufferingAdapter.cpp',
+                            '{}/PluginChannelAdapter.cpp',
+                            '{}/PluginHostAdapter.cpp',
+                            '{}/PluginInputDomainAdapter.cpp',
+                            '{}/PluginLoader.cpp',
+                            '{}/PluginSummarisingAdapter.cpp',
+                            '{}/PluginWrapper.cpp',
+                            '{}/RealTime.cpp'])
         return sources
 
 

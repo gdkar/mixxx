@@ -392,6 +392,7 @@ void SoundSourceFFmpeg::clearCache() {
         free(l_SRmObj);
     }
 }
+<<<<<<< HEAD
 
 bool SoundSourceFFmpeg::readFramesToCache(unsigned int count, SINT offset) {
     unsigned int l_iCount = count;
@@ -423,6 +424,77 @@ bool SoundSourceFFmpeg::readFramesToCache(unsigned int count, SINT offset) {
 #endif
             l_pFrame = nullptr;
 
+=======
+SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
+{
+    ScopedTimer top(__PRETTY_FUNCTION__);
+    DEBUG_ASSERT(isValidFrameIndex(frameIndex));
+    if(!m_pkt_array.size())
+        return 0;
+    if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) )
+        return -1;
+    auto first_sample = av_rescale_q ( m_frame->pts-m_first_pts, m_stream_tb, m_output_tb );
+    auto frame_pts    = av_rescale_q ( frameIndex, m_output_tb,m_stream_tb);
+    if ( frameIndex >= first_sample && frameIndex  < first_sample + m_frame->nb_samples ) {
+      m_offset = frameIndex - first_sample;
+      return     frameIndex;
+    }
+
+    if ( frame_pts < ( m_pkt_array.front()->pts - m_first_pts ) ){
+      m_pkt_index =  0;
+      m_codec_ctx.flush_buffers();
+      decode_next_frame ( );
+      first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+      m_offset = 0;
+      return first_sample;
+    }
+    if ( frame_pts >= ( m_pkt_array.back()->pts - m_first_pts ) ) {
+      m_pkt_index  = m_pkt_array.size() - 2;
+      m_codec_ctx.flush_buffers();
+      decode_next_frame ( );
+      first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+      m_offset     = frameIndex - first_sample;
+      return frameIndex;
+    }
+    {
+        auto target_pts    = av_rescale_q ( frameIndex - 128, m_output_tb,m_stream_tb);
+        target_pts = std::max<int64_t>(target_pts, 0);
+        auto hindex = m_pkt_array.size() - 1;
+        auto lindex = decltype(hindex){0};
+        auto lpts   = m_pkt_array.at(lindex)->pts - m_first_pts;
+        auto bail   = false;
+        m_pkt_index = -1;
+        ScopedTimer t("prop search for packet.");
+        while ( hindex > lindex + 1) {
+            auto pts_dist   = uint32_t(m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts);
+            auto idx_dist   = hindex - lindex;
+            auto target_dist= target_pts - lpts;
+            auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
+            if ( mindex >= hindex )
+                mindex = hindex - 1;
+            if ( mindex <= lindex ) {
+                if ( bail )
+                    mindex = ( idx_dist >> 1 ) + lindex;
+                else {
+                    mindex = lindex + 1;
+                    bail = true;
+                }
+            } else {
+                bail = false;
+            }
+            auto mpts = m_pkt_array.at(mindex  )->pts - m_first_pts;
+            auto npts = m_pkt_array.at(mindex+1)->pts - m_first_pts;
+            if ( mpts > target_pts ) {
+                hindex = mindex;
+            }else if ( npts <= target_pts ) {
+                lindex = mindex + 1;
+                lpts   = npts;
+            } else {
+                lindex = mindex;
+                lpts   = mpts;
+                hindex = mindex + 1;
+            }
+>>>>>>> iiiiiiidk, rtmidi?
         }
 
         if (l_bStop) {
@@ -582,6 +654,7 @@ bool SoundSourceFFmpeg::readFramesToCache(unsigned int count, SINT offset) {
         }
 
     }
+<<<<<<< HEAD
 
     if (l_pFrame != nullptr) {
         l_iFrameCount--;
@@ -598,6 +671,37 @@ bool SoundSourceFFmpeg::readFramesToCache(unsigned int count, SINT offset) {
 #endif
         l_pFrame = nullptr;
 
+=======
+    if ( !m_orig_frame->sample_rate    )
+        m_orig_frame->sample_rate    = m_codec_ctx->sample_rate;
+    if ( !m_orig_frame->channel_layout )
+        m_orig_frame->channel_layout = m_codec_ctx->channel_layout;
+    if ( !m_orig_frame->channels )
+        m_orig_frame->channels       = m_codec_ctx->channels;
+
+    m_orig_frame->pts = m_orig_frame.best_effort_timestamp();
+
+    m_frame.unref();
+    m_frame->format         = AV_SAMPLE_FMT_FLT;
+    m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
+    m_frame->sample_rate    = getSamplingRate();
+
+    auto delay = 0;
+    if(!m_swr.initialized() && (m_swr.config(m_frame,m_orig_frame) < 0
+        || m_swr.init() < 0)) {
+        qDebug() << __FUNCTION__ << "error initializing SwrContext" << av_strerror ( ret );
+    }else{
+        delay = swr_get_delay ( m_swr, getSamplingRate( ) );
+    }
+    m_frame->pts     = m_orig_frame->pts - av_rescale_q ( delay, m_output_tb, m_stream_tb ) ;
+//    m_frame->pkt_pts = m_orig_frame->pkt_pts;
+    m_frame->pkt_dts = m_orig_frame->pkt_dts;
+    {
+        if((ret = m_swr.convert(m_frame,m_orig_frame)) < 0) {
+            qDebug() << __FUNCTION__ << "error converting frame for" << getLocalFileName()<< av_strerror(ret);
+            return false;
+        }
+>>>>>>> iiiiiiidk, rtmidi?
     }
 
     if (l_iFrameCount > 0) {
