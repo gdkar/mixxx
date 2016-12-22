@@ -115,57 +115,95 @@ struct avpacket {
     AVPacket *m_d{nullptr};
     AVPacket       *operator ->()       { return m_d;}
     const AVPacket *operator ->() const { return m_d;}
-            AVPacket &operator  *()       { return *m_d;}
-    const AVPacket &operator *() const { return *m_d;}
-    operator const AVPacket *  () const{ return m_d;}
-    operator       AVPacket *  ()      { return m_d;}
-    operator bool() const { return !!m_d;}
-    bool operator !() const { return !m_d;}
-    avpacket() : m_d{av_packet_alloc()}{}
-    avpacket(avpacket && o) noexcept : avpacket() { swap(o);}
+            AVPacket &operator  *()     { return *m_d;}
+    const AVPacket &operator *() const  { return *m_d;}
+    operator const AVPacket *() const   { return m_d;}
+    operator       AVPacket *()         { return m_d;}
+    operator bool() const               { return !!m_d; }
+    bool operator !() const             { return !m_d; }
+    avpacket() : m_d{av_packet_alloc()} {}
+    avpacket(avpacket && o) noexcept    { swap(o); }
     avpacket(const avpacket &o) : avpacket() { av_packet_ref(m_d,o.m_d); }
-    avpacket &operator =(avpacket && o) noexcept { swap(o);return *this;}
-    avpacket &operator =(const avpacket &o) { ref(o.m_d); return *this;}
-   ~avpacket() { av_packet_free(&m_d);}
-    void swap(avpacket &o) noexcept { using std::swap;swap(m_d, o.m_d);}
-    void unref() { av_packet_unref(m_d);}
+    avpacket &operator =(avpacket && o) noexcept
+    {
+        swap(o);
+        return *this;
+    }
+    avpacket &operator =(const avpacket &o)
+    {
+        ref(o.m_d);
+        return *this;
+    }
+   ~avpacket() { av_packet_free(&m_d); }
+    void swap(avpacket &o) noexcept
+    {
+        using std::swap;
+        swap(m_d, o.m_d);
+    }
+    void unref() { if(m_d) av_packet_unref(m_d); }
     void ref(const AVPacket *pkt)
     {
         if(pkt != m_d) {
             unref();
-            av_packet_ref(m_d, pkt);
+            if(pkt) {
+                if(!m_d)
+                    m_d = av_packet_alloc();
+                av_packet_ref(m_d, pkt);
+            }
         }
     }
-    friend void swap(avpacket &lhs, avpacket &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(avpacket &lhs, avpacket &rhs) noexcept
+    {
+        lhs.swap(rhs);
+    }
 };
 struct avframe{
     AVFrame *m_d{nullptr};
 
-    AVFrame *operator ->()       { return m_d;}
-    const AVFrame *operator ->() const { return m_d;}
-          AVFrame &operator  *()       { return *m_d;}
-    const AVFrame &operator  *() const { return *m_d;}
-    operator const AVFrame *  () const{ return m_d;}
-    operator       AVFrame *  ()      { return m_d;}
-    operator bool() const { return !!m_d;}
-    bool operator !() const { return !m_d;}
-    avframe() : m_d{av_frame_alloc()}{}
-    avframe(avframe && o) noexcept : avframe(){ swap(o);}
-    avframe &operator =(avframe && o) noexcept { swap(o);return *this;}
-    avframe(const avframe &o) : avframe() { av_frame_ref(m_d,o.m_d); }
-    avframe &operator=(const avframe &o) { ref(o.m_d);return *this;}
-    ~avframe() { av_frame_free(&m_d);}
-    void swap(avframe &o) noexcept { using std::swap;swap(m_d, o.m_d);}
-    void unref() { av_frame_unref(m_d);}
+    AVFrame *operator ->()              { return m_d;}
+    const AVFrame *operator ->() const  { return m_d;}
+          AVFrame &operator  *()        { return *m_d;}
+    const AVFrame &operator  *() const  { return *m_d;}
+    operator const AVFrame *  () const  { return m_d;}
+    operator       AVFrame *  ()        { return m_d;}
+    operator bool() const               { return !!m_d; }
+    bool operator !() const             { return !m_d; }
+    avframe() : m_d{av_frame_alloc()}   {}
+    avframe(avframe && o) noexcept      { swap(o); }
+    avframe &operator =(avframe && o) noexcept
+    {
+        swap(o);
+        return *this;
+    }
+    avframe(const avframe &o) : avframe()   { if(o.m_d) av_frame_ref(m_d,o.m_d); }
+    avframe &operator=(const avframe &o)    { ref(o.m_d); return *this; }
+   ~avframe()                               { av_frame_free(&m_d); }
+    void swap(avframe &o) noexcept          { using std::swap; swap(m_d, o.m_d); }
+    void unref()                            { if(m_d) av_frame_unref(m_d); }
+    void unref_alloc()
+    {
+        if(m_d)
+            av_frame_unref(m_d);
+        else
+            m_d = av_frame_alloc();
+    }
     void ref(const AVFrame *frm)
     {
         if(frm != m_d) {
-            unref();
-            av_frame_ref(m_d, frm);
+            if(!m_d) {
+                m_d = av_frame_clone(frm);
+            } else {
+                av_frame_unref(m_d);
+                if(frm)
+                    av_frame_ref(m_d,frm);
+            }
         }
     }
     int  get_buffer(int _align = 32)
     {
+        if(!m_d)
+            return AVERROR(EFAULT);
+
         auto _samples = m_d->nb_samples;
         auto _layout  = m_d->channel_layout;
         auto _channels= m_d->channels;
@@ -176,74 +214,86 @@ struct avframe{
         auto _format  = m_d->format;
 
         unref();
-        m_d->nb_samples = _samples;
+        m_d->nb_samples     = _samples;
         m_d->channel_layout = _layout;
-        m_d->channels = _channels;
-        m_d->height = _height;
-        m_d->width = _width;
-        m_d->format = _format;
+        m_d->channels       = _channels;
+        m_d->height         = _height;
+        m_d->width          = _width;
+        m_d->format         = _format;
         return av_frame_get_buffer(m_d, _align);
     }
     int get_audio_buffer(AVSampleFormat _format, int _channels, int _samples, int _align = 32)
     {
-        unref();
-        m_d->format = static_cast<int>(_format);
-        m_d->channels = _channels;
+        unref_alloc();
+        m_d->format     = static_cast<int>(_format);
+        m_d->channels   = _channels;
         m_d->nb_samples = _samples;
         return av_frame_get_buffer(m_d, _align);
     }
     int get_vidio_buffer(AVPixelFormat _format, int _width, int _height, int _align = 32)
     {
-        unref();
+        unref_alloc();
         m_d->format = static_cast<int>(_format);
-        m_d->width = _width;
+        m_d->width  = _width;
         m_d->height = _height;
         return av_frame_get_buffer(m_d, _align);
     }
-    bool writable() const { return av_frame_is_writable(m_d);}
-    bool make_writable() { return !av_frame_make_writable(m_d);}
-    int64_t best_effort_timestamp() const {
-        return av_frame_get_best_effort_timestamp(m_d);
+    bool writable() const                   { return m_d && av_frame_is_writable(m_d); }
+    bool make_writable()                    { return m_d && !av_frame_make_writable(m_d); }
+    int64_t best_effort_timestamp() const   { return m_d ? av_frame_get_best_effort_timestamp(m_d) : AV_NOPTS_VALUE; }
+    AVSampleFormat format() const           { return m_d ? AVSampleFormat(m_d->format) : AV_SAMPLE_FMT_NONE; }
+    bool planar() const                     { return m_d && av_sample_fmt_is_planar(format()); }
+    int sample_rate() const                 { return m_d ? av_frame_get_sample_rate(m_d) : 0; }
+    int channels() const                    { return m_d ? av_frame_get_channels(m_d) : 0; }
+    int samples() const                     { return m_d ? m_d->nb_samples : 0; }
+    int64_t pts() const                     { return m_d ? m_d->pts : AV_NOPTS_VALUE; }
+    int64_t pkt_dts() const                 { return m_d ? m_d->pkt_dts : AV_NOPTS_VALUE; }
+    int64_t pkt_pos() const                 { return m_d ? m_d->pkt_pos : 0; }
+    int64_t pkt_duration() const            { return m_d ? m_d->pkt_duration : 0; }
+    int64_t channel_layout() const          { return m_d ? m_d->channel_layout : 0; }
+    uint8_t * const *data() const           { return m_d ? m_d->extended_data : nullptr; }
+    template<class T>
+    T * const * data() const
+    {
+        return m_d ? static_cast<T *const *>(m_d->extended_data) : nullptr;
     }
-    AVSampleFormat format() const { return static_cast<AVSampleFormat>(m_d->format);}
-    bool planar() const { return av_sample_fmt_is_planar(format());}
-    int sample_rate() const {return av_frame_get_sample_rate(m_d);}
-    int channels() const { return av_frame_get_channels(m_d);}
-    int samples() const { return m_d->nb_samples;}
-    int64_t pts() const { return m_d->pts;}
-    int64_t pkt_dts() const { return m_d->pkt_dts;}
-    int64_t pkt_pos() const { return m_d->pkt_pos;}
-    int64_t pkt_duration() const { return m_d->pkt_duration;}
-    int64_t channel_layout() const { return m_d->channel_layout;}
-    uint8_t * const *data() const { return m_d->extended_data;}
-    friend void swap(avframe &lhs, avframe &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(avframe &lhs, avframe &rhs) noexcept
+    {
+        lhs.swap(rhs);
+    }
 };
 struct format_context {
-    AVFormatContext  *m_d{nullptr};
-    AVFormatContext *operator ->()       { return m_d;}
-    const AVFormatContext *operator ->() const { return m_d;}
-            AVFormatContext &operator  *()       { return *m_d;}
-    const AVFormatContext &operator  *() const { return *m_d;}
-    operator const AVFormatContext *  () const{ return m_d;}
-    operator       AVFormatContext *  ()      { return m_d;}
-    operator bool() const { return !!m_d;}
-    bool operator !() const { return !m_d;}
+    AVFormatContext  *m_d{avformat_alloc_context()};
+    AVFormatContext *operator ->()              { return m_d;}
+    const AVFormatContext *operator ->() const  { return m_d;}
+            AVFormatContext &operator  *()      { return *m_d;}
+    const AVFormatContext &operator  *() const  { return *m_d;}
+    operator const AVFormatContext *  () const  { return m_d;}
+    operator       AVFormatContext *  ()        { return m_d;}
+    operator bool() const                       { return !!m_d;}
+    bool operator !() const                     { return !m_d;}
 
-    AVStream *new_stream(const AVCodec *_c)
+    AVStream *new_stream(const AVCodec *_c)     { return avformat_new_stream(m_d, _c); }
+    format_context() {}
+    format_context(format_context && o) noexcept: m_d{}         { swap(o); }
+    format_context &operator =(format_context && o) noexcept    { swap(o); return *this; }
+   ~format_context()
     {
-        return avformat_new_stream(m_d, _c);
-    }
-    format_context() : m_d{avformat_alloc_context()}{}
-    format_context(format_context && o) noexcept: format_context() { swap(o);}
-    format_context &operator =(format_context && o) noexcept { swap(o);return *this;}
-   ~format_context() {
        if(is_input())
            avformat_close_input(&m_d);
        avformat_free_context(m_d);
-   }
-    void swap(format_context &o) noexcept { using std::swap;swap(m_d, o.m_d);}
-    std::pair<avpacket,int> read_frame() { auto p = std::make_pair(avpacket{},0); if((p.second = read_frame(p.first)) < 0) { p.first.unref();} return std::move(p);}
-    int read_frame(AVPacket *pkt) { return av_read_frame(m_d,pkt);}
+    }
+    void swap(format_context &o) noexcept   { using std::swap; swap(m_d, o.m_d); }
+    std::pair<avpacket,int> read_frame()
+    {
+        auto p = std::make_pair(avpacket{},0);
+
+        if((p.second = read_frame(p.first)) < 0) {
+            p.first.unref();
+        }
+        return std::move(p);
+    }
+    int read_frame(AVPacket *pkt) { return av_read_frame(m_d,pkt); }
     void close()
     {
         if(is_input())
@@ -274,11 +324,13 @@ struct format_context {
     {
         auto ret = 0;
         auto res = std::pair<AVStream*,AVCodec*>{};
-        if ( ( ret = av_find_best_stream ( m_d, type, -1, -1, &res.second, 0 ) ) >= 0 ){
-            res.first = m_d->streams[ret];
-            if(!res.second)
-                res.second = avcodec_find_decoder ( res.first->codecpar->codec_id ) ;
-            res.first->discard = AVDISCARD_NONE;
+        if(m_d) {
+            if (( ret = av_find_best_stream ( m_d, type, -1, -1, &res.second, 0 )) >= 0 ) {
+                res.first = m_d->streams[ret];
+                if(!res.second)
+                    res.second = avcodec_find_decoder ( res.first->codecpar->codec_id ) ;
+                res.first->discard = AVDISCARD_NONE;
+            }
         }
         return res;
     }
@@ -292,10 +344,11 @@ struct format_context {
     }
     bool is_input() const { return m_d && !!m_d->iformat;}
     bool is_output() const { return m_d && !!m_d->oformat;}
-    int flush() { return avformat_flush(m_d);}
+    int flush() { return m_d ? avformat_flush(m_d) : AVERROR(EINVAL);}
     void dump(int index, const char *filename) const
     {
-        av_dump_format(m_d, index, filename, is_output());
+        if(m_d)
+            av_dump_format(m_d, index, filename, is_output());
     }
     friend void swap(format_context &lhs, format_context &rhs) noexcept { lhs.swap(rhs);}
 };
