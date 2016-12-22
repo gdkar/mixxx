@@ -94,7 +94,7 @@ class RtMidiController : public MidiController {
     void callback(double deltatime, std::vector<uint8_t>&message);
     // The sysex data must already contain the start byte 0xf0 and the end byte
     // 0xf7.
-    void sendWord(uint32_t word) override;
+    void sendShortMsg(unsigned char, unsigned char, unsigned char) override;
     void send(QByteArray data) override;
     bool isPolling() const override;
     QStringList inputPortNames() const;
