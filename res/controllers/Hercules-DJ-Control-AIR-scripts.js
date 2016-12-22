@@ -1,5 +1,29 @@
 function HerculesAir () {}
 
+var FakeRelative = function FakeRelative(group, control, enablefun, mapfun) {
+    if(!this instanceof FakeRelative) {
+        return new FakeRelative(group, control);
+    }
+    this.value     = 0x00;
+    this.group     = group;
+    this.control   = control;
+    this.enablefun = enablefun;
+    this.mapfun    = mapfun;
+}
+FakeRelative.prototype.update = function update(val) {
+    if(this.enablefun()) {
+        engine.setValue(
+          this.group
+        , this.control
+        , engine.getValue(
+              this.group
+            , this.control
+                ) + this.mapfun(val - this.value)
+            );
+    }
+    this.value = val;
+}
+
 HerculesAir.beatStepDeckA1 = 0
 HerculesAir.beatStepDeckA2 = 0x44
 HerculesAir.beatStepDeckB1 = 0
@@ -14,6 +38,19 @@ HerculesAir.shiftButtonPressed = false
 HerculesAir.enableSpinBack = false
 
 HerculesAir.wheel_multiplier = 0.4
+
+HerculesAir.rateRelative = {
+    '[Channel1]': FakeRelative('[Channel1]','rate',function() {
+        return !HerculesAir.shiftButtonPressed;
+    },function(diff){
+        return diff * (1./127);
+    }),
+    '[Channel2]': FakeRelative('[Channel2]','rate',function() {
+        return !HerculesAir.shiftButtonPressed;
+    },function(diff){
+        return diff * (1./127);
+    })
+}
 
 HerculesAir.init = function(id) {
     HerculesAir.id = id;
@@ -50,7 +87,7 @@ HerculesAir.init = function(id) {
 
 	engine.connectControl("[Channel2]", "beat_active", "HerculesAir.beatProgressDeckB")
 	engine.connectControl("[Channel2]", "play", "HerculesAir.playDeckB")
-    
+
     print ("Hercules DJ Controll AIR: "+id+" initialized.");
 }
 
@@ -189,8 +226,11 @@ HerculesAir.shift = function(midino, control, value, status, group) {
 	HerculesAir.shiftButtonPressed = (value == 0x7f);
     midi.sendShortMsg(status, control, value);
 }
-
-
+HerculesAir.rate = function(midino, control, value, status, group) {
+    var rel = HerculesAir.rateRelative[group]
+    if(rel && rel.update)
+        rel.update(value);
+}
 HerculesAir.spinback= function(midino, control, value, status,group) {
     if (value==0x7f) {
         HerculesAir.enableSpinBack = !HerculesAir.enableSpinBack;
