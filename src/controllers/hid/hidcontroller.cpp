@@ -120,19 +120,15 @@ HidController::~HidController() {
 QString HidController::presetExtension() {
     return HID_PRESET_EXTENSION;
 }
-
-void HidController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qWarning() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
+void HidController::visit(const ControllerPreset* prepreset)
+{
+    if(auto preset = dynamic_cast<const HidControllerPreset*>(prepreset)) {
+        m_preset = *preset;
+        emit(presetLoaded(getPreset()));
+    }else {
+        qWarning() << "ERROR: Attempting to load an unsupported preset to a MidiController!";
+    }
 }
-
-void HidController::visit(const HidControllerPreset* preset) {
-    m_preset = *preset;
-    // Emit presetLoaded with a clone of the preset.
-    emit(presetLoaded(getPreset()));
-}
-
 bool HidController::savePreset(const QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);

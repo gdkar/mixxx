@@ -6,16 +6,21 @@ class HidControllerPreset;
 
 class ControllerPresetVisitor {
   public:
-    virtual ~ControllerPresetVisitor() {}
-    virtual void visit(MidiControllerPreset* preset) = 0;
-    virtual void visit(HidControllerPreset* preset) = 0;
+    virtual ~ControllerPresetVisitor() = 0;
+    virtual void visit(ControllerPreset* preset)
+    {
+        Q_UNUSED(preset);
+    }
 };
-
+inline ControllerPresetVisitor::~ControllerPresetVisitor(){}
 class ConstControllerPresetVisitor {
   public:
-    virtual ~ConstControllerPresetVisitor() {}
-    virtual void visit(const MidiControllerPreset* preset) = 0;
-    virtual void visit(const HidControllerPreset* preset) = 0;
+    virtual ~ConstControllerPresetVisitor() = 0;
+    virtual void visit(const ControllerPreset* preset)
+    {
+        Q_UNUSED(preset);
+    }
 };
+inline ConstControllerPresetVisitor::~ConstControllerPresetVisitor(){}
 
 #endif /* CONTROLLERPRESETVISITOR_H */

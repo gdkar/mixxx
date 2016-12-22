@@ -21,8 +21,7 @@ class ControllerMappingTableModel : public QAbstractTableModel,
     ~ControllerMappingTableModel() override;
 
     void setPreset(ControllerPresetPointer pPreset);
-    void visit(HidControllerPreset* pHidPreset) override;
-    void visit(MidiControllerPreset* pMidiPreset) override;
+    void visit(ControllerPreset* pPreset) override;
 
     // Revert changes made since the last apply.
     virtual void cancel();
