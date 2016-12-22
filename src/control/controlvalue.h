@@ -3,20 +3,13 @@
 
 #include <limits>
 
-#include <QAtomicInt>
+#include <atomic>
 #include <QObject>
 
 #include "util/compatibility.h"
 #include "util/assert.h"
 
-// for lock free access, this value has to be >= the number of value using threads
-// value must be a fraction of an integer
-const int cRingSize = 8;
-// there are basicly unlimited readers allowed at each ring element
-// but we have to count them so max() is just fine.
-// NOTE(rryan): Wrapping max with parentheses avoids conflict with the max macro
-// defined in windows.h.
-const int cReaderSlotCnt = (std::numeric_limits<int>::max)();
+
 
 // A single instance of a value of type T along with an atomic integer which
 // tracks the current number of readers or writers of the slot. The value
@@ -28,34 +21,42 @@ const int cReaderSlotCnt = (std::numeric_limits<int>::max)();
 template<typename T>
 class ControlRingValue {
   public:
+    // there are basicly unlimited readers allowed at each ring element
+    // but we have to count them so max() is just fine.
+    // NOTE(rryan): Wrapping max with parentheses avoids conflict with the max macro
+    // defined in windows.h.
+    static constexpr const int cReaderSlotCnt = (std::numeric_limits<int>::max)();
     ControlRingValue()
-        : m_value(T()),
-          m_readerSlots(cReaderSlotCnt) {
-    }
+        : m_value(),
+          m_readerSlots(cReaderSlotCnt)
+    { }
 
-    bool tryGet(T* value) const {
+    bool tryGet(T* value) const
+    {
         // Read while consuming one readerSlot
-        bool hasSlot = (m_readerSlots.fetchAndAddAcquire(-1) > 0);
+        auto hasSlot = m_readerSlots.fetch_add(-1) > 0;
         if (hasSlot) {
             *value = m_value;
         }
-        (void)m_readerSlots.fetchAndAddRelease(1);
+        (void)m_readerSlots.fetch_add(1);
         return hasSlot;
     }
 
-    bool trySet(const T& value) {
+    bool trySet(const T& value)
+    {
         // try to lock this element entirely for reading
-        if (m_readerSlots.testAndSetAcquire(cReaderSlotCnt, 0)) {
+        auto expected = m_readerSlots.load(std::memory_order_acquire);
+        if(expected == cReaderSlotCnt
+        && m_readerSlots.compare_exchange_strong(expected, 0)) {
             m_value = value;
-            m_readerSlots.fetchAndAddRelease(cReaderSlotCnt);
+            m_readerSlots.fetch_add(cReaderSlotCnt);
             return true;
         }
         return false;
    }
-
   private:
-    T m_value;
-    mutable QAtomicInt m_readerSlots;
+    T m_value{};
+    mutable std::atomic<int> m_readerSlots{cReaderSlotCnt};
 };
 
 // Ring buffer based implementation for all Types sizeof(T) > sizeof(void*)
@@ -67,10 +68,16 @@ class ControlRingValue {
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
   public:
-    inline T getValue() const {
-        T value = T();
-        unsigned int index = static_cast<unsigned int>(load_atomic(m_readIndex)) % (cRingSize);
-        while (m_ring[index].tryGet(&value) == false) {
+    // for lock free access, this value has to be >= the number of value using threads
+    // value must be a fraction of an integer
+    static constexpr const int cRingSize = 8;
+    static_assert(((std::numeric_limits<unsigned int>::max)() % cRingSize) == (cRingSize - 1)
+        , "cRingSize must divide UINT_MAX + 1.");
+    T getValue() const
+    {
+        auto value = T{};
+        auto index = uint32_t(m_readIndex.load());
+        while (!m_ring[index%cRingSize].tryGet(&value)) {
             // We are here if
             // 1) there are more then cReaderSlotCnt reader (get) reading the same value or
             // 2) the formerly current value is locked by a writer
@@ -79,41 +86,32 @@ class ControlValueAtomicBase {
             // m_currentIndex and in the mean while a reader locks the formaly current value
             // because it has written cRingSize times. Reading the less recent value will fix
             // it because it is now actualy the current value.
-            index = (index - 1) % (cRingSize);
+            index--;
         }
         return value;
     }
-
-    inline void setValue(const T& value) {
+    void setValue(const T& value)
+    {
         // Test if we can read atomic
         // This test is const and will be mad only at compile time
-        unsigned int index;
+        auto index = uint32_t{};
         do {
-            index = (unsigned int)m_writeIndex.fetchAndAddAcquire(1)
-                    % (cRingSize);
+            index = m_writeIndex.fetch_add(1,std::memory_order_acquire);
             // This will be repeated if the value is locked
             // 1) by another writer writing at the same time or
             // 2) a delayed reader is still blocking the formerly current value
             // In both cases writing to the next value will fix it.
-        } while (!m_ring[index].trySet(value));
+        } while (!m_ring[index%cRingSize].trySet(value));
         m_readIndex = (int)index;
     }
-
   protected:
-    ControlValueAtomicBase()
-        : m_readIndex(0),
-          m_writeIndex(1) {
-        // NOTE(rryan): Wrapping max with parentheses avoids conflict with the
-        // max macro defined in windows.h.
-        DEBUG_ASSERT(((std::numeric_limits<unsigned int>::max)() % cRingSize) == (cRingSize - 1));
-    }
-
+    ControlValueAtomicBase() = default;
   private:
     // In worst case, each reader can consume a reader slot from a different ring element.
     // In this case there is still one ring element available for writing.
     ControlRingValue<T> m_ring[cRingSize];
-    QAtomicInt m_readIndex;
-    QAtomicInt m_writeIndex;
+    std::atomic<int> m_readIndex{0};
+    std::atomic<int> m_writeIndex{1};
 };
 
 // Specialized template for types that are deemed to be atomic on the target
@@ -122,31 +120,18 @@ class ControlValueAtomicBase {
 template<typename T>
 class ControlValueAtomicBase<T, true> {
   public:
-    inline T getValue() const {
+    T getValue() const
+    {
         return m_value;
     }
-
-    inline void setValue(const T& value) {
+    void setValue(const T& value)
+    {
         m_value = value;
     }
-
   protected:
-    ControlValueAtomicBase()
-            : m_value(T()) {
-    }
-
+    ControlValueAtomicBase() = default;
   private:
-#if defined(__GNUC__)
-    T m_value __attribute__ ((aligned(sizeof(void*))));
-#elif defined(_MSC_VER)
-#ifdef _WIN64
-    T __declspec(align(8)) m_value;
-#else
-    T __declspec(align(4)) m_value;
-#endif
-#else
-    T m_value;
-#endif
+    std::atomic<T> m_value{};
 };
 
 // ControlValueAtomic is a wrapper around ControlValueAtomicBase which uses the
@@ -156,12 +141,9 @@ class ControlValueAtomicBase<T, true> {
 // atomic on the architecture is used.
 template<typename T>
 class ControlValueAtomic
-    : public ControlValueAtomicBase<T, sizeof(T) <= sizeof(void*)> {
+    : public ControlValueAtomicBase<T, std::is_trivially_copyable<T>::value && sizeof(T) <= sizeof(long double)> {
   public:
-
-    ControlValueAtomic()
-        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(void*)>() {
-    }
+    ControlValueAtomic() = default;
 };
 
 #endif /* CONTROLVALUE_H */
