@@ -104,17 +104,16 @@ QString BulkController::presetExtension() {
     return BULK_PRESET_EXTENSION;
 }
 
-void BulkController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qWarning() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
+void BulkController::visit(const ControllerPreset* prepreset)
+{
+    if(auto preset = dynamic_cast<const HidControllerPreset*>(prepreset)) {
+        m_preset = *preset;
+        emit(presetLoaded(getPreset()));
+    }else {
+        qWarning() << "ERROR: Attempting to load an unsupported preset to a BulkController!";
+    }
 }
 
-void BulkController::visit(const HidControllerPreset* preset) {
-    m_preset = *preset;
-    // Emit presetLoaded with a clone of the preset.
-    emit(presetLoaded(getPreset()));
-}
 
 bool BulkController::savePreset(const QString fileName) const {
     HidControllerPresetFileHandler handler;
