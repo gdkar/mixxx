@@ -31,20 +31,19 @@ QString MidiController::presetExtension() {
     return MIDI_PRESET_EXTENSION;
 }
 
-void MidiController::visit(const MidiControllerPreset* preset) {
-    m_preset = *preset;
-    emit(presetLoaded(getPreset()));
+void MidiController::visit(const ControllerPreset* prepreset)
+{
+    if(auto preset = dynamic_cast<const MidiControllerPreset*>(prepreset)) {
+        m_preset = *preset;
+        emit(presetLoaded(getPreset()));
+    }else {
+        qWarning() << "ERROR: Attempting to load an unsupported preset to a MidiController!";
+    }
 }
 
 int MidiController::close() {
     destroyOutputHandlers();
     return 0;
-}
-
-void MidiController::visit(const HidControllerPreset* preset) {
-    Q_UNUSED(preset);
-    qWarning() << "ERROR: Attempting to load an HidControllerPreset to a MidiController!";
-    // TODO(XXX): throw a hissy fit.
 }
 
 bool MidiController::matchPreset(const PresetInfo& preset) {

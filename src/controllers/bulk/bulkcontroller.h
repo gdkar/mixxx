@@ -56,8 +56,7 @@ class BulkController : public Controller {
 
     bool savePreset(const QString fileName) const override;
 
-    void visit(const MidiControllerPreset* preset) override;
-    void visit(const HidControllerPreset* preset) override;
+    void visit(const ControllerPreset* preset) override;
 
     void accept(ControllerVisitor* visitor) override {
         if (visitor) {

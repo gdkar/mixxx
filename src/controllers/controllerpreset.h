@@ -49,79 +49,79 @@ class ControllerPreset {
         scripts.append(info);
     }
 
-    inline void setDeviceId(const QString id) {
+    void setDeviceId(const QString id) {
         m_deviceId = id;
     }
 
-    inline QString deviceId() const {
+    QString deviceId() const {
         return m_deviceId;
     }
 
-    inline void setFilePath(const QString filePath) {
+    void setFilePath(const QString filePath) {
         m_filePath = filePath;
     }
 
-    inline QString filePath() const {
+    QString filePath() const {
         return m_filePath;
     }
 
-    inline void setName(const QString name) {
+    void setName(const QString name) {
         m_name = name;
     }
 
-    inline QString name() const {
+    QString name() const {
         return m_name;
     }
 
-    inline void setAuthor(const QString author) {
+    void setAuthor(const QString author) {
         m_author = author;
     }
 
-    inline QString author() const {
+    QString author() const {
         return m_author;
     }
 
-    inline void setDescription(const QString description) {
+    void setDescription(const QString description) {
         m_description = description;
     }
 
-    inline QString description() const {
+    QString description() const {
         return m_description;
     }
 
-    inline void setForumLink(const QString forumlink) {
+    void setForumLink(const QString forumlink) {
         m_forumlink = forumlink;
     }
 
-    inline QString forumlink() const {
+    QString forumlink() const {
         return m_forumlink;
     }
 
-    inline void setWikiLink(const QString wikilink) {
+    void setWikiLink(const QString wikilink) {
         m_wikilink = wikilink;
     }
 
-    inline QString wikilink() const {
+    QString wikilink() const {
         return m_wikilink;
     }
 
-    inline void setSchemaVersion(const QString schemaVersion) {
+    void setSchemaVersion(const QString schemaVersion) {
         m_schemaVersion = schemaVersion;
     }
 
-    inline QString schemaVersion() const {
+    QString schemaVersion() const {
         return m_schemaVersion;
     }
 
-    inline void setMixxxVersion(const QString mixxxVersion) {
+    void setMixxxVersion(const QString mixxxVersion) {
         m_mixxxVersion = mixxxVersion;
     }
 
-    inline QString mixxxVersion() const {
+    QString mixxxVersion() const {
         return m_mixxxVersion;
     }
 
-    inline void addProductMatch(QHash<QString,QString> match) {
+    void addProductMatch(QHash<QString,QString> match) {
         m_productMatches.append(match);
     }
 
