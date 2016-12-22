@@ -94,10 +94,10 @@
                 <status>0xb0</status>
                 <midino>0x34</midino>
                 <group>[Channel1]</group>
-                <key>rate</key>
+                <key>HerculesAir.rate</key>
                 <description>Pitchslider Deck A</description>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -114,10 +114,10 @@
                 <status>0xb0</status>
                 <midino>0x35</midino>
                 <group>[Channel2]</group>
-                <key>rate</key>
+                <key>HerculesAir.rate</key>
                 <description>Pitchslider Deck B</description>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
