@@ -165,7 +165,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       return frameIndex;
     }
     {
-        auto target_pts    = av_rescale_q ( frameIndex - 512, m_output_tb,m_stream_tb);
+        auto target_pts    = av_rescale_q ( frameIndex - 128, m_output_tb,m_stream_tb);
         target_pts = std::max<int64_t>(target_pts, 0);
         auto hindex = m_pkt_array.size() - 1;
         auto lindex = decltype(hindex){0};
@@ -174,15 +174,15 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
         m_pkt_index = -1;
         ScopedTimer t("prop search for packet.");
         while ( hindex > lindex + 1) {
-            auto pts_dist   = m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts;
+            auto pts_dist   = uint32_t(m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts);
             auto idx_dist   = hindex - lindex;
-            auto target_dist= target_pts - ( lpts );
+            auto target_dist= target_pts - lpts;
             auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
             if ( mindex >= hindex )
                 mindex = hindex - 1;
             if ( mindex <= lindex ) {
                 if ( bail )
-                    mindex = ( idx_dist / 2 ) + lindex;
+                    mindex = ( idx_dist >> 1 ) + lindex;
                 else {
                     mindex = lindex + 1;
                     bail = true;
@@ -283,7 +283,7 @@ bool SoundSourceFFmpeg::decode_next_frame()
         delay = swr_get_delay ( m_swr, getSamplingRate( ) );
     }
     m_frame->pts     = m_orig_frame->pts - av_rescale_q ( delay, m_output_tb, m_stream_tb ) ;
-    m_frame->pkt_pts = m_orig_frame->pkt_pts;
+//    m_frame->pkt_pts = m_orig_frame->pkt_pts;
     m_frame->pkt_dts = m_orig_frame->pkt_dts;
     {
         if((ret = m_swr.convert(m_frame,m_orig_frame)) < 0) {
