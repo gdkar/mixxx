@@ -436,10 +436,11 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
         }
     }
 }
-void RtMidiController::sendWord(unsigned int word)
+void RtMidiController::sendShortMsg(unsigned char w0, unsigned char w1, unsigned char w2)
 {
     if(m_midiOut) {
-        auto message = std::vector<uint8_t>{uint8_t(word),uint8_t(word>>8),uint8_t(word>>16)};
+        auto message = std::vector<uint8_t>{ w0, w1, w2 };
+//        std::vector<uint8_t>{uint8_t(word),uint8_t(word>>8),uint8_t(word>>16)};
         m_midiOut->sendMessage(&message);
     }
 
