@@ -110,10 +110,10 @@ void CachingReader::freeAllChunks()
 
 CachingReaderChunkForOwner* CachingReader::allocateChunk(SINT chunkIndex)
 {
-    if (m_freeChunks.isEmpty()) {
+    if (m_freeChunks.empty()) {
         return nullptr;
     }
-    auto pChunk = m_freeChunks.takeFirst();
+    auto pChunk = m_freeChunks.take();
     pChunk->init(chunkIndex);
     pChunk->setId(m_id);
     //qDebug() << "Allocating chunk" << pChunk << pChunk->getIndex();
@@ -360,7 +360,8 @@ SINT CachingReader::read(SINT startSample, SINT numSamples, bool reverse, CSAMPL
     return numSamples;
 }
 
-void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
+void CachingReader::hintAndMaybeWake(const HintVector& hintList)
+{
     // If no file is loaded, skip.
     if (m_readerStatus != TRACK_LOADED) {
         return;
