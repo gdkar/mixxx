@@ -409,7 +409,8 @@ void LoopingControl::hintReader(HintVector* pHintList) {
     }
 }
 
-void LoopingControl::slotLoopIn(double val) {
+void LoopingControl::slotLoopIn(double val)
+{
     if (!m_pTrack || val <= 0.0) {
         return;
     }
@@ -417,9 +418,9 @@ void LoopingControl::slotLoopIn(double val) {
     clearActiveBeatLoop();
 
     // set loop-in position
-    LoopSamples loopSamples = m_loopSamples.getValue();
-    double closestBeat = -1;
-    int pos = m_iCurrentSample;
+    auto loopSamples = m_loopSamples.getValue();
+    auto closestBeat = -1.;
+    auto pos = m_iCurrentSample.load();
     if (m_pQuantizeEnabled->toBool()) {
         closestBeat = m_pClosestBeat->get();
         if (closestBeat != -1) {
@@ -466,9 +467,9 @@ void LoopingControl::slotLoopOut(double val) {
         return;
     }
 
-    LoopSamples loopSamples = m_loopSamples.getValue();
-    double closestBeat = -1;
-    int pos = m_iCurrentSample;
+    auto loopSamples = m_loopSamples.getValue();
+    auto closestBeat = -1.;
+    auto pos = m_iCurrentSample.load();
     if (m_pQuantizeEnabled->toBool()) {
         closestBeat = m_pClosestBeat->get();
         if (closestBeat != -1) {
@@ -519,7 +520,6 @@ void LoopingControl::slotLoopExit(double val) {
     if (!m_pTrack || val <= 0.0) {
         return;
     }
- 
     // If we're looping, stop looping
     if (m_bLoopingEnabled) {
         setLoopingEnabled(false);
