@@ -19,18 +19,15 @@ CachingReaderWorker::CachingReaderWorker(
           m_pChunkReadRequestFIFO(pChunkReadRequestFIFO),
           m_pReaderStatusFIFO(pReaderStatusFIFO),
           m_maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()),
-          m_stop(0) {
+          m_stop(false) {
 }
-
 CachingReaderWorker::~CachingReaderWorker()
 {
 }
-
 ReaderStatusUpdate CachingReaderWorker::processReadRequest(
         CachingReaderChunk * pChunk)
 {
     DEBUG_ASSERT(pChunk);
-
     if(pChunk->id() != m_id) {
         return ReaderStatusUpdate(CHUNK_READ_INVALID, pChunk, m_maxReadableFrameIndex, m_id);
     }
@@ -62,33 +59,31 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(
     }
     return ReaderStatusUpdate(status, pChunk, m_maxReadableFrameIndex, m_id);
 }
-
 // WARNING: Always called from a different thread (GUI)
 void CachingReaderWorker::newTrack(TrackPointer pTrack)
 {
-    QMutexLocker locker(&m_newTrackMutex);
-    m_newTrack = pTrack;
+    m_newTrack.swap(pTrack);
 }
-
 void CachingReaderWorker::run()
 {
-    unsigned static id = 0; //the id of this thread, for debugging purposes
+    static std::atomic<int> id{0}; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
 
     Event::start(m_tag);
     while (!m_stop.load()) {
         if (m_newTrack) {
-            TrackPointer pLoadTrack;
-            { // locking scope
-                QMutexLocker locker(&m_newTrackMutex);
-                pLoadTrack = m_newTrack;
-                m_newTrack.reset();
-            } // implicitly unlocks the mutex
-            loadTrack(pLoadTrack);
-        } else if (auto chunk = m_pChunkReadRequestFIFO->take()) {
+            auto pLoadTrack = TrackPointer{};
+            m_newTrack.swap(pLoadTrack);
+            if(pLoadTrack)
+                loadTrack(pLoadTrack);
+        } else if (!m_pChunkReadRequestFIFO->empty()) {
+            while(!m_pChunkReadRequestFIFO->empty() && !m_pReaderStatusFIFO->full()) {
+                auto update = processReadRequest(m_pChunkReadRequestFIFO->take());
+                m_pReaderStatusFIFO->push_back(update);
+            }
             // Read the requested chunk and send the result
-            auto update = processReadRequest(chunk);
-            m_pReaderStatusFIFO->writeBlocking(&update, 1);
+//            auto update = processReadRequest(chunk);
+//            m_pReaderStatusFIFO->writeBlocking(&update, 1);
         } else {
             Event::end(m_tag);
             m_semaRun.acquire();
@@ -96,12 +91,11 @@ void CachingReaderWorker::run()
         }
     }
 }
-
 namespace
 {
     mixxx::AudioSourcePointer openAudioSourceForReading(const TrackPointer& pTrack, const mixxx::AudioSourceConfig& audioSrcCfg) {
         SoundSourceProxy soundSourceProxy(pTrack);
-        mixxx::AudioSourcePointer pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
+        auto pAudioSource = soundSourceProxy.openAudioSource(audioSrcCfg);
         if (!pAudioSource) {
             qWarning() << "Failed to open file:" << pTrack->getLocation();
             return mixxx::AudioSourcePointer();
@@ -173,7 +167,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack)
 }
 void CachingReaderWorker::quitWait()
 {
-    m_stop = 1;
+    m_stop = true;
     m_semaRun.release();
     wait();
 }
