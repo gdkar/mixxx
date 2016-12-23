@@ -623,7 +623,6 @@ void LoopingControl::slotLoopExit(double val) {
     if (!m_pTrack || val <= 0.0) {
         return;
     }
-
     // If we're looping, stop looping
     if (m_bLoopingEnabled) {
         setLoopingEnabled(false);

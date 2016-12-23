@@ -36,7 +36,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     void initRubberBand();
 
     void deinterleaveAndProcess(const CSAMPLE* pBuffer, SINT frames, bool flush);
-    SINT retrieveAndDeinterleave(CSAMPLE* pBuffer, SINT frames);
+    SINT retrieveAndInterleave(CSAMPLE* pBuffer, SINT frames);
 
     // The read-ahead manager that we use to fetch samples
     ReadAheadManager* m_pReadAheadManager;
@@ -48,6 +48,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
 
     // Holds the playback direction
     bool m_bBackwards;
+    int  m_preroll{0};
 };
 
 

@@ -162,7 +162,6 @@ void CachingReader::freshenChunk(CachingReaderChunkForOwner* pChunk)
             m_lruCachingReaderChunk = m_mruCachingReaderChunk;
         }
     }
-
     // Insert the chunk as the new most-recently-used item.
     pChunk->insertIntoListBefore(m_mruCachingReaderChunk);
     m_mruCachingReaderChunk = pChunk;

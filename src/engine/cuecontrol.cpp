@@ -123,7 +123,7 @@ CueControl::~CueControl() {
     delete m_pPlayIndicator;
     delete m_pVinylControlEnabled;
     delete m_pVinylControlMode;
-    qDeleteAll(m_hotcueControls);
+    qDeleteAll(m_hotcueControl);
 }
 
 void CueControl::createControls() {
@@ -155,12 +155,12 @@ void CueControl::createControls() {
                 this, SLOT(hotcueClear(HotcueControl*, double)),
                 Qt::DirectConnection);
 
-        m_hotcueControls.append(pControl);
+        m_hotcueControl.append(pControl);
     }
 }
 
 void CueControl::attachCue(CuePointer pCue, int hotCue) {
-    HotcueControl* pControl = m_hotcueControls.value(hotCue, NULL);
+    HotcueControl* pControl = m_hotcueControl.value(hotCue, NULL);
     if (pControl == NULL) {
         return;
     }
@@ -171,29 +171,39 @@ void CueControl::attachCue(CuePointer pCue, int hotCue) {
             this, SLOT(cueUpdated()),
             Qt::DirectConnection);
 
+    pControl->getPosition()->set(pCue->getPosition());
+    pControl->getEnabled()->set(pCue->getPosition() == -1 ? 0.0 : 1.0);
+    // set pCue only if all other data is in place
+    // because we have a null check for valid data else where in the code
     pControl->setCue(pCue);
 
 }
 
 void CueControl::detachCue(int hotCue) {
-    HotcueControl* pControl = m_hotcueControls.value(hotCue, NULL);
-    if (pControl == NULL) {
+    HotcueControl* pControl = m_hotcueControl.value(hotCue, nullptr);
+    if (pControl == nullptr) {
         return;
     }
     CuePointer pCue(pControl->getCue());
     if (!pCue)
         return;
     disconnect(pCue.get(), 0, this, 0);
-    pControl->resetCue();
+    // clear pCue first because we have a null check for valid data else where
+    // in the code
+    pControl->setCue(CuePointer());
+    pControl->getPosition()->set(-1); // invalidate position for hintReader()
+    pControl->getEnabled()->set(0);
 }
 
-void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
+void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack)
+{
+    Q_UNUSED(pOldTrack);
     QMutexLocker lock(&m_mutex);
 
     DEBUG_ASSERT(m_pLoadedTrack == pOldTrack);
     if (m_pLoadedTrack) {
         disconnect(m_pLoadedTrack.get(), 0, this, 0);
-        for (int i = 0; i < m_iNumHotCues; ++i) {
+        for (auto i = 0; i < m_iNumHotCues; ++i) {
             detachCue(i);
         }
 
@@ -211,11 +221,12 @@ void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
             this, SLOT(trackCuesUpdated()),
             Qt::DirectConnection);
 
-    CuePointer pLoadCue;
+    auto pLoadCue = CuePointer{};
     for (const CuePointer& pCue: m_pLoadedTrack->getCuePoints()) {
         if (pCue->getType() == Cue::CUE) {
             continue; // skip
         }
+
         if (pCue->getType() == Cue::LOAD) {
             DEBUG_ASSERT(!pLoadCue);
             pLoadCue = pCue;
@@ -258,36 +269,34 @@ void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
     trackCuesUpdated();
 }
 
-void CueControl::cueUpdated() {
+void CueControl::cueUpdated()
+{
     //QMutexLocker lock(&m_mutex);
     // We should get a trackCuesUpdated call anyway, so do nothing.
 }
 
-void CueControl::trackCuesUpdated() {
+void CueControl::trackCuesUpdated()
+{
     QMutexLocker lock(&m_mutex);
     QSet<int> active_hotcues;
 
     if (!m_pLoadedTrack)
         return;
 
-    const QList<CuePointer> cuePoints(m_pLoadedTrack->getCuePoints());
-    QListIterator<CuePointer> it(cuePoints);
-    while (it.hasNext()) {
-        CuePointer pCue(it.next());
-
+    for(auto pCue : m_pLoadedTrack->getCuePoints()) {
         if (pCue->getType() != Cue::CUE && pCue->getType() != Cue::LOAD)
             continue;
 
-        int hotcue = pCue->getHotCue();
+        auto hotcue = pCue->getHotCue();
         if (hotcue != -1) {
-            HotcueControl* pControl = m_hotcueControls.value(hotcue, NULL);
+            HotcueControl* pControl = m_hotcueControl.value(hotcue, NULL);
 
             // Cue's hotcue doesn't have a hotcue control.
             if (pControl == NULL) {
                 continue;
             }
 
-            CuePointer pOldCue(pControl->getCue());
+            auto pOldCue = pControl->getCue();
 
             // If the old hotcue is different than this one.
             if (pOldCue != pCue) {
@@ -298,7 +307,16 @@ void CueControl::trackCuesUpdated() {
                 attachCue(pCue, hotcue);
             } else {
                 // If the old hotcue is the same, then we only need to update
-                pControl->setPosition(pCue->getPosition());
+                auto dOldPosition = pControl->getPosition()->get();
+                auto dOldEnabled = pControl->getEnabled()->get();
+                auto dPosition = pCue->getPosition();
+                auto dEnabled = dPosition == -1 ? 0.0 : 1.0;
+                if (dEnabled != dOldEnabled) {
+                    pControl->getEnabled()->set(dEnabled);
+                }
+                if (dPosition != dOldPosition) {
+                    pControl->getPosition()->set(dPosition);
+                }
             }
             // Add the hotcue to the list of active hotcues
             active_hotcues.insert(hotcue);
@@ -313,9 +331,9 @@ void CueControl::trackCuesUpdated() {
     }
 }
 
-void CueControl::hotcueSet(HotcueControl* pControl, double v) {
+void CueControl::hotcueSet(HotcueControl* pControl, double v)
+{
     //qDebug() << "CueControl::hotcueSet" << v;
-
     if (!v)
         return;
 
@@ -323,18 +341,14 @@ void CueControl::hotcueSet(HotcueControl* pControl, double v) {
     if (!m_pLoadedTrack)
         return;
 
-    int hotcue = pControl->getHotcueNumber();
-    // Note: the cue is just detached from the hotcue control
-    // It remains in the database for later use
-    // TODO: find a rule, that allows us to delete the cue as well
-    // https://bugs.launchpad.net/mixxx/+bug/1653276
+    auto hotcue = pControl->getHotcueNumber();
     hotcueClear(pControl, v);
-
-    CuePointer pCue(m_pLoadedTrack->createAndAddCue());
-    double closestBeat = m_pClosestBeat->get();
-    double cuePosition =
-            (m_pQuantizeEnabled->toBool() && closestBeat != -1) ?
-                    closestBeat : getCurrentSample();
+    CuePointer pCue(m_pLoadedTrack->addCue());
+    auto cuePosition =
+            (m_pQuantizeEnabled->get() > 0.0 && m_pClosestBeat->get() != -1) ?
+            floor(m_pClosestBeat->get()) : floor(getCurrentSample());
+    if (!even(static_cast<int>(cuePosition)))
+        cuePosition--;
     pCue->setPosition(cuePosition);
     pCue->setHotCue(hotcue);
     pCue->setLabel("");
@@ -345,7 +359,7 @@ void CueControl::hotcueSet(HotcueControl* pControl, double v) {
     // If quantize is enabled and we are not playing, jump to the cue point
     // since it's not necessarily where we currently are. TODO(XXX) is this
     // potentially invalid for vinyl control?
-    bool playing = m_pPlay->toBool();
+    auto playing = m_pPlay->toBool();
     if (!playing && m_pQuantizeEnabled->get() > 0.0) {
         lock.unlock();  // prevent deadlock.
         // Enginebuffer will quantize more exactly than we can.
@@ -353,7 +367,8 @@ void CueControl::hotcueSet(HotcueControl* pControl, double v) {
     }
 }
 
-void CueControl::hotcueGoto(HotcueControl* pControl, double v) {
+void CueControl::hotcueGoto(HotcueControl* pControl, double v)
+{
     if (!v)
         return;
 
@@ -362,20 +377,21 @@ void CueControl::hotcueGoto(HotcueControl* pControl, double v) {
         return;
     }
 
-    CuePointer pCue(pControl->getCue());
+    auto pCue = pControl->getCue();
 
     // Need to unlock before emitting any signals to prevent deadlock.
     lock.unlock();
 
     if (pCue) {
-        int position = pCue->getPosition();
+        auto position = pCue->getPosition();
         if (position != -1) {
             seekAbs(position);
         }
     }
 }
 
-void CueControl::hotcueGotoAndStop(HotcueControl* pControl, double v) {
+void CueControl::hotcueGotoAndStop(HotcueControl* pControl, double v)
+{
     if (!v)
         return;
 
@@ -397,7 +413,8 @@ void CueControl::hotcueGotoAndStop(HotcueControl* pControl, double v) {
     }
 }
 
-void CueControl::hotcueGotoAndPlay(HotcueControl* pControl, double v) {
+void CueControl::hotcueGotoAndPlay(HotcueControl* pControl, double v)
+{
     if (!v)
         return;
 
@@ -428,7 +445,8 @@ void CueControl::hotcueGotoAndPlay(HotcueControl* pControl, double v) {
     }
 }
 
-void CueControl::hotcueActivate(HotcueControl* pControl, double v) {
+void CueControl::hotcueActivate(HotcueControl* pControl, double v)
+{
     //qDebug() << "CueControl::hotcueActivate" << v;
 
     QMutexLocker lock(&m_mutex);
@@ -541,14 +559,20 @@ void CueControl::hotcuePositionChanged(HotcueControl* pControl, double newPositi
             pCue->setHotCue(-1);
             detachCue(pControl->getHotcueNumber());
         } else if (newPosition > 0 && newPosition < m_pTrackSamples->get()) {
-            pCue->setPosition(newPosition);
+            int position = newPosition;
+            // People writing from MIDI land, elsewhere might be careless.
+            if (position % 2 != 0) {
+                position--;
+            }
+            pCue->setPosition(position);
         }
     }
 }
 
-void CueControl::hintReader(HintVector* pHintList) {
+void CueControl::hintReader(HintVector* pHintList)
+{
     Hint cue_hint;
-    double cuePoint = m_pCuePoint->get();
+    auto cuePoint = m_pCuePoint->get();
     if (cuePoint >= 0) {
         cue_hint.frame = SampleUtil::floorPlayPosToFrame(m_pCuePoint->get());
         cue_hint.frameCount = Hint::kFrameCountForward;
@@ -559,8 +583,10 @@ void CueControl::hintReader(HintVector* pHintList) {
     // this is called from the engine thread
     // it is no locking required, because m_hotcueControl is filled during the
     // constructor and getPosition()->get() is a ControlObject
-    for (const auto& pControl: m_hotcueControls) {
-        double position = pControl->getPosition();
+    for (auto it = m_hotcueControl.constBegin();
+         it != m_hotcueControl.constEnd(); ++it) {
+        auto pControl = *it;
+        auto position = pControl->getPosition()->get();
         if (position != -1) {
             cue_hint.frame = SampleUtil::floorPlayPosToFrame(position);
             cue_hint.frameCount = Hint::kFrameCountForward;
@@ -572,14 +598,17 @@ void CueControl::hintReader(HintVector* pHintList) {
 
 // Moves the cue point to current position or to closest beat in case
 // quantize is enabled
-void CueControl::cueSet(double v) {
+void CueControl::cueSet(double v)
+{
     if (!v)
         return;
 
     QMutexLocker lock(&m_mutex);
-    double closestBeat = m_pClosestBeat->get();
-    double cue = (m_pQuantizeEnabled->get() > 0.0 && closestBeat != -1) ?
-            closestBeat : getCurrentSample();
+    double cue = (m_pQuantizeEnabled->get() > 0.0 && m_pClosestBeat->get() != -1) ?
+            floor(m_pClosestBeat->get()) : floor(getCurrentSample());
+    if (!even(static_cast<int>(cue))) {
+        cue--;
+    }
     m_pCuePoint->set(cue);
     TrackPointer pLoadedTrack = m_pLoadedTrack;
     lock.unlock();
@@ -669,7 +698,7 @@ void CueControl::cueCDJ(double v) {
     // If play is pressed while holding cue, the deck is now playing. (Handled in playFromCuePreview().)
 
     QMutexLocker lock(&m_mutex);
-    const auto freely_playing = m_pPlay->toBool() && !getEngineBuffer()->getScratching();
+    auto freely_playing = m_pPlay->toBool() && !getEngineBuffer()->getScratching();
 
     if (v) {
         if (m_iCurrentlyPreviewingHotcues) {
@@ -728,7 +757,8 @@ void CueControl::cueCDJ(double v) {
     }
 }
 
-void CueControl::cueDenon(double v) {
+void CueControl::cueDenon(double v)
+{
     // This is how Denon DN-S 3700 cue buttons work:
     // If pressed go to cue and stop.
     // If pressed while stopped and at cue, play while pressed.
@@ -1019,7 +1049,7 @@ HotcueControl::HotcueControl(QString group, int i)
     m_hotcuePosition->set(-1);
 
     m_hotcueEnabled = new ControlObject(keyForControl(i, "enabled"));
-    m_hotcueEnabled->setReadOnly();
+    m_hotcueEnabled->set(0);
 
     m_hotcueSet = new ControlPushButton(keyForControl(i, "set"));
     connect(m_hotcueSet, SIGNAL(valueChanged(double)),
@@ -1098,29 +1128,5 @@ void HotcueControl::slotHotcueClear(double v) {
 }
 
 void HotcueControl::slotHotcuePositionChanged(double newPosition) {
-    m_hotcueEnabled->forceSet(newPosition == -1 ? 0.0 : 1.0);
     emit(hotcuePositionChanged(this, newPosition));
-}
-
-double HotcueControl::getPosition() const {
-    return m_hotcuePosition->get();
-}
-
-void HotcueControl::setCue(CuePointer pCue) {
-    setPosition(pCue->getPosition());
-    // set pCue only if all other data is in place
-    // because we have a null check for valid data else where in the code
-    m_pCue = pCue;
-}
-
-void HotcueControl::resetCue() {
-    // clear pCue first because we have a null check for valid data else where
-    // in the code
-    m_pCue.reset();
-    setPosition(-1.0);
-}
-
-void HotcueControl::setPosition(double position) {
-    m_hotcuePosition->set(position);
-    m_hotcueEnabled->forceSet(position == -1.0 ? 0.0 : 1.0);
 }

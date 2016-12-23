@@ -105,6 +105,6 @@ class CachingReaderWorker : public EngineWorker {
     // This frame index references the frame that follows the
     // last frame with readable sample data.
     SINT m_maxReadableFrameIndex;
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop{false};
 };
 #endif /* ENGINE_CACHINGREADERWORKER_H */
