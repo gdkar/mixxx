@@ -111,6 +111,7 @@ class CachingReader : public QObject {
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
     intrusive::fifo<CachingReaderChunk> m_chunkReadRequestFIFO;
+    intrusive::fifo<CachingReaderChunkForOwner> m_freeChunks;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
 
     // Looks for the provided chunk number in the index of in-memory chunks and
@@ -145,7 +146,6 @@ class CachingReader : public QObject {
 
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    QLinkedList<CachingReaderChunkForOwner*> m_freeChunks;
 
     // Keeps track of what CachingReaderChunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
