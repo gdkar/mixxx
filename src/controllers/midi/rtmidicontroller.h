@@ -62,7 +62,6 @@ class RtMidiController : public MidiController {
     RtMidiController(int inputDeviceIndex, QString inputDeviceName,
                      int outputDeviceIndex,QString outputDeviceName, QObject *p = nullptr);
    ~RtMidiController();
-
   public slots:
     int open() override;
     int close() override;

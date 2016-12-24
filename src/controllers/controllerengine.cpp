@@ -33,7 +33,8 @@ ControllerEngine::ControllerEngine(Controller* controller)
         : m_pEngine(nullptr),
           m_pController(controller),
           m_bPopups(false),
-          m_pBaClass(nullptr) {
+          m_pBaClass(nullptr)
+{
     // Handle error dialog buttons
     qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 
@@ -196,12 +197,13 @@ bool ControllerEngine::isReady() {
     return ret;
 }
 
-void ControllerEngine::initializeScriptEngine() {
+void ControllerEngine::initializeScriptEngine()
+{
     // Create the Script Engine
     m_pEngine = new QScriptEngine(this);
 
     // Make this ControllerEngine instance available to scripts as 'engine'.
-    QScriptValue engineGlobalObject = m_pEngine->globalObject();
+    auto engineGlobalObject = m_pEngine->globalObject();
     engineGlobalObject.setProperty("engine", m_pEngine->newQObject(this));
 
     if (m_pController) {
@@ -224,7 +226,8 @@ void ControllerEngine::initializeScriptEngine() {
    Output:  Returns true if no errors occurred.
    -------- ------------------------------------------------------ */
 bool ControllerEngine::loadScriptFiles(const QList<QString>& scriptPaths,
-                                       const QList<ControllerPreset::ScriptFileInfo>& scripts) {
+                                       const QList<ControllerPreset::ScriptFileInfo>& scripts)
+{
     m_lastScriptPaths = scriptPaths;
 
     // scriptPaths holds the paths to search in when we're looking for scripts
@@ -533,9 +536,10 @@ void ControllerEngine::errorDialogButton(const QString& key, QMessageBox::Standa
     }
 }
 
-ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& group, const QString& name) {
-    ConfigKey key = ConfigKey(group, name);
-    ControlObjectScript* coScript = m_controlCache.value(key, nullptr);
+ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& group, const QString& name)
+{
+    auto key = ConfigKey(group, name);
+    auto coScript = m_controlCache.value(key, nullptr);
     if (coScript == nullptr) {
         // create COT
         coScript = new ControlObjectScript(key, this);
@@ -555,7 +559,7 @@ ControlObjectScript* ControllerEngine::getControlObjectScript(const QString& gro
    Output:  The value
    -------- ------------------------------------------------------ */
 double ControllerEngine::getValue(QString group, QString name) {
-    ControlObjectScript* coScript = getControlObjectScript(group, name);
+    auto coScript = getControlObjectScript(group, name);
     if (coScript == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;

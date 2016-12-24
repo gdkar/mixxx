@@ -1,29 +1,5 @@
 function HerculesAir () {}
 
-var FakeRelative = function FakeRelative(group, control, enablefun, mapfun) {
-    if(!this instanceof FakeRelative) {
-        return new FakeRelative(group, control);
-    }
-    this.value     = 0x00;
-    this.group     = group;
-    this.control   = control;
-    this.enablefun = enablefun;
-    this.mapfun    = mapfun;
-}
-FakeRelative.prototype.update = function update(val) {
-    if(this.enablefun()) {
-        engine.setValue(
-          this.group
-        , this.control
-        , engine.getValue(
-              this.group
-            , this.control
-                ) + this.mapfun(val - this.value)
-            );
-    }
-    this.value = val;
-}
-
 HerculesAir.beatStepDeckA1 = 0
 HerculesAir.beatStepDeckA2 = 0x44
 HerculesAir.beatStepDeckB1 = 0
@@ -38,23 +14,8 @@ HerculesAir.shiftButtonPressed = false
 HerculesAir.enableSpinBack = false
 
 HerculesAir.wheel_multiplier = 0.4
-
-HerculesAir.rateRelative = {
-    '[Channel1]': FakeRelative('[Channel1]','rate',function() {
-        return !HerculesAir.shiftButtonPressed;
-    },function(diff){
-        return diff * (1./127);
-    }),
-    '[Channel2]': FakeRelative('[Channel2]','rate',function() {
-        return !HerculesAir.shiftButtonPressed;
-    },function(diff){
-        return diff * (1./127);
-    })
-}
-
 HerculesAir.init = function(id) {
     HerculesAir.id = id;
-
 	// extinguish all LEDs
     for (var i = 79; i<79; i++) {
         midi.sendShortMsg(0x90, i, 0x00);
@@ -89,8 +50,35 @@ HerculesAir.init = function(id) {
 	engine.connectControl("[Channel2]", "play", "HerculesAir.playDeckB")
 
     print ("Hercules DJ Controll AIR: "+id+" initialized.");
-}
 
+
+}
+var FakeRelative = function FakeRelative(group, control, enablefun, mapfun) {
+    if(!this instanceof FakeRelative) {
+        return new FakeRelative(group, control);
+    }
+    this.value     = 0x00;
+    this.group     = group;
+    this.control   = control;
+    this.enablefun = enablefun;
+    this.mapfun    = mapfun;
+}
+FakeRelative.prototype.update = function update(val) {
+    if(this.enablefun()) {
+        var gotValue = engine.getValue(
+            this.group
+            , this.control
+                );
+        var newValue = gotValue + this.mapfun(val - this.value)
+
+        engine.setValue(
+        this.group
+        , this.control
+        , newValue);
+    }
+    this.value = val;
+}
+HerculesAir.rateRelative = {'[Channel1]': new FakeRelative('[Channel1]','rate',function() {return !HerculesAir.shiftButtonPressed;},function(diff){ return diff /63.; }),'[Channel2]': new FakeRelative('[Channel2]','rate',function() {return !HerculesAir.shiftButtonPressed;},function(diff){ return diff /63.; })}
 HerculesAir.shutdown = function() {
 	HerculesAir.resetLEDs()
 }
@@ -226,10 +214,9 @@ HerculesAir.shift = function(midino, control, value, status, group) {
 	HerculesAir.shiftButtonPressed = (value == 0x7f);
     midi.sendShortMsg(status, control, value);
 }
-HerculesAir.rate = function(midino, control, value, status, group) {
-    var rel = HerculesAir.rateRelative[group]
-    if(rel && rel.update)
-        rel.update(value);
+HerculesAir.rate = function (midino, control, value, status, group) {
+    var rel = HerculesAir.rateRelative[group];
+    if(rel) rel.update(value);
 }
 HerculesAir.spinback= function(midino, control, value, status,group) {
     if (value==0x7f) {
