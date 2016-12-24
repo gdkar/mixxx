@@ -781,17 +781,6 @@
                 <off>0x0</off>
             </output>
             <output>
-                <group>[Channel1]</group>
-                <key>flanger</key>
-                <description>FX button LED Deck A</description>
-                <minimum>0.1</minimum>
-                <maximum>1</maximum>
-                <status>0x0</status>
-                <midino>0x1</midino>
-                <on>0x7f</on>
-                <off>0x0</off>
-            </output>
-            <output>
                 <group>[Sampler1]</group>
                 <key>play</key>
                 <description>Sampler 1 LED Deck A</description>
@@ -821,17 +810,6 @@
                 <maximum>1</maximum>
                 <status>0x90</status>
                 <midino>0x4</midino>
-                <on>0x7f</on>
-                <off>0x0</off>
-            </output>
-            <output>
-                <group>[Channel2]</group>
-                <key>flanger</key>
-                <description>FX button LED Deck B</description>
-                <minimum>0.1</minimum>
-                <maximum>1</maximum>
-                <status>0x0</status>
-                <midino>0x17</midino>
                 <on>0x7f</on>
                 <off>0x0</off>
             </output>

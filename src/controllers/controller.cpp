@@ -47,10 +47,11 @@ void Controller::stopEngine() {
     m_pEngine = NULL;
 }
 
-bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts) {
+bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
+{
     qDebug() << "Applying controller preset...";
 
-    const ControllerPreset* pPreset = preset();
+    auto pPreset = preset();
 
     // Load the script code into the engine
     if (m_pEngine == NULL) {

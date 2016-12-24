@@ -16,19 +16,22 @@
 namespace detail {
 
 template <class T, bool trivial>
-class fifo{ };
+class fifo;
 
 template<class T>
 class fifo<T,true> {
   public:
     using value_type      = T;
+
     using size_type       = std::size_t;
     using difference_type = std::int64_t;
-    using const_reference = const T&;
-    using const_pointer   = const T*;
 
     using reference       = T&;
     using pointer         = T*;
+
+    using const_reference = const T&;
+    using const_pointer   = const T*;
+
 
   protected:
     size_type        bufferSize{};
@@ -130,7 +133,8 @@ class fifo<T,true> {
     {
         return bufferSize - readAvailable();
     }
-    size_type read(T* pData, size_type count)
+    template<class It>
+    size_type read(It pData, size_type count)
     {
         auto data0 = pointer{},data1=pointer{};
         auto size0 = size_type{}, size1=size_type{};
@@ -143,7 +147,8 @@ class fifo<T,true> {
         }
         return releaseReadRegions(count);
     }
-    size_type write(const T* pData, size_type count)
+    template<class It>
+    size_type write(It pData, size_type count)
     {
         auto data0 = pointer{},data1=pointer{};
         auto size0 = size_type{}, size1=size_type{};
@@ -157,7 +162,8 @@ class fifo<T,true> {
         }
         return releaseWriteRegions(count);
     }
-    void writeBlocking(const T* pData, size_type count) {
+    template<class It>
+    void writeBlocking(It pData, size_type count) {
         auto written = size_type{0};
         while (written != count) {
             auto i = write(pData, count);
@@ -277,6 +283,10 @@ class fifo<T,false> {
     , smallMask ( bufferSize - 1)
     , m_data    ( std::make_unique<storage_type[]>(bufferSize))
     { }
+   ~fifo()
+    {
+        clear();
+    }
     bool empty() const
     {
         auto ridx = m_ridx.load(std::memory_order_relaxed);
@@ -362,7 +372,8 @@ class fifo<T,false> {
     {
         return bufferSize - readAvailable();
     }
-    size_type read(T* pData, size_type count)
+    template<class It>
+    size_type read(It pData, size_type count)
     {
         auto data0 = pointer{},data1=pointer{};
         auto size0 = size_type{}, size1=size_type{};
@@ -372,14 +383,15 @@ class fifo<T,false> {
             for(auto ptr = data0; ptr < data0 + size0; ++ptr)
                 ptr->~T();
             if(size1) {
-                std::copy_n(data1, size1, pData);
+                std::move(data1, data1 + size1, pData);
                 for(auto ptr = data1; ptr < data1 + size1; ++ptr)
                     ptr->~T();
             }
         }
         return releaseReadRegions(count);
     }
-    size_type write(const T* pData, size_type count)
+    template<class It>
+    size_type write(It pData, size_type count)
     {
         auto data0 = pointer{},data1=pointer{};
         auto size0 = size_type{}, size1=size_type{};
@@ -389,12 +401,13 @@ class fifo<T,false> {
                 ::new(static_cast<void*>(ptr)) T (*pData);
             if(size1) {
                 for(auto ptr = data1; ptr != (data1+size1); ++ptr,++pData)
-                    ::new(static_cast<void*>(ptr)) T(*pData);
+                    ::new(static_cast<void*>(ptr)) T (*pData);
             }
         }
         return releaseWriteRegions(count);
     }
-    void writeBlocking(const T* pData, size_type count) {
+    template<class It>
+    void writeBlocking(It pData, size_type count) {
         auto written = size_type{0};
         while (written != count) {
             auto i = write(pData, count);
@@ -403,7 +416,7 @@ class fifo<T,false> {
         }
     }
     size_type acquireWriteRegions(size_type count,
-            pointer* dataPtr1, size_type *sizePtr1,
+            pointer* dataPtr1, size_type* sizePtr1,
             pointer* dataPtr2, size_type* sizePtr2)
     {
         auto ridx = m_ridx.load(std::memory_order_acquire);
@@ -474,6 +487,11 @@ class fifo<T,false> {
         while(!empty()){
             flushReadData(readAvailable());
         }
+    }
+    void reset(difference_type diff = 0)
+    {
+        clear();
+        m_ridx = m_widx = diff;
     }
     difference_type read_index() const
     {
