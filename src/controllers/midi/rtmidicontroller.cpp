@@ -187,7 +187,8 @@ RtMidiController::RtMidiController(QObject *p)
 , m_midiIn(std::make_unique<RtMidiIn>())
 , m_midiOut(std::make_unique<RtMidiOut>())
 
-{ }
+{
+}
 
 RtMidiController::RtMidiController(int inIndex, QString inName, int outIndex, QString outName, QObject *p)
         : MidiController(),
@@ -355,7 +356,7 @@ int RtMidiController::open()
     m_bInSysex = false;
     m_sysex.clear();;
     setOpen(true);
-//    startEngine();
+    startEngine();
     return 0;
 }
 
@@ -366,7 +367,7 @@ int RtMidiController::close()
         return -1;
     }
 
-//    stopEngine();
+    stopEngine();
     MidiController::close();
     m_midiIn.reset();
     m_midiOut.reset();
@@ -382,7 +383,8 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
     auto status = message[0];
     if ((status & 0xF8) == 0xF8) {
         // Handle real-time MIDI messages at any time
-        receive(status, 0, 0, timestamp);
+        QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, 0), Q_ARG(unsigned char, 0), Q_ARG(mixxx::Duration, timestamp));
+//        receive(status, 0, 0, timestamp);
         return;
     }
     if (!m_bInSysex) {
@@ -395,7 +397,9 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
                 return;
             auto note = message[1];
             auto velocity = message[2];
-            receive(status, note, velocity, timestamp);
+
+            QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration, timestamp));
+//            receive(status, note, velocity, timestamp);
             return;
         }
     }
@@ -415,6 +419,8 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
                     return;
                 auto note = message[1];
                 auto velocity = message[2];
+
+                QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration, timestamp));
                 receive(status, note, velocity, timestamp);
                 return;
             }
@@ -425,6 +431,7 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
             auto data = message.at(i);
             // End System Exclusive message if the EOX byte was received
             if(data == MIDI_EOX) {
+                QMetaObject::invokeMethod(this,"receive", Q_ARG(QByteArray,QByteArray::fromRawData(reinterpret_cast<const char*>(m_sysex.data()),m_sysex.size())),Q_ARG(mixxx::Duration, timestamp));
 //                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
 //                    timestamp);
                 m_sysex.clear();
