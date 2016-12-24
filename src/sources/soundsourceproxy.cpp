@@ -16,7 +16,7 @@
 #ifdef __SNDFILE__
 #include "sources/soundsourcesndfile.h"
 #endif
-#ifdef __FFMPEGSOURCE__
+#ifdef USE_FFMPEGSOURCE
 #include "sources/soundsourceffmpeg.h"
 #endif
 #ifdef __MODPLUG__
@@ -144,7 +144,7 @@ void SoundSourceProxy::loadPlugins() {
     // providers to ensure that they are only after the specialized
     // provider failed to open a file. But the order of registration
     // only matters among providers with equal priority.
-#ifdef __FFMPEGSOURCE__
+#ifdef USE_FFMPEGSOURCE
     // Use FFmpeg as the last resort.
     s_soundSourceProviders.registerProvider(
             std::make_shared<mixxx::SoundSourceProviderFFmpeg>());
