@@ -944,7 +944,7 @@ class FFMPEGSource(Feature):
             build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
             build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
 
-            build.env.Append(CPPDEFINES='__FFMPEGSOURCE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGSOURCE')
             self.status = "Enabled"
 
         else:
@@ -970,7 +970,7 @@ class FFMPEGSource(Feature):
             build.env.Append(LIBS='vorbis')
             build.env.Append(LIBS='m')
             build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGSOURCE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGSOURCE')
 
         # Add new path for FFmpeg header files.
         # Non-crosscompiled builds need this too, don't they?
