@@ -73,6 +73,8 @@ CachingReader::CachingReader(QString group,
 CachingReader::~CachingReader()
 {
     m_worker.quitWait();
+    while(m_freeChunks.take()) {}
+    while(m_chunkReadRequestFIFO.take()) {}
     qDeleteAll(m_chunks);
 }
 
