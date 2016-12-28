@@ -909,7 +909,7 @@ class FFMPEGSource(Feature):
         return "FFmpeg/Avconv support"
 
     def enabled(self, build):
-        build.flags['ffmpeg_source'] = util.get_flags(build.env, 'ffmpeg_source', 0)
+        build.flags['ffmpeg_source'] = util.get_flags(build.env, 'ffmpeg_source', 1)
         if int(build.flags['ffmpeg_source']):
             return True
         return False
@@ -1020,7 +1020,7 @@ class FFMPEG(Feature):
             build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
             build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
 
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGFILE')
             self.status = "Enabled"
 
         else:
@@ -1046,7 +1046,7 @@ class FFMPEG(Feature):
             build.env.Append(LIBS='vorbis')
             build.env.Append(LIBS='m')
             build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            build.env.Append(CPPDEFINES='USE_FFMPEGFILE')
 
         # Add new path for FFmpeg header files.
         # Non-crosscompiled builds need this too, don't they?
@@ -1065,10 +1065,18 @@ class Optimize(Feature):
     LEVEL_OFF = 'off'
     LEVEL_PORTABLE = 'portable'
     LEVEL_NATIVE = 'native'
+    LEVEL_EXCESSIVE = 'excessive'
     LEVEL_LEGACY = 'legacy'
     LEVEL_FASTBUILD = 'fastbuild'
     LEVEL_DEFAULT = LEVEL_PORTABLE
-
+    LEVELS = (
+        LEVEL_OFF
+      , LEVEL_PORTABLE
+      , LEVEL_NATIVE
+      , LEVEL_EXCESSIVE
+      , LEVEL_LEGACY
+      , LEVEL_FASTBUILD
+    )
     def description(self):
         return "Optimization and Tuning"
 
@@ -1089,16 +1097,17 @@ class Optimize(Feature):
             elif optimize_integer in xrange(2, 10):
                 # Levels 2 through 9 map to portable.
                 optimize_level = Optimize.LEVEL_PORTABLE
+            elif optimize_integer == 10:
+                optimize_level = Optimize.LEVEL_NATIVE
+            elif optimize_integer >= 11:
+                optimize_level = Optimize.LEVEL_EXCESSIVE
         except:
             pass
 
         # Support common aliases for off.
         if optimize_level in ('none', 'disable', 'disabled'):
             optimize_level = Optimize.LEVEL_OFF
-
-        if optimize_level not in (Optimize.LEVEL_OFF, Optimize.LEVEL_PORTABLE,
-                                  Optimize.LEVEL_NATIVE, Optimize.LEVEL_LEGACY,
-                                  Optimize.LEVEL_FASTBUILD):
+        if optimize_level not in Optimize.LEVELS:
             raise Exception("optimize={} is not supported. "
                             "Use portable, native, legacy or off"
                             .format(optimize_level))
@@ -1114,6 +1123,7 @@ class Optimize(Feature):
                         '  portable: sse2 CPU (>= Pentium 4)\n' \
                         '  fastbuild: portable, but without costly optimization steps\n' \
                         '  native: optimized for the CPU of this system\n' \
+                        '  excessive: optimize for this CPU + LTO\n' \
                         '  legacy: pure i386 code' \
                         '  off: no optimization' \
                         , Optimize.LEVEL_DEFAULT)
@@ -1247,9 +1257,8 @@ class Optimize(Feature):
                 # i386 compatible, so builds that claim 'i386' will crash.
                 # -- rryan 2/2011
                 # Note: SSE2 is a core part of x64 CPUs
-            elif optimize_level == Optimize.LEVEL_NATIVE:
-                self.status = self.build_status(
-                    optimize_level, "tuned for this CPU (%s)" % build.machine)
+            elif optimize_level == Optimize.LEVEL_NATIVE or optimize_level == Optimize.LEVEL_EXCESSIVE:
+                self.status = "native: tuned for this CPU (%s)" % build.machine
                 build.env.Append(CCFLAGS='-march=native')
                 # http://en.chys.info/2010/04/what-exactly-marchnative-means/
                 # Note: requires gcc >= 4.2.0
@@ -1265,6 +1274,14 @@ class Optimize(Feature):
                     self.status = self.build_status(optimize_level)
                     build.env.Append(CCFLAGS='-mfloat-abi=hard')
                     build.env.Append(CCFLAGS='-mfpu=neon')
+#                    build.env.Append(CCFLAGS='-mfloat-abi=hard -mfpu=neon')
+                if optimize_level == Optimize.LEVEL_EXCESSIVE:
+                    build.env.Append(CCFLAGS='-Ofast')
+                    build.env.Append(CCFLAGS='-flto')
+                    build.env.Append(CCFLAGS='-ffat-lto-objects')
+                    build.env.Append(LINKFLAGS='-Ofast')
+                    build.env.Append(LINKFLAGS='-flto')
+                    build.env.Append(LINKFLAGS='-ffat-lto-objects')
             elif optimize_level == Optimize.LEVEL_LEGACY:
                 if build.architecture_is_x86:
                     self.status = self.build_status(
