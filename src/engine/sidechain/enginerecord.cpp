@@ -22,7 +22,7 @@
 #include "control/controlproxy.h"
 #include "encoder/encoder.h"
 
-#ifdef __FFMPEGFILE__
+#ifdef USE_FFMPEGFILE
 #include "encoder/encoderffmpegmp3.h"
 #include "encoder/encoderffmpegvorbis.h"
 #else
@@ -84,7 +84,7 @@ void EngineRecord::updateFromPreferences() {
     }
 
     if (m_encoding == ENCODING_MP3) {
-#ifdef __FFMPEGFILE__
+#ifdef USE_FFMPEGFILE
         m_pEncoder = new EncoderFfmpegMp3(this);
 #else
         m_pEncoder = new EncoderMp3(this);
@@ -95,14 +95,14 @@ void EngineRecord::updateFromPreferences() {
                                    m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = NULL;
-#ifdef __FFMPEGFILE__
+#ifdef USE_FFMPEGFILE
             qDebug() << "MP3 recording is not supported. FFMPEG mp3 could not be initialized";
 #else
             qDebug() << "MP3 recording is not supported. Lame could not be initialized";
 #endif
         }
     } else if (m_encoding == ENCODING_OGG) {
-#ifdef __FFMPEGFILE__
+#ifdef USE_FFMPEGFILE
         m_pEncoder = new EncoderFfmpegVorbis(this);
 #else
         m_pEncoder = new EncoderVorbis(this);
@@ -113,7 +113,7 @@ void EngineRecord::updateFromPreferences() {
                                    m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = NULL;
-#ifdef __FFMPEGFILE__
+#ifdef USE_FFMPEGFILE
             qDebug() << "OGG recording is not supported. FFMPEG OGG/Vorbis could not be initialized";
 #else
             qDebug() << "OGG recording is not supported. OGG/Vorbis library could not be initialized";

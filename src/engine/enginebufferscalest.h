@@ -15,7 +15,7 @@ class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
     explicit EngineBufferScaleST(
-            ReadAheadManager* pReadAheadManager);
+            ReadAheadManager* pReadAheadManager, QObject *p = nullptr);
     ~EngineBufferScaleST() override;
 
     void setScaleParameters(double base_rate,
@@ -34,11 +34,8 @@ class EngineBufferScaleST : public EngineBufferScale {
 
   private:
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
-
     // SoundTouch time/pitch scaling lib
     std::unique_ptr<soundtouch::SoundTouch> m_pSoundTouch;
-
     // Temporary buffer for reading from the RAMAN.
     SINT buffer_back_size;
     CSAMPLE* buffer_back;
