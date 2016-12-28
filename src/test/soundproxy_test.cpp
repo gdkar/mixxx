@@ -18,6 +18,10 @@ const QDir kTestDir(QDir::current().absoluteFilePath("src/test/id3-test-data"));
 
 } // anonymous namespace
 
+#ifdef USE_FFMPEGFILE
+#include "sources/soundsourceffmpeg.h"
+#endif
+
 class SoundSourceProxyTest: public MixxxTest {
   protected:
     static QStringList getFileNameSuffixes() {
