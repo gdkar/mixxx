@@ -79,7 +79,7 @@ void CachingReaderWorker::run()
             if(pLoadTrack)
                 loadTrack(pLoadTrack);
         } else if (!m_pChunkReadRequestFIFO->empty()) {
-            while(!m_pChunkReadRequestFIFO->empty() && !m_pReaderStatusFIFO->full()) {
+            while(!m_stop.load() && !m_pChunkReadRequestFIFO->empty() && !m_pReaderStatusFIFO->full()) {
                 auto update = processReadRequest(m_pChunkReadRequestFIFO->take());
                 m_pReaderStatusFIFO->push_back(update);
             }
