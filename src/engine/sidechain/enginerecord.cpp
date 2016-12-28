@@ -13,6 +13,14 @@
 #include "control/controlproxy.h"
 #include "encoder/encoder.h"
 
+#ifdef USE_FFMPEGFILE
+#include "encoder/encoderffmpegmp3.h"
+#include "encoder/encoderffmpegvorbis.h"
+#else
+#include "encoder/encodermp3.h"
+#include "encoder/encodervorbis.h"
+#endif
+
 #include "mixer/playerinfo.h"
 #include "recording/defs_recording.h"
 #include "util/event.h"

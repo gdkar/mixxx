@@ -22,8 +22,8 @@ size_t kRubberBandBlockSize = 256;
 }  // namespace
 
 EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
-        ReadAheadManager* pReadAheadManager)
-        : m_pReadAheadManager(pReadAheadManager),
+        ReadAheadManager* pReadAheadManager, QObject *p)
+        : EngineBufferScale(pReadAheadManager,p),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
           m_bBackwards(false)
 {

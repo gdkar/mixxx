@@ -26,8 +26,8 @@ const SINT kSeekOffsetFrames = 519;
 
 }  // namespace
 
-EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : m_pReadAheadManager(pReadAheadManager),
+EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QObject *p)
+    : EngineBufferScale(pReadAheadManager, p),
       m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>()),
       buffer_back_size(getAudioSignal().frames2samples(kSeekOffsetFrames)),
       buffer_back(SampleUtil::alloc(buffer_back_size)),
