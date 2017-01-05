@@ -36,28 +36,25 @@ float BarBeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
 class BarBeatTrackerData
 {
 public:
-    BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
-    df = new DetectionFunction(config);
+    BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config)
+    , df{std::make_unique<DetectionFunction>(config)}
+    {
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
-        int factor = MathUtilities::nextPowerOfTwo(rate / 3000);
+        auto factor = MathUtilities::nextPowerOfTwo(rate / 3000);
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
-        downBeat = new DownBeat(rate, factor, config.stepSize);
+        downBeat = std::make_unique<DownBeat>(rate, factor, config.stepSize);
     }
-    ~BarBeatTrackerData() {
-    delete df;
-        delete downBeat;
-    }
+    ~BarBeatTrackerData() = default;
     void reset() {
-    delete df;
-    df = new DetectionFunction(dfConfig);
-    dfOutput.clear();
+        df = std::make_unique<DetectionFunction>(dfConfig);
+        dfOutput.clear();
         downBeat->resetAudioBuffer();
         origin = Vamp::RealTime::zeroTime;
     }
 
     DFConfig dfConfig;
-    DetectionFunction *df;
-    DownBeat *downBeat;
+    std::unique_ptr<DetectionFunction> df;
+    std::unique_ptr<DownBeat> downBeat;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
@@ -65,7 +62,7 @@ public:
 
 BarBeatTracker::BarBeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
-    m_d(0),
+    m_d(),
     m_bpb(4),
     m_alpha(0.9), 			// changes are as per the BeatTrack.cpp
     m_tightness(4.),		// changes are as per the BeatTrack.cpp
@@ -74,10 +71,7 @@ BarBeatTracker::BarBeatTracker(float inputSampleRate) :
 {
 }
 
-BarBeatTracker::~BarBeatTracker()
-{
-    delete m_d;
-}
+BarBeatTracker::~BarBeatTracker() = default;
 
 string
 BarBeatTracker::getIdentifier() const
@@ -171,7 +165,6 @@ BarBeatTracker::getParameterDescriptors() const
     desc.valueNames.clear();
     list.push_back(desc);
 
-
     return list;
 }
 
@@ -207,13 +200,10 @@ BarBeatTracker::setParameter(std::string name, float value)
 bool
 BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
-    if (m_d) {
-    delete m_d;
-    m_d = 0;
-    }
+    m_d.reset();
 
     if (channels < getMinChannelCount() ||
-    channels > getMaxChannelCount()) {
+        channels > getMaxChannelCount()) {
         std::cerr << "BarBeatTracker::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
@@ -240,7 +230,7 @@ BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.whiteningRelaxCoeff = -1;
     dfConfig.whiteningFloor = -1;
 
-    m_d = new BarBeatTrackerData(m_inputSampleRate, dfConfig);
+    m_d = std::make_unique<BarBeatTrackerData>(m_inputSampleRate, dfConfig);
     m_d->downBeat->setBeatsPerBar(m_bpb);
     return true;
 }
@@ -248,7 +238,8 @@ BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 void
 BarBeatTracker::reset()
 {
-    if (m_d) m_d->reset();
+    if (m_d)
+        m_d->reset();
 }
 
 size_t

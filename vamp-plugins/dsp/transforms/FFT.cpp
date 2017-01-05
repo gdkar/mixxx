@@ -68,14 +68,14 @@ public:
             }
         }
     }
-    
+
 private:
     int m_n;
     kiss_fft_cfg m_planf;
     kiss_fft_cfg m_plani;
     kiss_fft_cpx *m_kin;
     kiss_fft_cpx *m_kout;
-};        
+};
 
 FFT::FFT(int n) :
     m_d(new D(n))
@@ -96,7 +96,7 @@ FFT::process(bool inverse,
                  p_lpRealIn, p_lpImagIn,
                  p_lpRealOut, p_lpImagOut);
 }
-    
+
 class FFTReal::D
 {
 public:
@@ -153,7 +153,7 @@ public:
             m_c[i].r = ri[i];
             m_c[i].i = ii[i];
         }
-        
+
         kiss_fftri(m_plani, m_c, ro);
 
         double scale = 1.0 / m_n;
@@ -171,7 +171,7 @@ private:
 };
 
 FFTReal::FFTReal(int n) :
-    m_d(new D(n)) 
+    m_d(new D(n))
 {
 }
 
@@ -199,4 +199,4 @@ FFTReal::inverse(const double *ri, const double *ii, double *ro)
 }
 
 
-    
+

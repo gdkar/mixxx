@@ -32,21 +32,19 @@ float BeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
 class BeatTrackerData
 {
 public:
-    BeatTrackerData(const DFConfig &config) : dfConfig(config) {
-    df = new DetectionFunction(config);
-    }
-    ~BeatTrackerData() {
-    delete df;
-    }
+    BeatTrackerData(const DFConfig &config)
+    : dfConfig(config)
+    , df{std::make_unique<DetectionFunction>(config)}
+    { }
+   ~BeatTrackerData() = default;
     void reset() {
-    delete df;
-    df = new DetectionFunction(dfConfig);
-    dfOutput.clear();
+        df = std::make_unique<DetectionFunction>(dfConfig);
+        dfOutput.clear();
         origin = Vamp::RealTime::zeroTime;
     }
 
     DFConfig dfConfig;
-    DetectionFunction *df;
+    std::unique_ptr<DetectionFunction> df;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
@@ -54,7 +52,7 @@ public:
 
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
-    m_d(0),
+    m_d(),
     m_method(METHOD_NEW),
     m_dfType(DF_COMPLEXSD),
     m_whiten(false),
@@ -66,11 +64,7 @@ BeatTracker::BeatTracker(float inputSampleRate) :
 
 {
 }
-
-BeatTracker::~BeatTracker()
-{
-    delete m_d;
-}
+BeatTracker::~BeatTracker() = default;
 
 string
 BeatTracker::getIdentifier() const
@@ -249,10 +243,7 @@ BeatTracker::setParameter(std::string name, float value)
 bool
 BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
-    if (m_d) {
-    delete m_d;
-    m_d = 0;
-    }
+    m_d.reset();
 
     if (channels < getMinChannelCount() ||
     channels > getMaxChannelCount()) {
@@ -282,20 +273,21 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.whiteningRelaxCoeff = -1;
     dfConfig.whiteningFloor = -1;
 
-    m_d = new BeatTrackerData(dfConfig);
+    m_d = std::make_unique<BeatTrackerData>(dfConfig);
     return true;
 }
 
 void
 BeatTracker::reset()
 {
-    if (m_d) m_d->reset();
+    if (m_d)
+        m_d->reset();
 }
 
 size_t
 BeatTracker::getPreferredStepSize() const
 {
-    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    auto step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
 //    std::cerr << "BeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
@@ -303,12 +295,12 @@ BeatTracker::getPreferredStepSize() const
 size_t
 BeatTracker::getPreferredBlockSize() const
 {
-    size_t theoretical = getPreferredStepSize() * 2;
+    return  getPreferredStepSize() * 2;
 
     // I think this is not necessarily going to be a power of two, and
     // the host might have a problem with that, but I'm not sure we
     // can do much about it here
-    return theoretical;
+//    return theoretical;
 }
 
 BeatTracker::OutputList
@@ -361,16 +353,16 @@ BeatTracker::process(const float *const *inputBuffers,
                      Vamp::RealTime timestamp)
 {
     if (!m_d) {
-    cerr << "ERROR: BeatTracker::process: "
-         << "BeatTracker has not been initialised"
-         << endl;
-    return FeatureSet();
+        cerr << "ERROR: BeatTracker::process: "
+            << "BeatTracker has not been initialised"
+            << endl;
+        return FeatureSet();
     }
 
     size_t len = m_d->dfConfig.frameLength / 2 + 1;
 
-    double *reals = new double[len];
-    double *imags = new double[len];
+    auto reals = std::make_unique<double[]>(len);
+    auto imags = std::make_unique<double[]>(len);
 
     // We only support a single input channel
 
@@ -379,12 +371,10 @@ BeatTracker::process(const float *const *inputBuffers,
         imags[i] = inputBuffers[0][i*2+1];
     }
 
-    double output = m_d->df->processFrequencyDomain(reals, imags);
+    auto output = m_d->df->processFrequencyDomain(reals.get(), imags.get());
 
-    delete[] reals;
-    delete[] imags;
-
-    if (m_d->dfOutput.empty()) m_d->origin = timestamp;
+    if (m_d->dfOutput.empty())
+        m_d->origin = timestamp;
 
     m_d->dfOutput.push_back(output);
 
@@ -431,7 +421,7 @@ BeatTracker::beatTrackOld()
     TempoTrack tempoTracker(ttParams);
 
     vector<double> tempi;
-    vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempi);
+    auto beats = tempoTracker.process(m_d->dfOutput, &tempi);
 
     FeatureSet returnFeatures;
 
@@ -439,40 +429,38 @@ BeatTracker::beatTrackOld()
 
     for (size_t i = 0; i < beats.size(); ++i) {
 
-    size_t frame = beats[i] * m_d->dfConfig.stepSize;
+        auto frame = beats[i] * m_d->dfConfig.stepSize;
 
-    Feature feature;
-    feature.hasTimestamp = true;
-    feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-        (frame, lrintf(m_inputSampleRate));
+        Feature feature;
+        feature.hasTimestamp = true;
+        feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+            (frame, std::lrintf(m_inputSampleRate));
 
-    float bpm = 0.0;
-    int frameIncrement = 0;
+        auto bpm = 0.0f;
+        auto frameIncrement = 0;
 
-    if (i < beats.size() - 1) {
+        if (i < beats.size() - 1) {
+            frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
 
-        frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
+            // one beat is frameIncrement frames, so there are
+            // samplerate/frameIncrement bps, so
+            // 60*samplerate/frameIncrement bpm
 
-        // one beat is frameIncrement frames, so there are
-        // samplerate/frameIncrement bps, so
-        // 60*samplerate/frameIncrement bpm
-
-        if (frameIncrement > 0) {
-        bpm = (60.0 * m_inputSampleRate) / frameIncrement;
-        bpm = int(bpm * 100.0 + 0.5) / 100.0;
+            if (frameIncrement > 0) {
+                bpm = (60.0 * m_inputSampleRate) / frameIncrement;
+                bpm = int(bpm * 100.0 + 0.5) / 100.0;
                 sprintf(label, "%.2f bpm", bpm);
                 feature.label = label;
+            }
         }
+        returnFeatures[0].push_back(feature); // beats are output 0
     }
 
-    returnFeatures[0].push_back(feature); // beats are output 0
-    }
-
-    double prevTempo = 0.0;
+    auto prevTempo = 0.0;
 
     for (size_t i = 0; i < tempi.size(); ++i) {
 
-        size_t frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
+        auto frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
 
 //        std::cerr << "unit " << i << ", step size " << m_d->dfConfig.stepSize << ", hop " << ttParams.lagLength << ", frame = " << frame << std::endl;
 
