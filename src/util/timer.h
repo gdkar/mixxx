@@ -56,7 +56,8 @@ class ScopedTimer {
     ScopedTimer(const char* key, int i,
                 Stat::ComputeFlags compute = kDefaultComputeFlags)
             : m_pTimer(NULL),
-              m_cancel(false) {
+              m_cancel(false)
+    {
         if (CmdlineArgs::Instance().getDeveloper()) {
             initialize(QString(key), QString::number(i), compute);
         }
@@ -80,7 +81,8 @@ class ScopedTimer {
         }
     }
 
-    virtual ~ScopedTimer() {
+    virtual ~ScopedTimer()
+    {
         if (m_pTimer) {
             if (!m_cancel) {
                 m_pTimer->elapsed(true);
@@ -89,8 +91,9 @@ class ScopedTimer {
         }
     }
 
-    inline void initialize(const QString& key, const QString& arg,
-                Stat::ComputeFlags compute = kDefaultComputeFlags) {
+    void initialize(const QString& key, const QString& arg,
+                Stat::ComputeFlags compute = kDefaultComputeFlags)
+    {
         QString strKey;
         if (arg.isEmpty()) {
             strKey = key;
@@ -116,7 +119,7 @@ class GuiTickTimer : public QObject {
     Q_OBJECT
   public:
     GuiTickTimer(QObject* pParent);
-    virtual ~GuiTickTimer();
+   ~GuiTickTimer() override;
 
     void start(mixxx::Duration interval);
     void stop();

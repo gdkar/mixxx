@@ -6,6 +6,7 @@
 #include "track/track.h"
 #include "util/assert.h"
 #include "util/counter.h"
+#include "util/timer.h"
 #include "util/math.h"
 #include "util/sample.h"
 
@@ -186,8 +187,14 @@ void CachingReader::newTrack(TrackPointer pTrack)
 
 void CachingReader::process()
 {
+    ScopedTimer top_time(__PRETTY_FUNCTION__);
     ReaderStatusUpdate status;
     auto count = 0u;
+    Stat::track("m_readerStatusFIFO.readAvailable()",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        m_readerStatusFIFO.readAvailable()
+        );
     while (!m_readerStatusFIFO.empty()) {//&status, 1) == 1) {
         auto status = m_readerStatusFIFO.front();
         m_readerStatusFIFO.pop_front();
@@ -364,6 +371,7 @@ SINT CachingReader::read(SINT startSample, SINT numSamples, bool reverse, CSAMPL
 
 void CachingReader::hintAndMaybeWake(const HintVector& hintList)
 {
+    ScopedTimer top_time(__PRETTY_FUNCTION__);
     // If no file is loaded, skip.
     if (m_readerStatus != TRACK_LOADED) {
         return;
@@ -372,6 +380,11 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList)
     // For every chunk that the hints indicated, check if it is in the cache. If
     // any are not, then wake.
     auto shouldWake = false;
+    Stat::track("hintList.size()",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        hintList.size()
+        );
     for ( auto hint : hintList) {
         // Handle some special length values
         if (hint.length == 0) {
