@@ -102,7 +102,7 @@ class EngineBuffer : public EngineObject {
         RUBBERBAND,
         KEYLOCK_ENGINE_COUNT,
     };
-
+    Q_ENUM(KeylockEngine);
     EngineBuffer(QString _group, UserSettingsPointer pConfig,
                  EngineChannel* pChannel, EngineMaster* pMixingEngine);
     virtual ~EngineBuffer();
