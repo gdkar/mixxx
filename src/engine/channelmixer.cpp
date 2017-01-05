@@ -9,8 +9,7 @@ void ChannelMixer::mixChannels(
         unsigned int num)
 {
     SampleUtil::clear(dst,num);
-
-    for(auto pChannel : *activeChannels){
+    for(auto pChannel : *activeChannels) {
         CSAMPLE_GAIN newGain = 0;
         auto &gCache  = (*gainCache)[pChannel->m_index];
         if(!gCache.m_fadeout) {
@@ -41,7 +40,7 @@ void ChannelMixer::mixChannelsRamping(
             newGain = gcalc.getGain(pChannel);
         }
         gCache.m_gain    = newGain;
-        if(newGain)
+        if(newGain || oldGain)
             SampleUtil::addWithRampingGain(dst,pChannel->m_pBuffer, oldGain, newGain, num);
     }
 }

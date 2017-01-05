@@ -40,7 +40,8 @@ RateControl::RateControl(QString group,
       m_dTempRateChange(0.0),
       m_dRateTemp(0.0),
       m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
-      m_dRateTempRampbackChange(0.0) {
+      m_dRateTempRampbackChange(0.0)
+{
     m_pScratchController = new PositionScratchController(group);
 
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
@@ -173,7 +174,8 @@ RateControl::RateControl(QString group,
     m_pSyncMode = new ControlProxy(group, "sync_mode", this);
 }
 
-RateControl::~RateControl() {
+RateControl::~RateControl()
+{
     delete m_pRateSlider;
     delete m_pRateRange;
     delete m_pRateDir;
@@ -204,7 +206,8 @@ RateControl::~RateControl() {
     delete m_pScratchController;
 }
 
-void RateControl::setBpmControl(BpmControl* bpmcontrol) {
+void RateControl::setBpmControl(BpmControl* bpmcontrol)
+{
     m_pBpmControl = bpmcontrol;
 }
 
@@ -231,26 +234,31 @@ void RateControl::setRateRampSensitivity(int sense)
 }
 
 //static
-void RateControl::setTemp(double v) {
+void RateControl::setTemp(double v)
+{
     m_dTemp = v;
 }
 
 //static
-void RateControl::setTempSmall(double v) {
+void RateControl::setTempSmall(double v)
+{
     m_dTempSmall = v;
 }
 
 //static
-void RateControl::setPerm(double v) {
+void RateControl::setPerm(double v)
+{
     m_dPerm = v;
 }
 
 //static
-void RateControl::setPermSmall(double v) {
+void RateControl::setPermSmall(double v)
+{
     m_dPermSmall = v;
 }
 
-void RateControl::slotReverseRollActivate(double v) {
+void RateControl::slotReverseRollActivate(double v)
+{
     if (v > 0.0) {
         m_pSlipEnabled->set(1);
         m_pReverseButton->set(1);

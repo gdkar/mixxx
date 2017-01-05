@@ -165,5 +165,4 @@ class CueControl : public EngineControl {
     QMutex m_mutex;
 };
 
-
 #endif /* CUECONTROL_H */

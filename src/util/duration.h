@@ -10,9 +10,9 @@
 #include "util/assert.h"
 
 namespace mixxx {
-
-class DurationBase {
-
+namespace impl {
+class Duration {
+  Q_GADGET
   public:
     enum Units {
         HEX,
@@ -21,45 +21,45 @@ class DurationBase {
         MICROS,
         NANOS
     };
-
+    Q_ENUM(Units);
     // Returns the duration as an integer number of seconds (rounded-down).
-    inline qint64 toIntegerSeconds() const {
+    qint64 toIntegerSeconds() const {
         return m_durationNanos / kNanosPerSecond;
     }
 
     // Returns the duration as a floating point number of seconds.
-    inline double toDoubleSeconds() const {
+    double toDoubleSeconds() const {
         return static_cast<double>(m_durationNanos) / kNanosPerSecond;
     }
 
     // Returns the duration as an integer number of milliseconds (rounded-down).
-    inline qint64 toIntegerMillis() const {
+    qint64 toIntegerMillis() const {
         return m_durationNanos / kNanosPerMilli;
     }
 
     // Returns the duration as a floating point number of milliseconds.
-    inline qint64 toDoubleMillis() const {
+    qint64 toDoubleMillis() const {
         return static_cast<double>(m_durationNanos) / kNanosPerMilli;
     }
 
     // Returns the duration as an integer number of microseconds (rounded-down).
-    inline qint64 toIntegerMicros() const {
+    qint64 toIntegerMicros() const {
         return m_durationNanos / kNanosPerMicro;
     }
 
     // Returns the duration as a floating point number of microseconds.
-    inline qint64 toDoubleMicros() const {
+    qint64 toDoubleMicros() const {
         return static_cast<double>(m_durationNanos) / kNanosPerMicro;
     }
 
     // Returns the duration as an integer number of nanoseconds. The duration is
     // represented internally as nanoseconds so no rounding occurs.
-    inline qint64 toIntegerNanos() const {
+    qint64 toIntegerNanos() const {
         return m_durationNanos;
     }
 
     // Returns the duration as an integer number of nanoseconds.
-    inline qint64 toDoubleNanos() const {
+    qint64 toDoubleNanos() const {
         return static_cast<double>(m_durationNanos);
     }
 
@@ -68,33 +68,46 @@ class DurationBase {
         CENTISECONDS,
         MILLISECONDS
     };
-
+    Q_ENUM(Precision);
     // The standard way of formatting a floating-point duration in seconds.
     // Used for display of track duration, etc.
     static QString formatSeconds(
             double dSeconds,
             Precision precision = Precision::SECONDS);
 
-    static const qint64 kMillisPerSecond = 1000;
-    static const qint64 kMicrosPerSecond = kMillisPerSecond * 1000;
-    static const qint64 kNanosPerSecond  = kMicrosPerSecond * 1000;
-    static const qint64 kNanosPerMilli   = kNanosPerSecond / 1000;
-    static const qint64 kNanosPerMicro   = kNanosPerMilli / 1000;
-
+    static constexpr const qint64 kMillisPerSecond = 1000;
+    static constexpr const qint64 kMicrosPerSecond = kMillisPerSecond * 1000;
+    static constexpr const qint64 kNanosPerSecond  = kMicrosPerSecond * 1000;
+    static constexpr const qint64 kNanosPerMilli   = kNanosPerSecond / 1000;
+    static constexpr const qint64 kNanosPerMicro   = kNanosPerMilli / 1000;
+    constexpr Duration() noexcept = default;
+    constexpr Duration(const Duration&) noexcept = default;
+    Duration(Duration&&) noexcept = default;
+    Duration&operator=(const Duration&) noexcept = default;
+    Duration&operator=(Duration&&) noexcept = default;
   protected:
-    DurationBase(qint64 durationNanos)
-        : m_durationNanos(durationNanos) {
-    }
+    constexpr Duration(qint64 durationNanos)
+        : m_durationNanos(durationNanos)
+    { }
 
-    qint64 m_durationNanos;
+    qint64 m_durationNanos{};
 };
+}
 
-class DurationDebug : public DurationBase {
+class DurationDebug : public impl::Duration{
+    Q_GADGET
+    using super = impl::Duration;
   public:
-    DurationDebug(const DurationBase& duration, Units unit)
-        : DurationBase(duration),
-          m_unit(unit) {
-    }
+    using super::super;
+    constexpr DurationDebug(const impl::Duration& duration, Units unit)
+        : impl::Duration(duration),
+          m_unit(unit)
+    { }
+    constexpr DurationDebug() noexcept = default;
+    constexpr DurationDebug(const DurationDebug&) noexcept = default;
+    DurationDebug(DurationDebug&&) noexcept = default;
+    DurationDebug&operator=(const DurationDebug&) noexcept = default;
+    DurationDebug&operator=(DurationDebug&&) noexcept = default;
 
     friend QDebug operator<<(QDebug debug, const DurationDebug& dd) {
         switch (dd.m_unit) {
@@ -120,95 +133,96 @@ class DurationDebug : public DurationBase {
     }
 
   private:
-    Units m_unit;
+    Units m_unit{NANOS};
 };
 
 // Represents a duration in a type-safe manner. Provides conversion methods to
 // convert between physical units. Durations can be negative.
-class Duration : public DurationBase {
+class Duration : public impl::Duration{
+    Q_GADGET
+    using super = impl::Duration;
   public:
+    using super::super;
     // Returns a Duration object representing a duration of 'seconds'.
-    static Duration fromSeconds(qint64 seconds) {
+    constexpr static Duration fromSeconds(qint64 seconds) {
         return Duration(seconds * kNanosPerSecond);
     }
 
     // Returns a Duration object representing a duration of 'millis'.
-    static Duration fromMillis(qint64 millis) {
+    constexpr static Duration fromMillis(qint64 millis) {
         return Duration(millis * kNanosPerMilli);
     }
 
     // Returns a Duration object representing a duration of 'micros'.
-    static Duration fromMicros(qint64 micros) {
+    constexpr static Duration fromMicros(qint64 micros) {
         return Duration(micros * kNanosPerMicro);
     }
 
     // Returns a Duration object representing a duration of 'nanos'.
-    static Duration fromNanos(qint64 nanos) {
+    constexpr static Duration fromNanos(qint64 nanos) {
         return Duration(nanos);
     }
 
-    Duration()
-        : DurationBase(0) {
-    }
+    constexpr Duration() = default;
 
-    const Duration operator+(const Duration& other) const {
-        Duration result = *this;
+    constexpr Duration operator+(const Duration& other) const {
+        auto result = *this;
         result += other;
         return result;
     }
 
-    Duration& operator+=(const Duration& other) {
+    constexpr Duration& operator+=(const Duration& other) {
         m_durationNanos += other.m_durationNanos;
         return *this;
     }
 
-    const Duration operator-(const Duration& other) const {
+    constexpr Duration operator-(const Duration& other) const {
         Duration result = *this;
         result -= other;
         return result;
     }
 
-    Duration& operator-=(const Duration& other) {
+    constexpr Duration& operator-=(const Duration& other) {
         m_durationNanos -= other.m_durationNanos;
         return *this;
     }
 
-    friend const Duration operator*(const Duration& duration, int scalar) {
-        Duration result = duration;
+    friend constexpr Duration operator*(const Duration& duration, int scalar) {
+        auto result = duration;
         result.m_durationNanos *= scalar;
         return result;
     }
 
-    friend const Duration operator*(int scalar, const Duration& duration) {
+    friend constexpr Duration operator*(int scalar, const Duration& duration) {
         return duration * scalar;
     }
 
-    Duration& operator*=(int scalar) {
+    constexpr Duration& operator*=(int scalar) {
         m_durationNanos *= scalar;
         return *this;
     }
 
-    friend bool operator==(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator==(const Duration& lhs, const Duration& rhs) {
         return lhs.m_durationNanos == rhs.m_durationNanos;
     }
 
-    friend bool operator!=(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator!=(const Duration& lhs, const Duration& rhs) {
         return !(lhs == rhs);
     }
 
-    friend bool operator<(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator<(const Duration& lhs, const Duration& rhs) {
         return lhs.m_durationNanos < rhs.m_durationNanos;
     }
 
-    friend bool operator>(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator>(const Duration& lhs, const Duration& rhs) {
         return lhs.m_durationNanos > rhs.m_durationNanos;
     }
 
-    friend bool operator<=(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator<=(const Duration& lhs, const Duration& rhs) {
         return lhs.m_durationNanos <= rhs.m_durationNanos;
     }
 
-    friend bool operator>=(const Duration& lhs, const Duration& rhs) {
+    friend constexpr bool operator>=(const Duration& lhs, const Duration& rhs) {
         return lhs.m_durationNanos >= rhs.m_durationNanos;
     }
 
@@ -223,7 +237,7 @@ class Duration : public DurationBase {
     }
 
     // Formats the duration as a two's-complement hexadecimal string.
-    inline DurationDebug debugHex() const {
+    constexpr DurationDebug debugHex() const {
         return debug(HEX);
     }
 
@@ -231,7 +245,7 @@ class Duration : public DurationBase {
         return QString("%1 ns").arg(toIntegerNanos());
     }
 
-    DurationDebug debugNanosWithUnit() const {
+    constexpr DurationDebug debugNanosWithUnit() const {
         return debug(NANOS);
     }
 
@@ -239,7 +253,7 @@ class Duration : public DurationBase {
         return QString("%1 us").arg(toIntegerMicros());
     }
 
-    DurationDebug debugMicrosWithUnit() const {
+    constexpr DurationDebug debugMicrosWithUnit() const {
         return debug(MICROS);
     }
 
@@ -247,7 +261,7 @@ class Duration : public DurationBase {
         return QString("%1 ms").arg(toIntegerMillis());
     }
 
-    DurationDebug debugMillisWithUnit() const {
+    constexpr DurationDebug debugMillisWithUnit() const {
         return debug(MILLIS);
     }
 
@@ -255,22 +269,24 @@ class Duration : public DurationBase {
         return QString("%1 s").arg(toIntegerSeconds());
     }
 
-    DurationDebug debugSecondsWithUnit() const {
+    constexpr DurationDebug debugSecondsWithUnit() const {
         return debug(SECONDS);
     }
 
-    DurationDebug debug(Units unit) const {
+    constexpr DurationDebug debug(Units unit) const {
         return DurationDebug(*this, unit);
     }
 
   private:
-    Duration(qint64 durationNanos)
-            : DurationBase(durationNanos) {
-    }
+    constexpr Duration(qint64 durationNanos)
+            : super(durationNanos)
+    { }
 };
 
 }  // namespace mixxx
-
+Q_DECLARE_TYPEINFO(mixxx::Duration::Units, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(mixxx::Duration::Precision, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(mixxx::impl::Duration, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(mixxx::Duration, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(mixxx::Duration)
 

@@ -46,7 +46,7 @@ struct WaveformStride {
         }
     }
 
-    inline void reset() {
+    void reset() {
         m_position = 0;
         m_averageDivisor = 0;
         for (int i = 0; i < ChannelCount; ++i) {
@@ -59,7 +59,7 @@ struct WaveformStride {
         }
     }
 
-    inline void store(WaveformData* data) {
+    void store(WaveformData* data) {
         for (int i = 0; i < ChannelCount; ++i) {
             WaveformData& datum = *(data + i);
             datum.filtered.all = static_cast<unsigned char>(math_min(255.0,
@@ -82,7 +82,7 @@ struct WaveformStride {
         }
     }
 
-    inline void averageStore(WaveformData* data) {
+    void averageStore(WaveformData* data) {
         if (m_averageDivisor) {
             for (int i = 0; i < ChannelCount; ++i) {
                 WaveformData& datum = *(data + i);
