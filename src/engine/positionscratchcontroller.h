@@ -35,7 +35,7 @@ class PositionScratchController : public QObject {
     double m_dStartScratchPosition;
     double m_dRate;
     double m_dMoveDelay;
-    double m_dMouseSampeTime;
+    double m_dMouseSampleTime;
 };
 
 #endif /* POSITIONSCRATCHCONTROLLER_H */

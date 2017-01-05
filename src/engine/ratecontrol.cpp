@@ -380,32 +380,36 @@ void RateControl::slotControlRateTempUpSmall(double)
     }
 }
 
-void RateControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
+void RateControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack)
+{
     Q_UNUSED(pOldTrack);
     m_pTrack = pNewTrack;
 }
 
-double RateControl::calcRateRatio() const {
+double RateControl::calcRateRatio() const
+{
     double rateRatio = 1.0 + m_pRateDir->get() * m_pRateRange->get() *
             m_pRateSlider->get();
     return rateRatio;
 }
 
-double RateControl::getWheelFactor() const {
+double RateControl::getWheelFactor() const
+{
     return m_pWheel->get();
 }
 
-double RateControl::getJogFactor() const {
+double RateControl::getJogFactor() const
+{
     // FIXME: Sensitivity should be configurable separately?
-    const double jogSensitivity = 0.1;  // Nudges during playback
-    double jogValue = m_pJog->get();
+    auto jogSensitivity = 0.1;  // Nudges during playback
+    auto jogValue = m_pJog->get();
 
     // Since m_pJog is an accumulator, reset it since we've used its value.
     if(jogValue != 0.)
         m_pJog->set(0.);
 
-    double jogValueFiltered = m_pJogFilter->filter(jogValue);
-    double jogFactor = jogValueFiltered * jogSensitivity;
+    auto jogValueFiltered = m_pJogFilter->filter(jogValue);
+    auto jogFactor = jogValueFiltered * jogSensitivity;
 
     if (isnan(jogValue) || isnan(jogFactor)) {
         jogFactor = 0.0;
@@ -424,16 +428,16 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                                    bool* pReportReverse) {
     *pReportScratching = false;
     *pReportReverse = false;
-    double rate = (paused ? 0 : 1.0);
-    double searching = m_pRateSearch->get();
+    auto rate = (paused ? 0. : 1.0);
+    auto searching = m_pRateSearch->get();
     if (searching) {
         // If searching is in progress, it overrides everything else
         rate = searching;
     } else {
-        double wheelFactor = getWheelFactor();
-        double jogFactor = getJogFactor();
-        bool bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
-        bool useScratch2Value = m_pScratch2Enable->get() != 0;
+        auto wheelFactor = getWheelFactor();
+        auto jogFactor = getJogFactor();
+        auto bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
+        auto useScratch2Value = m_pScratch2Enable->get() != 0;
 
         // By default scratch2_enable is enough to determine if the user is
         // scratching or not. Moving platter controllers have to disable
@@ -449,7 +453,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             }
             rate = speed;
         } else {
-            double scratchFactor = m_pScratch2->get();
+            auto scratchFactor = m_pScratch2->get();
             // Don't trust values from m_pScratch2
             if (isnan(scratchFactor)) {
                 scratchFactor = 0.0;
@@ -481,7 +485,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             }
         }
 
-        double currentSample = getCurrentSample();
+        auto currentSample = getCurrentSample();
         m_pScratchController->process(currentSample, rate, iSamplesPerBuffer, baserate);
 
         // If waveform scratch is enabled, override all other controls
@@ -497,7 +501,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                     return 1.0;
                 }
 
-                double userTweak = 0.0;
+                auto userTweak = 0.0;
                 if (!*pReportScratching) {
                     // Only report user tweak if the user is not scratching.
                     userTweak = getTempRate() + wheelFactor + jogFactor;
@@ -506,7 +510,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             }
             // If we are reversing (and not scratching,) flip the rate.  This is ok even when syncing.
             // Reverse with vinyl is only ok if absolute mode isn't on.
-            int vcmode = m_pVCMode ? m_pVCMode->get() : MIXXX_VCMODE_ABSOLUTE;
+            auto vcmode = m_pVCMode ? int(m_pVCMode->get()) : MIXXX_VCMODE_ABSOLUTE;
             // TODO(owen): Instead of just ignoring reverse mode, should we
             // disable absolute mode instead?
             if (m_pReverseButton->get()
@@ -542,7 +546,6 @@ double RateControl::process(const double rate,
      * one.
      */
 
-    double latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
 
 
     if ((m_ePbPressed) && (!m_bTempStarted)) {
@@ -550,7 +553,7 @@ double RateControl::process(const double rate,
 
         if (m_eRateRampMode == RATERAMP_STEP) {
             // old temporary pitch shift behavior
-            double range = m_pRateRange->get();
+            auto range = m_pRateRange->get();
 
             // Avoid Division by Zero
             if (range == 0) {
@@ -558,10 +561,8 @@ double RateControl::process(const double rate,
                 return kNoTrigger;
             }
 
-            double change = m_pRateDir->get() * m_dTemp /
-                                    (100. * range);
-            double csmall = m_pRateDir->get() * m_dTempSmall /
-                                    (100. * range);
+            auto change = m_pRateDir->get() * m_dTemp / (100. * range);
+            auto csmall = m_pRateDir->get() * m_dTempSmall / (100. * range);
 
             if (buttonRateTempUp->get())
                 addRateTemp(change);
@@ -573,6 +574,7 @@ double RateControl::process(const double rate,
                 subRateTemp(csmall);
         } else {
             // m_eRateRampMode == RATERAMP_LINEAR
+            auto latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
             m_dTempRateChange = ((double)latrate / ((double)m_iRateRampSensitivity / 100.));
 
             if (m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD)
@@ -595,14 +597,12 @@ double RateControl::process(const double rate,
             // No buttons pressed, so time to deinitialize
             m_bTempStarted = false;
 
-            if ((m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD)
-                    && (m_dRateTempRampbackChange == 0.0)) {
-                int period = 2;
-                m_dRateTempRampbackChange = fabs(
-                        m_dRateTemp / period);
+            if ((m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD) && (m_dRateTempRampbackChange == 0.0)) {
+                auto period = 2;
+                m_dRateTempRampbackChange = std::abs( m_dRateTemp / period);
             } else if ((m_eRampBackMode != RATERAMP_RAMPBACK_NONE)
                     && (m_dRateTempRampbackChange == 0.0)) {
-                if (fabs(m_dRateTemp) < m_dRateTempRampbackChange) {
+                if (std::abs(m_dRateTemp) < m_dRateTempRampbackChange) {
                     resetRateTemp();
                 } else if (m_dRateTemp > 0) {
                     subRateTemp(m_dRateTempRampbackChange);
@@ -623,7 +623,8 @@ double RateControl::process(const double rate,
     return kNoTrigger;
 }
 
-double RateControl::getTempRate() {
+double RateControl::getTempRate()
+{
     return (m_pRateDir->get() * (m_dRateTemp * m_pRateRange->get()));
 }
 
@@ -643,22 +644,19 @@ void RateControl::setRateTemp(double v)
         m_dRateTemp = 0;
     }
 }
-
 void RateControl::addRateTemp(double v)
 {
     setRateTemp(m_dRateTemp + v);
 }
-
 void RateControl::subRateTemp(double v)
 {
     setRateTemp(m_dRateTemp - v);
 }
-
 void RateControl::resetRateTemp(void)
 {
     setRateTemp(0.0);
 }
-
-void RateControl::notifySeek(double playPos) {
+void RateControl::notifySeek(double playPos)
+{
     m_pScratchController->notifySeek(playPos);
 }
