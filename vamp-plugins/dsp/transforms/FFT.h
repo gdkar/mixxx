@@ -9,7 +9,7 @@
 #ifndef FFT_H
 #define FFT_H
 
-class FFT  
+class FFT
 {
 public:
     /**
@@ -37,7 +37,7 @@ public:
     void process(bool inverse,
                  const double *realIn, const double *imagIn,
                  double *realOut, double *imagOut);
-    
+
 private:
     class D;
     D *m_d;
@@ -100,6 +100,6 @@ public:
 private:
     class D;
     D *m_d;
-};    
+};
 
 #endif

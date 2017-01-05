@@ -16,6 +16,7 @@
 #define _BEAT_TRACK_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
+#include <memory>
 
 class BeatTrackerData;
 
@@ -52,7 +53,7 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    BeatTrackerData *m_d;
+    std::unique_ptr<BeatTrackerData> m_d;
     int m_method;
     int m_dfType;
 

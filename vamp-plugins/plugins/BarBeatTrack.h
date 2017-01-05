@@ -16,7 +16,7 @@
 #define _BAR_BEAT_TRACK_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
-
+#include <memory>
 class BarBeatTrackerData;
 
 class BarBeatTracker : public Vamp::Plugin
@@ -52,7 +52,7 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    BarBeatTrackerData *m_d;
+    std::unique_ptr<BarBeatTrackerData> m_d;
     static float m_stepSecs;
     int m_bpb;
     FeatureSet barBeatTrack();
