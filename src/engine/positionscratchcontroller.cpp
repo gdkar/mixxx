@@ -6,7 +6,7 @@
 
 class VelocityController {
   public:
-    constexpr VelocityController() = default
+    constexpr VelocityController() = default;
 
     void setPD(double p, double d) {
         m_p = p;
