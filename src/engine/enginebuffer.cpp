@@ -796,7 +796,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
 
         // TODO(owen): Maybe change this so that rubberband doesn't disable
         // keylock on scratch. (just check m_pScaleKeylock == m_pScaleST)
-        if (is_scratching || std::abs(speed) > 4.5) {
+        if (is_scratching || std::abs(speed) > 6) {
             // Scratching and high speeds with always disables keylock
             // because Soundtouch sounds terrible in these conditions.  Rubberband
             // sounds better, but still has some problems (it may reallocate in
@@ -807,7 +807,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             // Force pitchRatio to the linear pitch set by speed
             pitchRatio = speed;
             // This is for the natural speed pitch found on turn tables
-        } else if (std::abs(speed) < 0.1) {
+        } else if (std::abs(speed) < 0.05) {
             // We have pre-allocated big buffers in Rubberband and Soundtouch for
             // a minimum speed of 0.1. Slower speeds will re-allocate much bigger
             // buffers which may cause underruns.
