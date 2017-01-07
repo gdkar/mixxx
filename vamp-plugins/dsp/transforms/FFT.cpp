@@ -10,8 +10,6 @@
 
 #include <fftw3.h>
 #include "maths/MathUtilities.h"
-//#include "ext/kissfft/kiss_fft.h"
-//#include "ext/kissfft/kiss_fftr.h"
 
 #include <cmath>
 
@@ -43,18 +41,10 @@ public:
     {
         auto dims= fftw_iodim{ n, 1, 1 };
         m_plan = fftwf_plan_guru_split_dft(1, &dims, 0, nullptr, m_freal_in.get(), m_fimag_in.get(), m_freal_out.get(), m_fimag_out.get(), FFTW_MEASURE);
-//        m_planf = kiss_fft_alloc(m_n, 0, NULL, NULL);
-//        m_plani = kiss_fft_alloc(m_n, 1, NULL, NULL);
-//        m_kin = new kiss_fft_cpx[m_n];
-//        m_kout = new kiss_fft_cpx[m_n];
     }
 
     ~D() {
         fftwf_destroy_plan(m_plan);
-//        kiss_fft_free(m_planf);
- //       kiss_fft_free(m_plani);
-//        delete[] m_kin;
-//        delete[] m_kout;
     }
 
     void process(bool inverse,
@@ -89,32 +79,6 @@ public:
             if(io)
                 std::copy_n(m_fimag_out.get(), m_n, io);
         }
-/*
-        for (int i = 0; i < m_n; ++i) {
-            m_kin[i].r = ri[i];
-            m_kin[i].i = (ii ? ii[i] : 0.0);
-        }
-
-        if (!inverse) {
-
-            kiss_fft(m_planf, m_kin, m_kout);
-
-            for (int i = 0; i < m_n; ++i) {
-                ro[i] = m_kout[i].r;
-                io[i] = m_kout[i].i;
-            }
-
-        } else {
-
-            kiss_fft(m_plani, m_kin, m_kout);
-
-            double scale = 1.0 / m_n;
-
-            for (int i = 0; i < m_n; ++i) {
-                ro[i] = m_kout[i].r * scale;
-                io[i] = m_kout[i].i * scale;
-            }
-        }*/
     }
 
 private:
@@ -125,11 +89,6 @@ private:
     std::unique_ptr<float[],fftwf_deleter<float>> m_fimag_out;
 
     fftwf_plan   m_plan;
-//    fftwf_plan   m_plani;
-//    kiss_fft_cfg m_planf;
-//    kiss_fft_cfg m_plani;
-//    kiss_fft_cpx *m_kin;
-//    kiss_fft_cpx *m_kout;
 };
 
 FFT::FFT(int n) :
@@ -178,18 +137,6 @@ public:
         std::reverse_copy(m_freal.get(), m_freal.get() + m_c - 1, std::copy(m_freal.get(), m_freal.get() + m_c, ro));
         std::reverse_copy(m_fimag.get(), m_fimag.get() + m_c - 1, std::copy(m_fimag.get(), m_fimag.get() + m_c, io));
         std::transform(io + m_c, io + m_n, io + m_c, [](auto x){return -x;});
-/*        auto imid = std::copy(m_fimag.get(),m_fimag.get() + m_c, io);
-        kiss_fftr(m_planf, ri, m_c);
-
-        for (int i = 0; i <= m_n/2; ++i) {
-            ro[i] = m_c[i].r;
-            io[i] = m_c[i].i;
-        }
-
-        for (int i = 0; i + 1 < m_n/2; ++i) {
-            ro[m_n - i - 1] =  ro[i + 1];
-            io[m_n - i - 1] = -io[i + 1];
-        }*/
     }
 
     void forwardMagnitude(const double *ri, double *mo) {
@@ -198,15 +145,6 @@ public:
         fftwf_execute(m_planf);
         std::transform(m_freal.get(), m_freal.get() + m_c, m_fimag.get(), mo, [](auto x, auto y){return std::hypot(x,y);});
         std::reverse_copy(mo, mo + m_c - 1, mo + m_c);
-/*        double *io = new double[m_n];
-
-        forward(ri, mo, io);
-
-        for (int i = 0; i < m_n; ++i) {
-            mo[i] = sqrt(mo[i] * mo[i] + io[i] * io[i]);
-        }
-
-        delete[] io;*/
     }
 
     void inverse(const double *ri, const double *ii, double *ro) {
@@ -215,21 +153,6 @@ public:
         fftwf_execute(m_plani);
         auto scale = 1.0f / m_n;
         std::transform(m_fbuf.get(),m_fbuf.get() + m_n, ro, [scale](auto x){return x * scale;});
-        // kiss_fftr.h says
-        // "input freqdata has nfft/2+1 complex points"
-
-/*        for (int i = 0; i < m_n/2 + 1; ++i) {
-            m_c[i].r = ri[i];
-            m_c[i].i = ii[i];
-        }
-
-        kiss_fftri(m_plani, m_c, ro);
-
-        double scale = 1.0 / m_n;
-
-        for (int i = 0; i < m_n; ++i) {
-            ro[i] *= scale;
-        }*/
     }
 
 private:
@@ -241,10 +164,6 @@ private:
 
     fftwf_plan   m_planf;
     fftwf_plan   m_plani;
-
-/*    kiss_fftr_cfg m_planf;
-    kiss_fftr_cfg m_plani;
-    kiss_fft_cpx *m_c;*/
 };
 
 FFTReal::FFTReal(int n) :
@@ -274,6 +193,3 @@ FFTReal::inverse(const double *ri, const double *ii, double *ro)
 {
     m_d->inverse(ri, ii, ro);
 }
-
-
-

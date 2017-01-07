@@ -37,7 +37,7 @@ struct DFConfig{
     double whiteningFloor; // if < 0, a sensible default will be used
 };
 
-class DetectionFunction  
+class DetectionFunction
 {
 public:
     double* getSpectrumMagnitude();
@@ -65,7 +65,7 @@ private:
     double phaseDev(unsigned int length, double *srcPhase);
     double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
     double broadband(unsigned int length, double *srcMagnitude);
-	
+
 private:
     void initialise( DFConfig Config );
     void deInitialise();
@@ -93,4 +93,4 @@ private:
     PhaseVocoder* m_phaseVoc;	// Phase Vocoder
 };
 
-#endif 
+#endif
