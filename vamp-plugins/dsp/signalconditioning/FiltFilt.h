@@ -23,7 +23,7 @@
  * through a filter specified by the given FilterConfig structure (see
  * Filter) and then processing it again in reverse.
  */
-class FiltFilt  
+class FiltFilt
 {
 public:
     FiltFilt( FilterConfig Config );

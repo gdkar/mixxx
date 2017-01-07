@@ -41,7 +41,7 @@ class Window
 {
 public:
     /**
-     * Construct a windower of the given type and size. 
+     * Construct a windower of the given type and size.
      *
      * Note that the cosine windows are periodic by design, rather
      * than symmetrical. (A window of size N is equivalent to a
@@ -57,7 +57,7 @@ public:
 	return *this;
     }
     virtual ~Window() { delete[] m_cache; }
-    
+
     void cut(T *src) const { cut(src, src); }
     void cut(const T *src, T *dst) const {
 	for (int i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
@@ -78,7 +78,7 @@ protected:
     WindowType m_type;
     int m_size;
     T *m_cache;
-    
+
     void encache();
 };
 
@@ -91,13 +91,13 @@ void Window<T>::encache()
     for (i = 0; i < n; ++i) mult[i] = 1.0;
 
     switch (m_type) {
-		
+
     case RectangularWindow:
         for (i = 0; i < n; ++i) {
             mult[i] = mult[i] * 0.5;
 	}
 	break;
-	    
+
     case BartlettWindow:
         if (n == 2) {
             mult[0] = mult[1] = 0; // "matlab compatible"
@@ -111,7 +111,7 @@ void Window<T>::encache()
             }
 	}
 	break;
-	    
+
     case HammingWindow:
         if (n > 1) {
             for (i = 0; i < n; ++i) {
@@ -119,7 +119,7 @@ void Window<T>::encache()
             }
 	}
 	break;
-	    
+
     case HanningWindow:
         if (n > 1) {
             for (i = 0; i < n; ++i) {
@@ -127,7 +127,7 @@ void Window<T>::encache()
             }
 	}
 	break;
-	    
+
     case BlackmanWindow:
         if (n > 1) {
             for (i = 0; i < n; ++i) {
@@ -136,7 +136,7 @@ void Window<T>::encache()
             }
 	}
 	break;
-	    
+
     case BlackmanHarrisWindow:
         if (n > 1) {
             for (i = 0; i < n; ++i) {
@@ -148,7 +148,7 @@ void Window<T>::encache()
 	}
 	break;
     }
-	   
+
     m_cache = mult;
 }
 
