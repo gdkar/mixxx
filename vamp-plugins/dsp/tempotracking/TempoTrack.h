@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "dsp/signalconditioning/DFProcess.h"
-#include "maths/Correlation.h"
 #include "dsp/signalconditioning/Framer.h"
 
 
@@ -95,7 +94,6 @@ private:
     // Objetcs/operators declaration
     Framer<double> m_DFFramer;
     DFProcess* m_DFConditioning;
-    Correlation m_correlator;
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
 

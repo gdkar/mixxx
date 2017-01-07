@@ -21,6 +21,11 @@
 #include <iostream>
 
 #include <cassert>
+#include <algorithm>
+#include <utility>
+#include <numeric>
+#include <functional>
+#include <cmath>
 
 //#define DEBUG_TEMPO_TRACK 1
 
@@ -757,9 +762,17 @@ vector<int> TempoTrack::process( vector <double> DF,
 	m_DFFramer.getFrame( m_rawDFFrame );
 
 	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
-
-	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
-
+        {
+            auto scale = 1. / (m_winLength -1);
+            for(auto src0 = m_smoothDFFrame, end0 = src0 + m_winLength; src0 != end0; ++src0, ++m_frameACF) {
+                auto val = std::inner_product(src0, end0, m_smoothDFFrame, 0.) * scale;
+                if(val <= 0) {
+                    *m_frameACF = EPS;
+                }else{
+                    *m_frameACF = val;
+                }
+            }
+        }
 	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
 
 	if( GW[ 0 ] != 0 )
