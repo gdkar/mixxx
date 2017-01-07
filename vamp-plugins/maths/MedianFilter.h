@@ -35,7 +35,7 @@ public:
 	reset();
     }
 
-    ~MedianFilter() { 
+    ~MedianFilter() {
 	delete[] m_frame;
 	delete[] m_sorted;
     }
@@ -64,7 +64,7 @@ public:
     }
 
     int getSize() const {
-        return m_size; 
+        return m_size;
     }
 
     T getAt(float percentile) {

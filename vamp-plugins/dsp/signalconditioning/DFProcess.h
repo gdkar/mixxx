@@ -28,12 +28,12 @@
 #include "FiltFilt.h"
 
 struct DFProcConfig{
-    unsigned int length; 
-    unsigned int LPOrd; 
-    double *LPACoeffs; 
-    double *LPBCoeffs; 
+    unsigned int length;
+    unsigned int LPOrd;
+    double *LPACoeffs;
+    double *LPBCoeffs;
     unsigned int winPre;
-    unsigned int winPost; 
+    unsigned int winPost;
     double AlphaNormParam;
     bool isMedianPositive;
     float delta; //delta threshold used as an offset when computing the smoothed detection function
@@ -52,7 +52,7 @@ struct DFProcConfig{
     }
 };
 
-class DFProcess  
+class DFProcess
 {
 public:
     DFProcess( DFProcConfig Config );
@@ -60,7 +60,7 @@ public:
 
     void process( double* src, double* dst );
 
-	
+
 private:
     void initialise( DFProcConfig Config );
     void deInitialise();

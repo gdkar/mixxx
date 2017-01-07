@@ -35,7 +35,7 @@ struct FilterConfig{
 /**
  * Digital filter specified through FilterConfig structure.
  */
-class Filter  
+class Filter
 {
 public:
     Filter( FilterConfig Config );

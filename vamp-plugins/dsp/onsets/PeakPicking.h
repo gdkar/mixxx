@@ -87,12 +87,12 @@ struct PPickParams
     }
 };
 
-class PeakPicking  
+class PeakPicking
 {
 public:
     PeakPicking( PPickParams Config );
     virtual ~PeakPicking();
-	
+
     void process( double* src, unsigned int len, vector<int> &onsets  );
 
 
@@ -100,7 +100,7 @@ private:
     void initialise( PPickParams Config  );
     void deInitialise();
     int  quadEval( vector<double> &src, vector<int> &idx );
-	
+
     DFProcConfig m_DFProcessingParams;
 
     unsigned int m_DFLength ;
@@ -110,7 +110,7 @@ private:
 
 
     double* m_workBuffer;
-	
+
     DFProcess*	m_DFSmoothing;
 };
 
