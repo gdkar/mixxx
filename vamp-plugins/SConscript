@@ -28,7 +28,6 @@ mixxxminimal_sources = [
 	"dsp/tonal/TCSgram.cpp",
 	"dsp/tonal/TonalEstimator.cpp",
 	"dsp/transforms/FFT.cpp",
-	"maths/Correlation.cpp",
 	"maths/KLDivergence.cpp",
 	"maths/MathUtilities.cpp",
 	"plugins/BarBeatTrack.cpp",
