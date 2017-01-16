@@ -20,7 +20,8 @@ class Analyzer {
     virtual void process(const CSAMPLE* pIn, const int iLen) = 0;
     virtual void cleanup(TrackPointer tio) = 0;
     virtual void finalize(TrackPointer tio) = 0;
-    virtual ~Analyzer() {}
+    virtual ~Analyzer() = 0;
 };
 
+inline Analyzer::~Analyzer() {}
 #endif

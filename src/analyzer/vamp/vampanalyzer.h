@@ -13,7 +13,10 @@
 #include <QVector>
 
 #include <vamp-hostsdk/vamp-hostsdk.h>
-
+#include <utility>
+#include <memory>
+#include <array>
+#include "analyzer/vamp/vamppluginloader.h"
 #include "preferences/usersettings.h"
 #include "util/sample.h"
 
@@ -40,8 +43,9 @@ class VampAnalyzer {
     Vamp::HostExt::PluginLoader::PluginKey m_key;
     int m_iSampleCount, m_iOUT, m_iRemainingSamples,
         m_iBlockSize, m_iStepSize, m_rate, m_iOutput;
-    CSAMPLE ** m_pluginbuf;
-    Vamp::Plugin *m_plugin;
+    std::array<CSAMPLE  *,2> m_pluginbuf;
+    std::array<std::unique_ptr<CSAMPLE[]>,2> m_pluginstore;
+    std::unique_ptr<Vamp::Plugin> m_plugin;
     Vamp::Plugin::ParameterList mParameters;
     Vamp::Plugin::FeatureList m_Results;
 
