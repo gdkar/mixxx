@@ -5,7 +5,9 @@
 #define DAO_H
 
 class DAO {
+public:
+    virtual ~DAO() = 0;
     virtual void initialize() = 0;
 };
-
+inline DAO::~DAO() {}
 #endif /* DAO_H */
