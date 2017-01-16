@@ -5,9 +5,8 @@
 
 class DAO {
   public:
-    virtual ~DAO() {}
-
     virtual void initialize(const QSqlDatabase& database) = 0;
+    virtual ~DAO() = 0;
 };
-
+inline DAO::~DAO() {}
 #endif /* DAO_H */
