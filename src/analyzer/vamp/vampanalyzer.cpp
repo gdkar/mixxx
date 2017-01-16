@@ -22,20 +22,18 @@
 using Vamp::Plugin;
 using Vamp::PluginHostAdapter;
 
-void VampAnalyzer::initializePluginPaths() {
-    const char* pVampPath = getenv("VAMP_PATH");
-    QString vampPath = "";
-    if (pVampPath) {
+void VampAnalyzer::initializePluginPaths()
+{
+    auto && dataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+    auto && applicationPath = QCoreApplication::applicationDirPath();
+
+    auto vampPath = QString{};
+
+    if(auto pVampPath = getenv("VAMP_PATH")){
         vampPath = QString(pVampPath);
     }
-
     // TODO(XXX) use correct split separator here.
-    QStringList pathElements = vampPath.length() > 0 ? vampPath.split(PATH_SEPARATOR)
-            : QStringList();
-
-    const QString dataLocation = QDesktopServices::storageLocation(
-            QDesktopServices::DataLocation);
-    const QString applicationPath = QCoreApplication::applicationDirPath();
+    auto pathElements = vampPath.split(PATH_SEPARATOR);
 
 #ifdef __WINDOWS__
     QDir winVampPath(applicationPath);
@@ -87,15 +85,15 @@ void VampAnalyzer::initializePluginPaths() {
         pathElements << developer64Root.absolutePath();
     }
 #endif
-
-    QString newPath = pathElements.join(PATH_SEPARATOR);
+    pathElements.removeDuplicates();
+    auto newPath = pathElements.join(PATH_SEPARATOR);
     qDebug() << "Setting VAMP_PATH to: " << newPath;
-    QByteArray newPathBA = newPath.toLocal8Bit();
 #ifndef __WINDOWS__
+    auto newPathBA = newPath.toLocal8Bit();
     setenv("VAMP_PATH", newPathBA.constData(), 1);
 #else
-    QString winpath = "VAMP_PATH=" + newPath;
-    QByteArray winpathBA = winpath.toLocal8Bit();
+    auto winpath = "VAMP_PATH=" + newPath;
+    auto winpathBA = winpath.toLocal8Bit();
     putenv(winpathBA.constData());
 #endif
 }
@@ -108,16 +106,15 @@ VampAnalyzer::VampAnalyzer()
       m_iStepSize(0),
       m_rate(0),
       m_iOutput(0),
-      m_pluginbuf(new CSAMPLE*[2]),
-      m_plugin(NULL),
+      m_pluginbuf{nullptr,nullptr},
+      m_plugin(nullptr),
       m_bDoNotAnalyseMoreSamples(false),
       m_FastAnalysisEnabled(false),
       m_iMaxSamplesToAnalyse(0) {
 }
 
-VampAnalyzer::~VampAnalyzer() {
-    delete[] m_pluginbuf;
-    delete m_plugin;
+VampAnalyzer::~VampAnalyzer()
+{
 }
 
 bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
@@ -135,43 +132,40 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
         return false;
     }
 
-    if (m_plugin != NULL) {
-        delete m_plugin;
-        m_plugin = NULL;
+    if (m_plugin ) {
+        m_plugin.reset();
         qDebug() << "VampAnalyzer: kill plugin";
     }
 
-    VampPluginLoader *loader = VampPluginLoader::getInstance();
-    QStringList pluginlist = pluginid.split(":");
+    auto loader = VampPluginLoader::getInstance();
+    auto pluginlist = pluginid.split(":");
     if (pluginlist.size() != 2) {
         qDebug() << "VampAnalyzer: got malformed pluginid: " << pluginid;
         return false;
     }
 
-    bool isNumber = false;
-    int outputnumber = (pluginlist.at(1)).toInt(&isNumber);
+    auto isNumber = false;
+    auto outputnumber = (pluginlist.at(1)).toInt(&isNumber);
     if (!isNumber) {
         qDebug() << "VampAnalyzer: got malformed pluginid: " << pluginid;
         return false;
     }
 
-    QString plugin = pluginlist.at(0);
-    m_key = loader->composePluginKey(pluginlibrary.toStdString(),
-                                     plugin.toStdString());
-    m_plugin = loader->loadPlugin(m_key, m_rate,
-                                  Vamp::HostExt::PluginLoader::ADAPT_ALL_SAFE);
+    auto plugin = pluginlist.at(0);
+    m_key = loader->composePluginKey(pluginlibrary.toStdString(),plugin.toStdString());
+    m_plugin.reset(loader->loadPlugin(m_key, m_rate,Vamp::HostExt::PluginLoader::ADAPT_ALL_SAFE));
 
     if (!m_plugin) {
         qDebug() << "VampAnalyzer: Cannot load Vamp Plug-in.";
         qDebug() << "Please copy libmixxxminimal.so from build dir to one of the following:";
 
-        std::vector<std::string> path = PluginHostAdapter::getPluginPath();
-        for (unsigned int i = 0; i < path.size(); i++) {
-            qDebug() << QString::fromStdString(path[i]);
+        auto path = PluginHostAdapter::getPluginPath();
+        for(auto && sub : path) {
+            qDebug() << QString::fromStdString(sub);
         }
         return false;
     }
-    Plugin::OutputList outputs = m_plugin->getOutputDescriptors();
+    auto outputs = m_plugin->getOutputDescriptors();
     if (outputs.empty()) {
         qDebug() << "VampAnalyzer: Plugin has no outputs!";
         return false;
@@ -206,8 +200,11 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
         return false;
     }
     // Here we are using m_iBlockSize: it cannot be 0
-    m_pluginbuf[0] = new CSAMPLE[m_iBlockSize];
-    m_pluginbuf[1] = new CSAMPLE[m_iBlockSize];
+    m_pluginstore[0] = std::make_unique<CSAMPLE[]>(m_iBlockSize);
+    m_pluginstore[1] = std::make_unique<CSAMPLE[]>(m_iBlockSize);
+    m_pluginbuf[0] = m_pluginstore[0].get();
+    m_pluginbuf[1] = m_pluginstore[1].get();
+
     m_FastAnalysisEnabled = bFastAnalysis;
     if (m_FastAnalysisEnabled) {
         qDebug() << "Using fast analysis methods for BPM and Replay Gain.";
@@ -216,7 +213,8 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
     return true;
 }
 
-bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
+bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen)
+{
     if (!m_plugin) {
         qDebug() << "VampAnalyzer: Plugin not loaded";
         return false;
@@ -231,8 +229,8 @@ bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
         return true;
     }
 
-    int iIN = 0;
-    bool lastsamples = false;
+    auto iIN = 0;
+    auto lastsamples = false;
     m_iRemainingSamples -= iLen;
 
     while (iIN < iLen / 2) { //4096
@@ -241,7 +239,6 @@ bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
 
         m_iOUT++;
         iIN++;
-
         /*
          * Note 'm_iRemainingSamples' is initialized with
          * the number of total samples.
@@ -265,18 +262,13 @@ bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
         if (m_iOUT == m_iBlockSize) { //Blocksize 1024
             //qDebug() << "VAMP Block size reached";
             //qDebug() << "Ramaining samples=" << m_iRemainingSamples;
-            Vamp::RealTime timestamp =
-                    Vamp::RealTime::frame2RealTime(m_iSampleCount, m_rate);
-
-            Vamp::Plugin::FeatureSet features =
-                    m_plugin->process(m_pluginbuf, timestamp);
-
+            auto timestamp = Vamp::RealTime::frame2RealTime(m_iSampleCount, m_rate);
+            auto features = m_plugin->process(m_pluginbuf.data(), timestamp);
             m_Results.insert(m_Results.end(), features[m_iOutput].begin(),
                              features[m_iOutput].end());
 
             if (lastsamples) {
-                Vamp::Plugin::FeatureSet features =
-                        m_plugin->getRemainingFeatures();
+                auto features = m_plugin->getRemainingFeatures();
                 m_Results.insert(m_Results.end(), features[m_iOutput].begin(),
                                  features[m_iOutput].end());
             }
@@ -289,8 +281,8 @@ bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
             // move (m_iBlockSize - m_iStepSize) samples from m_iStepSize'th
             // position to 0.
             while (m_iOUT < (m_iBlockSize - m_iStepSize)) {
-                CSAMPLE lframe = m_pluginbuf[0][m_iOUT + m_iStepSize];
-                CSAMPLE rframe = m_pluginbuf[1][m_iOUT + m_iStepSize];
+                auto lframe = m_pluginbuf[0][m_iOUT + m_iStepSize];
+                auto rframe = m_pluginbuf[1][m_iOUT + m_iStepSize];
                 m_pluginbuf[0][m_iOUT] = lframe;
                 m_pluginbuf[1][m_iOUT] = rframe;
                 m_iOUT++;
@@ -307,58 +299,55 @@ bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen) {
     return true;
 }
 
-bool VampAnalyzer::End() {
+bool VampAnalyzer::End()
+{
     // If the total number of samples has been estimated incorrectly
     if (m_iRemainingSamples > 0) {
-        Vamp::Plugin::FeatureSet features = m_plugin->getRemainingFeatures();
-        m_Results.insert(m_Results.end(), features[m_iOutput].begin(),
-                         features[m_iOutput].end());
+        auto features = m_plugin->getRemainingFeatures();
+        m_Results.insert(m_Results.end(), features[m_iOutput].begin(),features[m_iOutput].end());
     }
     // Clearing buffer arrays
-    for (int i = 0; i < 2; i++) {
-        if (m_pluginbuf[i]) {
-            delete [] m_pluginbuf[i];
-            m_pluginbuf[i] = NULL;
-        }
-    }
+    m_pluginbuf[0] = m_pluginbuf[1] = nullptr;
+    m_pluginstore[0].release();
+    m_pluginstore[1].release();
     return true;
 }
 
-bool VampAnalyzer::SetParameter(const QString parameter, const double value) {
+bool VampAnalyzer::SetParameter(const QString parameter, double value)
+{
     Q_UNUSED(parameter);
     Q_UNUSED(value);
     return true;
 }
 
-void VampAnalyzer::SelectOutput(const int outputnumber) {
-    Plugin::OutputList outputs = m_plugin->getOutputDescriptors();
-    if (outputnumber >= 0 && outputnumber < int(outputs.size())) {
+void VampAnalyzer::SelectOutput(int outputnumber)
+{
+    auto outputs = m_plugin->getOutputDescriptors();
+    if (outputnumber >= 0 && outputnumber < int(outputs.size()))
         m_iOutput = outputnumber;
-    }
 }
 
-QVector<double> VampAnalyzer::GetInitFramesVector() {
+QVector<double> VampAnalyzer::GetInitFramesVector()
+{
     QVector<double> vectout;
-    for (Vamp::Plugin::FeatureList::iterator fli = m_Results.begin();
-         fli != m_Results.end(); ++fli) {
-        if (fli->hasTimestamp) {
-            Vamp::RealTime ftime0 = fli->timestamp;
+    for (auto & fl : m_Results) {
+        if (fl.hasTimestamp) {
+            auto ftime0 = fl.timestamp;
             //double ltime0 = ftime0.sec + (double(ftime0.nsec)
             //        / 1000000000.0);
-            vectout << static_cast<double>(
-                Vamp::RealTime::realTime2Frame(ftime0, m_rate));
+            vectout << static_cast<double>(Vamp::RealTime::realTime2Frame(ftime0, m_rate));
         }
     }
     return vectout;
 }
 
-QVector<double> VampAnalyzer::GetEndFramesVector() {
+QVector<double> VampAnalyzer::GetEndFramesVector()
+{
     QVector<double> vectout;
-    for (Vamp::Plugin::FeatureList::iterator fli = m_Results.begin();
-         fli != m_Results.end(); ++fli) {
-        if (fli->hasDuration) {
-            Vamp::RealTime ftime0 = fli->timestamp;
-            Vamp::RealTime ftime1 = ftime0 + fli->duration;
+    for (auto & fl : m_Results) {
+        if (fl.hasDuration) {
+            auto ftime0 = fl.timestamp;
+            auto ftime1 = ftime0 + fl.duration;
             //double ltime1 = ftime1.sec + (double(ftime1.nsec)
             //        / 1000000000.0);
             vectout << static_cast<double>(
@@ -368,31 +357,30 @@ QVector<double> VampAnalyzer::GetEndFramesVector() {
     return vectout;
 }
 
-QVector<QString> VampAnalyzer::GetLabelsVector() {
+QVector<QString> VampAnalyzer::GetLabelsVector()
+{
     QVector<QString> vectout;
-    for (Vamp::Plugin::FeatureList::iterator fli = m_Results.begin();
-         fli != m_Results.end(); ++fli) {
-        vectout << fli->label.c_str();
-    }
+    for(auto & fl : m_Results)
+        vectout << fl.label.c_str();
     return vectout;
 }
 
-QVector<double> VampAnalyzer::GetFirstValuesVector() {
+QVector<double> VampAnalyzer::GetFirstValuesVector()
+{
     QVector<double> vectout;
-    for (Vamp::Plugin::FeatureList::iterator fli = m_Results.begin();
-         fli != m_Results.end(); ++fli) {
-        std::vector<float> vec = fli->values;
+    for (auto fli = m_Results.begin(); fli != m_Results.end(); ++fli) {
+        auto vec = fli->values;
         if (!vec.empty())
             vectout << vec[0];
     }
     return vectout;
 }
 
-QVector<double> VampAnalyzer::GetLastValuesVector() {
+QVector<double> VampAnalyzer::GetLastValuesVector()
+{
     QVector<double> vectout;
-    for (Vamp::Plugin::FeatureList::iterator fli = m_Results.begin();
-         fli != m_Results.end(); ++fli) {
-        std::vector<float> vec = fli->values;
+    for (auto & fl : m_Results) {
+        auto && vec = fl.values;
         if (!vec.empty())
             vectout << vec[vec.size() - 1];
     }
