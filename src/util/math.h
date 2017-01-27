@@ -44,32 +44,26 @@ constexpr decltype(auto) math_max3(auto && a, auto && b, auto && c)
 {
     return std::max({a,b,c});
 }
-template<class T,class Compare>
-constexpr const T& clamp(const T& v, const T& lo, const T& hi, Compare comp)
+template<class T, class Compare>
+constexpr const T& clamp( const T& v, const T& lo, const T& hi, Compare && comp)
 {
-    return comp(v,lo) ? lo : comp(hi,v) ? hi : v;
+    return comp(v, lo) ? lo : comp(hi, v) ? hi : v;
 }
 template<class T>
-constexpr const T& clamp(const T& v, const T& lo, const T& hi)
+constexpr const T &clamp( const T& v, const T& lo, const T& hi)
 {
-    return clamp(v, lo, hi, std::less<>());
-}
-
-// Restrict value to the range [min, max]. Undefined behavior if min > max.
+    return clamp( v, lo, hi, std::less<>{});
+}// Restrict value to the range [min, max]. Undefined behavior if min > max.
 template <typename T>
 constexpr T math_clamp(T value, T _min, T _max) {
     // DEBUG_ASSERT compiles out in release builds so it does not affect
     // vectorization or pipelining of clamping in tight loops.
     return clamp(value, _min,_max);
+}
 #define math_maxn(...) std::max({ __VA_ARGS__})
 #define math_minn(...) std::max({ __VA_ARGS__})
 #define math_max3(a,b,c) math_maxn((a),(b),(c))
 
-// Restrict value to the range [min, max]. Undefined behavior if min > max.
-template <typename T>
-constexpr T math_clamp(T val, T minval, T maxval) {
-    return std::max(minval,std::min(maxval,val));
-}
 
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required

@@ -29,17 +29,6 @@ constexpr auto SAMPLE_ZERO  = SAMPLE(0);
 constexpr auto SAMPLE_MIN = std::numeric_limits<SAMPLE>::min();
 constexpr auto SAMPLE_MAX = std::numeric_limits<SAMPLE>::max();
 
-template<class T, class Compare>
-constexpr const T& clamp( const T& v, const T& lo, const T& hi, Compare && comp)
-{
-    return comp(v, lo) ? lo : comp(hi, v) ? hi : v;
-}
-template<class T>
-constexpr const T &clamp( const T& v, const T& lo, const T& hi)
-{
-    return clamp( v, lo, hi, std::less<>{});
-}
-
 
 // Limits the range of a SAMPLE value to [SAMPLE_MIN, SAMPLE_MAX].
 constexpr SAMPLE SAMPLE_clamp(SAMPLE in) {
