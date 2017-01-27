@@ -98,9 +98,7 @@ int main(int argc, char * argv[]) {
     // If you change this here, you also need to change it in
     // ErrorDialogHandler::errorDialog(). TODO(XXX): Remove this hack.
     QThread::currentThread()->setObjectName("Main");
-
     mixxx::Logging::initialize();
-
     MixxxApplication a(argc, argv);
 
     // Support utf-8 for all translation strings. Not supported in Qt 5.

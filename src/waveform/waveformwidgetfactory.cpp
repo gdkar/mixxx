@@ -79,6 +79,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[High] = 1.0;
 
     auto glFormat = QSurfaceFormat::defaultFormat();
+#if 0
     glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     glFormat.setDepthBufferSize(0);
     glFormat.setAlphaBufferSize(8);
@@ -110,7 +111,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     QSurfaceFormat::setDefaultFormat(glFormat);
 
     glFormat = QSurfaceFormat::defaultFormat();
-
+#endif
     auto majorVersion = glFormat.majorVersion();
     auto minorVersion = glFormat.minorVersion();
 
@@ -125,10 +126,10 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_time.start();
 }
 
-WaveformWidgetFactory::~WaveformWidgetFactory() {
-    if (m_vsyncThread) {
+WaveformWidgetFactory::~WaveformWidgetFactory()
+{
+    if (m_vsyncThread)
         delete m_vsyncThread;
-    }
 }
 
 bool WaveformWidgetFactory::setConfig(UserSettingsPointer config) {
@@ -398,13 +399,13 @@ void WaveformWidgetFactory::setOverviewNormalized(bool normalize) {
 }
 
 void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer) {
-    WaveformWidgetAbstract* pWaveformWidget = viewer->getWaveformWidget();
+    auto pWaveformWidget = viewer->getWaveformWidget();
     if (pWaveformWidget != NULL && isZoomSync()) {
         //qDebug() << "WaveformWidgetFactory::notifyZoomChange";
-        int refZoom = pWaveformWidget->getZoomFactor();
+        auto refZoom = pWaveformWidget->getZoomFactor();
 
         for (int i = 0; i < m_waveformWidgetHolders.size(); ++i) {
-            WaveformWidgetHolder& holder = m_waveformWidgetHolders[i];
+            auto& holder = m_waveformWidgetHolders[i];
             if (holder.m_waveformViewer != viewer) {
                 holder.m_waveformViewer->setZoom(refZoom);
             }
@@ -431,7 +432,7 @@ void WaveformWidgetFactory::render() {
             // anti tearing driver settings
             // all render commands are delayed until the swap from the previous run is executed
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-                WaveformWidgetAbstract* pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
+                auto pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
                 if (pWaveformWidget->getWidth() > 0 &&
                         pWaveformWidget->getWidget()->isVisible()) {
                     (void)pWaveformWidget->render();
@@ -468,9 +469,9 @@ void WaveformWidgetFactory::swap() {
             // Show rendered buffer from last render() run
             //qDebug() << "swap() start" << m_vsyncThread->elapsed();
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-                WaveformWidgetAbstract* pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
+                auto  pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
                 if (pWaveformWidget->getWidth() > 0) {
-                    QGLWidget* glw = dynamic_cast<QGLWidget*>(pWaveformWidget->getWidget());
+                    auto glw = dynamic_cast<QGLWidget*>(pWaveformWidget->getWidget());
                     // Don't swap invalid or invisible widgets. Prevents
                     // continuous log spew of "QOpenGLContext::swapBuffers()
                     // called with non-exposed window, behavior is undefined" on
@@ -678,8 +679,8 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
     }
     return widget;
 }
-
-int WaveformWidgetFactory::findIndexOf(WWaveformViewer* viewer) const {
+int WaveformWidgetFactory::findIndexOf(WWaveformViewer* viewer) const
+{
     for (int i = 0; i < (int)m_waveformWidgetHolders.size(); i++) {
         if (m_waveformWidgetHolders[i].m_waveformViewer == viewer) {
             return i;
@@ -687,15 +688,13 @@ int WaveformWidgetFactory::findIndexOf(WWaveformViewer* viewer) const {
     }
     return -1;
 }
-
-void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick) {
+void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick)
+{
     m_vsyncThread = new VSyncThread(this, pGuiTick);
-    m_vsyncThread->start(QThread::NormalPriority);
 
-    connect(m_vsyncThread, SIGNAL(vsyncRender()),
-            this, SLOT(render()));
-    connect(m_vsyncThread, SIGNAL(vsyncSwap()),
-            this, SLOT(swap()));
+    connect(m_vsyncThread, SIGNAL(vsyncRender()),this, SLOT(render()));
+    connect(m_vsyncThread, SIGNAL(vsyncSwap()),this, SLOT(swap()));
+    m_vsyncThread->start(QThread::NormalPriority);
 }
 
 void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
