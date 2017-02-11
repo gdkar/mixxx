@@ -72,7 +72,6 @@ void CachingReaderWorker::run()
 
     Event::start(m_tag);
     while (!m_stop.load()) {
-<<<<<<< HEAD
         if (m_newTrack) {
             auto pLoadTrack = TrackPointer{};
             m_newTrack.swap(pLoadTrack);
