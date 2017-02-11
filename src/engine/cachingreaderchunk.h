@@ -41,7 +41,6 @@ public:
     }
     // Converts samples to frames
     static SINT samples2frames(SINT samples) {
-        DEBUG_ASSERT(0 == (samples % kChannels));
         return samples / kChannels;
     }
 
