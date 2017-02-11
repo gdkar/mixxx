@@ -92,12 +92,11 @@ void MessageHandler(
         Logfile.setFileName(logFileName);
         Logfile.open(QIODevice::WriteOnly | QIODevice::Text);
     }
-    auto LogLevel logLevel = CmdlineArgs::Instance().getLogLevel();
-    auto debugLevel = CmdlineArgs::Instance().getDebugLevel(); // Get message verbosity
+    auto debugLevel = CmdlineArgs::Instance().getLogLevel(); // Get message verbosity
 
     switch (type) {
     case QtDebugMsg:
-        if (logLevel >= Logging::LogLevel::Debug || controllerDebug) {
+        if (debugLevel >= Logging::LogLevel::Debug || controllerDebug) {
             fprintf(stderr, "Debug %s", ba.constData());
         }
         if (Logfile.isOpen()) {
@@ -107,7 +106,7 @@ void MessageHandler(
         break;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QtInfoMsg:
-        if (logLevel >= Logging::LogLevel::Info) {
+        if (debugLevel >= Logging::LogLevel::Info) {
             fprintf(stderr, "Info %s", ba.constData());
         }
         if (Logfile.isOpen()) {
@@ -117,7 +116,7 @@ void MessageHandler(
         break;
 #endif
     case QtWarningMsg:
-        if (logLevel >= Logging::LogLevel::Warning) {
+        if (debugLevel >= Logging::LogLevel::Warning) {
             fprintf(stderr, "Warning %s", ba.constData());
         }
         if (Logfile.isOpen()) {

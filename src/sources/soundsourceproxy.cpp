@@ -174,7 +174,7 @@ void SoundSourceProxy::loadPlugins()
 #ifdef USE_FFMPEGSOURCE
     // Use FFmpeg as the last resort.
     s_soundSourceProviders.registerProvider(
-            mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderFFmpeg>());
+            std::make_shared<mixxx::SoundSourceProviderFFmpeg>());
 #endif
 
     // Scan for and initialize all plugins.
