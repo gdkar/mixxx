@@ -157,16 +157,11 @@ MixxxMainWindow::~MixxxMainWindow() {
 void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     ScopedTimer t("MixxxMainWindow::initialize");
 
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
-
+    auto pConfig = m_pSettingsManager->settings();
     Sandbox::initialize(QDir(pConfig->getSettingsPath()).filePath("sandbox.cfg"));
-
-    QString resourcePath = pConfig->getResourcePath();
-
+    auto resourcePath = pConfig->getResourcePath();
     FontUtils::initializeFonts(resourcePath); // takes a long time
-
     launchProgress(2);
-
     // Set the visibility of tooltips, default "1" = ON
     m_toolTipsCfg = static_cast<mixxx::TooltipsPreference>(
         pConfig->getValue(ConfigKey("[Controls]", "Tooltips"),
@@ -174,37 +169,26 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
 
     setAttribute(Qt::WA_AcceptTouchEvents);
     m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"));
-
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, pConfig);
-
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,
-                                 true, true);
-
+    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,true, true);
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
-    NativeBackend* pNativeBackend = new NativeBackend(m_pEffectsManager);
+    auto  pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
-
-    // Sets up the EffectChains and EffectRacks (long)
-    m_pEffectsManager->setup();
-
+    // Sets up the default EffectChains and EffectRacks (long)
+    m_pEffectsManager->setupDefaults();
     launchProgress(8);
-
     // Initialize player device
     // while this is created here, setupDevices needs to be called sometime
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
     m_pSoundManager = new SoundManager(pConfig, m_pEngine);
-
     m_pRecordingManager = new RecordingManager(pConfig, m_pEngine);
-
-
 #ifdef __BROADCAST__
     m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager);
 #endif
-
     launchProgress(11);
 
     // Needs to be created before CueControl (decks) and WTrackTableView.
