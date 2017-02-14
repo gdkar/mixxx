@@ -4,6 +4,7 @@
 
 namespace mixxx {
 
+#if 0
 /*static*/ constexpr AudioSignal::SampleLayout AudioSource::kSampleLayout;
 
 /*static*/ constexpr SINT AudioSource::kFrameCountZero;
@@ -13,7 +14,7 @@ namespace mixxx {
 
 /*static*/ constexpr SINT AudioSource::kBitrateZero;
 /*static*/ constexpr SINT AudioSource::kBitrateDefault;
-
+#endif
 void AudioSource::clampFrameInterval(
         SINT* pMinFrameIndexOfInterval,
         SINT* pMaxFrameIndexOfInterval,
@@ -60,7 +61,8 @@ SINT AudioSource::getSampleBufferSize(
 SINT AudioSource::readSampleFramesStereo(
         SINT numberOfFrames,
         CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+        SINT sampleBufferSize)
+{
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
 
     switch (getChannelCount()) {
