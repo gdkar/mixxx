@@ -11,6 +11,7 @@ const Logger kLogger("AudioSource");
 
 } // anonymous namespace
 
+#if 0
 /*static*/ constexpr AudioSignal::SampleLayout AudioSource::kSampleLayout;
 
 /*static*/ constexpr SINT AudioSource::kFrameCountZero;
@@ -20,7 +21,7 @@ const Logger kLogger("AudioSource");
 
 /*static*/ constexpr SINT AudioSource::kBitrateZero;
 /*static*/ constexpr SINT AudioSource::kBitrateDefault;
-
+#endif
 void AudioSource::clampFrameInterval(
         SINT* pMinFrameIndexOfInterval,
         SINT* pMaxFrameIndexOfInterval,
@@ -67,7 +68,8 @@ SINT AudioSource::getSampleBufferSize(
 SINT AudioSource::readSampleFramesStereo(
         SINT numberOfFrames,
         CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+        SINT sampleBufferSize)
+{
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
 
     switch (getChannelCount()) {
