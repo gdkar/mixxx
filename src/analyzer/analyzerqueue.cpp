@@ -171,22 +171,20 @@ TrackPointer AnalyzerQueue::dequeueNextBlocking()
 }
 
 // This is called from the AnalyzerQueue thread
-bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudioSource) {
-
+bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudioSource)
+{
     QTime progressUpdateInhibitTimer;
     progressUpdateInhibitTimer.start(); // Inhibit Updates for 60 milliseconds
 
-    auto frameIndex = pAudioSource->getMinFrameIndex();
+    auto frameIndex = pAudioSource->seekSampleFrame(pAudioSource->getMinFrameIndex());
     auto dieflag = false;
     auto cancelled = false;
     do {
         ScopedTimer t("AnalyzerQueue::doAnalysis block");
 
         DEBUG_ASSERT(frameIndex < pAudioSource->getMaxFrameIndex());
-        auto framesRemaining =
-                pAudioSource->getMaxFrameIndex() - frameIndex;
-        auto framesToRead =
-                math_min(kAnalysisFramesPerBlock, framesRemaining);
+        auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
+        auto framesToRead = std::min(kAnalysisFramesPerBlock, framesRemaining);
         DEBUG_ASSERT(0 < framesToRead);
 
         auto framesRead =
@@ -439,7 +437,8 @@ AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
 
 // static
 AnalyzerQueue* AnalyzerQueue::createAnalysisFeatureAnalyzerQueue(
-        UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
+        UserSettingsPointer pConfig, TrackCollection* pTrackCollection)
+{
     auto ret = std::make_unique<AnalyzerQueue>(pTrackCollection);
 
     if (pConfig->getValue<bool>(ConfigKey("[Library]", "EnableWaveformGenerationWithAnalysis"))) {
