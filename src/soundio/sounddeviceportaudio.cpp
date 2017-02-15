@@ -25,6 +25,7 @@
 
 #ifdef __LINUX__
 #include <QLibrary>
+#include <alsa/error.h>
 #endif
 
 #include "control/controlobject.h"
@@ -46,7 +47,7 @@
 namespace {
 
 // Buffer for drift correction 1 full, 1 for r/w, 1 empty
-constexpr int kDriftReserve = 1;
+constexpr int kDriftReserve = 2;
 
 // Buffer for drift correction 1 full, 1 for r/w, 1 empty
 constexpr int kFifoSize = 2 * kDriftReserve + 1;
@@ -84,7 +85,6 @@ int paV19CallbackClkRef(const void *inputBuffer, void *outputBuffer,
             (unsigned int) framesPerBuffer, (CSAMPLE*) outputBuffer,
             (const CSAMPLE*) inputBuffer, timeInfo, statusFlags);
 }
-
 void paV19CallbackFinished(void *opaque)
 {
     auto d = static_cast<SoundDevicePortAudio*>(opaque);
@@ -147,7 +147,11 @@ SoundDevicePortAudio::~SoundDevicePortAudio()
     delete m_pMasterAudioLatencyUsage;
     delete m_pMasterAudioLatencyOverload;
 }
-
+#ifdef __LINUX__
+static void alsa_null_msg(const char*,int,const char*,int,const char*,...)
+{
+}
+#endif
 SoundDeviceError SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
 {
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
@@ -175,9 +179,7 @@ SoundDeviceError SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers
             auto channelGroup = out.getChannelGroup();
             auto highChannel = channelGroup.getChannelBase()
                     + channelGroup.getChannelCount();
-            if (m_outputParams.channelCount <= highChannel) {
-                m_outputParams.channelCount = highChannel;
-            }
+            m_outputParams.channelCount = std::max(m_outputParams.channelCount,highChannel);
         }
     }
     // Look at how many audio inputs we have,
@@ -190,9 +192,7 @@ SoundDeviceError SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers
             auto channelGroup = in.getChannelGroup();
             auto highChannel = channelGroup.getChannelBase()
                 + channelGroup.getChannelCount();
-            if (m_inputParams.channelCount <= highChannel) {
-                m_inputParams.channelCount = highChannel;
-            }
+            m_inputParams.channelCount = std::max(m_inputParams.channelCount,highChannel);
         }
     }
     // Workaround for Bug #900364. The PortAudio ALSA hostapi opens the minimum
@@ -236,7 +236,10 @@ SoundDeviceError SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers
     if (m_deviceInfo->hostApi == paJACK) {
         m_framesPerBuffer = paFramesPerBufferUnspecified;
     }
-
+#ifdef __LINUX__
+    if (m_deviceInfo->hostApi == paALSA)
+        snd_lib_error_set_handler(alsa_null_msg);
+#endif
     //Fill out the rest of the info.
     m_outputParams.device = m_devId;
     m_outputParams.sampleFormat = paFloat32;
@@ -335,10 +338,17 @@ SoundDeviceError SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers
        qDebug() << "Dynamically loaded PortAudio library";
 
     auto enableRealtime = (EnableAlsaRT) portaudio.resolve("PaAlsa_EnableRealtimeScheduling");
+
     if (enableRealtime) {
         enableRealtime(pStream, 1);
     }
+/*    typedef void (*PaUtilLogCallback)(const char *);
+    typedef void (*PaUtil_SetDebugPrintFunctionType)(PaUtilLogCallback cb);
+    if(auto setDebugPrintFunction = (PaUtil_SetDebugPrintFunctionType) portaudio.resolve("PaUtil_SetDebugPrintFunction")) {
+        setDebugPrintFunction([](const char* ignore){void(sizeof(ignore));});
+    }*/
     portaudio.unload();
+
 #endif
     // Start stream
     err = Pa_StartStream(pStream);
@@ -429,7 +439,6 @@ SoundDeviceError SoundDevicePortAudio::close()
                        << Pa_GetErrorText(err) << getInternalName();
             return SOUNDDEVICE_ERROR_ERR;
         }
-
         if (m_outputFifo) {
             delete m_outputFifo;
         }
@@ -437,7 +446,6 @@ SoundDeviceError SoundDevicePortAudio::close()
             delete m_inputFifo;
         }
     }
-
     m_outputFifo = NULL;
     m_inputFifo = NULL;
     m_bSetThreadPriority = false;

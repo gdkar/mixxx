@@ -22,7 +22,7 @@
 #include "util/math.h"
 
 // this (7) represents latency values from 1 ms to about 80 ms -- bkgood
-const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 7;
+const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 31;
 
 const QString SoundManagerConfig::kDefaultAPI = QString("None");
 // Sample Rate even the cheap sound Devices will support most likely
@@ -270,15 +270,18 @@ unsigned int SoundManagerConfig::getFramesPerBuffer() const
     auto framesPerBuffer = 1u;
     auto sampleRate = double(m_sampleRate); // need this to avoid int division
     // first, get to the framesPerBuffer value corresponding to latency index 1
-    for (; framesPerBuffer / sampleRate < 1e-3; framesPerBuffer *= 2) {
+    for (; framesPerBuffer / sampleRate < 0.5e-3; framesPerBuffer *= 2) {
         /* nothing */
     }
-    // then, keep going until we get to our desired latency index (if not 1)
+    framesPerBuffer <<= (audioBufferSizeIndex /4ul);
+    framesPerBuffer  *= 4 + (audioBufferSizeIndex % 4);
+    framesPerBuffer /= 4;
+/*    // then, keep going until we get to our desired latency index (if not 1)
     framesPerBuffer <<= ((audioBufferSizeIndex - 1u) >> 1);
     if((audioBufferSizeIndex - 1u) % 2) {
         framesPerBuffer *= 3;
         framesPerBuffer >>= 1;
-    }
+    }*/
     return framesPerBuffer;
 }
 
