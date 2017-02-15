@@ -37,7 +37,8 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
           m_pPlayerManager(pPlayerManager),
           m_pConfig(pConfig),
           m_settingsModified(false),
-          m_loading(false) {
+          m_loading(false)
+{
     setupUi(this);
 
     connect(m_pSoundManager, SIGNAL(devicesUpdated()),
@@ -376,7 +377,7 @@ void DlgPrefSound::loadSettings(const SoundManagerConfig &config) {
     keylockComboBox->setCurrentIndex(keylock_engine);
 
     m_loading = false;
-    // DlgPrefSoundItem has it's own inhibit flag 
+    // DlgPrefSoundItem has it's own inhibit flag
     emit(loadPaths(m_config));
 }
 
@@ -458,27 +459,25 @@ void DlgPrefSound::syncBuffersChanged(int index) {
 void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex) {
     double sampleRate = sampleRateComboBox->itemData(sampleRateIndex).toDouble();
     int oldSizeIndex = audioBufferComboBox->currentIndex();
-    unsigned int framesPerBuffer = 1; // start this at 0 and inf loop happens
+    unsigned int framesPerBuffer = 64 / (2*sizeof(float)); // start this at 0 and inf loop happens
     // we don't want to display any sub-1ms buffer sizes (well maybe we do but I
     // don't right now!), so we iterate over all the buffer sizes until we
     // find the first that gives us a buffer size >= 1 ms -- bkgood
     // no div-by-0 in the next line because we don't allow srates of 0 in our
     // srate list when we construct it in the ctor -- bkgood
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {
+    for (; framesPerBuffer / sampleRate  < 0.5e-3; framesPerBuffer *= 2) {
     }
     audioBufferComboBox->clear();
     for (unsigned int i = 0; i < SoundManagerConfig::kMaxAudioBufferSizeIndex; ++i) {
-        auto fpb = framesPerBuffer << (i >> 1);
-        if(i % 2) {
-            fpb *= 3;
-            fpb /= 2;
-        }
+        auto fpb = framesPerBuffer << (i >> 2);
+        fpb *= 4 + (i%4);
+        fpb /= 4;
         float latency = fpb / sampleRate * 1000.0f;
         // i + 1 in the next line is a latency index as described in SSConfig
         audioBufferComboBox->addItem(tr("%1 samples ( %2 ms, %3 ms latency )")
             .arg(fpb,4)
             .arg(latency,0,'g',3)
-            .arg(latency * 3 ,0,'g',3)
+            .arg(latency * 3.0 ,0,'g',3)
             , i + 1);
 //        framesPerBuffer <<= 1; // *= 2
     }
@@ -496,7 +495,8 @@ void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex) {
  * Slot called when device lists go bad to refresh them, or the API
  * just changes and we need to display new devices.
  */
-void DlgPrefSound::refreshDevices() {
+void DlgPrefSound::refreshDevices()
+{
     if (m_config.getAPI() == "None") {
         m_outputDevices.clear();
         m_inputDevices.clear();
@@ -515,7 +515,8 @@ void DlgPrefSound::refreshDevices() {
  * apply button and marks that settings have been changed so that
  * DlgPrefSound::slotApply knows to apply them.
  */
-void DlgPrefSound::settingChanged() {
+void DlgPrefSound::settingChanged()
+{
     if (m_loading) return; // doesn't count if we're just loading prefs
     m_settingsModified = true;
 }
@@ -523,7 +524,8 @@ void DlgPrefSound::settingChanged() {
 /**
  * Slot called when the "Query Devices" button is clicked.
  */
-void DlgPrefSound::queryClicked() {
+void DlgPrefSound::queryClicked()
+{
     ScopedWaitCursor cursor;
     m_pSoundManager->clearAndQueryDevices();
     updateAPIs();
@@ -532,7 +534,8 @@ void DlgPrefSound::queryClicked() {
 /**
  * Slot called when the "Reset to Defaults" button is clicked.
  */
-void DlgPrefSound::slotResetToDefaults() {
+void DlgPrefSound::slotResetToDefaults()
+{
     SoundManagerConfig newConfig;
     newConfig.loadDefaults(m_pSoundManager, SoundManagerConfig::ALL);
     loadSettings(newConfig);
@@ -567,34 +570,42 @@ void DlgPrefSound::masterLatencyChanged(double latency)
     update();
 }
 
-void DlgPrefSound::headDelayChanged(double value) {
+void DlgPrefSound::headDelayChanged(double value)
+{
     m_pHeadDelay->set(value);
 }
 
-void DlgPrefSound::masterDelayChanged(double value) {
+void DlgPrefSound::masterDelayChanged(double value)
+{
     m_pMasterDelay->set(value);
 }
 
-void DlgPrefSound::masterMixChanged(int value) {
+void DlgPrefSound::masterMixChanged(int value)
+{
     m_pMasterEnabled->set(value);
 }
 
-void DlgPrefSound::masterEnabledChanged(double value) {
+void DlgPrefSound::masterEnabledChanged(double value)
+{
     masterMixComboBox->setCurrentIndex(value ? 1 : 0);
 }
 
-void DlgPrefSound::masterOutputModeComboBoxChanged(int value) {
+void DlgPrefSound::masterOutputModeComboBoxChanged(int value)
+{
     m_pMasterMonoMixdown->set((double)value);
 }
 
-void DlgPrefSound::masterMonoMixdownChanged(double value) {
+void DlgPrefSound::masterMonoMixdownChanged(double value)
+{
     masterOutputModeComboBox->setCurrentIndex(value ? 1 : 0);
 }
 
-void DlgPrefSound::talkoverMixComboBoxChanged(int value) {
+void DlgPrefSound::talkoverMixComboBoxChanged(int value)
+{
     m_pMasterTalkoverMix->set((double)value);
 }
 
-void DlgPrefSound::talkoverMixChanged(double value) {
+void DlgPrefSound::talkoverMixChanged(double value)
+{
     micMixComboBox->setCurrentIndex(value ? 1 : 0);
 }
