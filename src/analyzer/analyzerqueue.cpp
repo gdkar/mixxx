@@ -130,14 +130,13 @@ bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack)
 // This is called from the AnalyzerQueue thread
 TrackPointer AnalyzerQueue::dequeueNextBlocking()
 {
-    m_qm.lock();
+    auto _lock = QMutexLocker(&m_qm);
     if (m_tioq.isEmpty()) {
         Event::end("AnalyzerQueue process");
         m_qwait.wait(&m_qm);
         Event::start("AnalyzerQueue process");
 
         if (m_exit) {
-            m_qm.unlock();
             return TrackPointer();
         }
     }
@@ -145,24 +144,22 @@ TrackPointer AnalyzerQueue::dequeueNextBlocking()
     TrackPointer pLoadTrack;
     QMutableListIterator<TrackPointer> it(m_tioq);
     while (it.hasNext()) {
-        auto& pTrack = it.next();
-        if (!pTrack) {
+        if(auto& pTrack = it.next()) {
+            // Prioritize tracks that are loaded.
+            if (info.isTrackLoaded(pTrack)) {
+                qDebug() << "Prioritizing" << pTrack->getTitle() << pTrack->getLocation();
+                pLoadTrack = pTrack;
+                it.remove();
+                break;
+            }
+        }else{
             it.remove();
-            continue;
-        }
-        // Prioritize tracks that are loaded.
-        if (info.isTrackLoaded(pTrack)) {
-            qDebug() << "Prioritizing" << pTrack->getTitle() << pTrack->getLocation();
-            pLoadTrack = pTrack;
-            it.remove();
-            break;
         }
     }
     if (!pLoadTrack && !m_tioq.isEmpty()) {
         // no prioritized track found, use head track
         pLoadTrack = m_tioq.dequeue();
     }
-    m_qm.unlock();
     if (pLoadTrack) {
         qDebug() << "Analyzing" << pLoadTrack->getTitle() << pLoadTrack->getLocation();
     }
@@ -191,9 +188,9 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 pAudioSource->readSampleFramesStereo(
                         kAnalysisFramesPerBlock,
                         &m_sampleBuffer);
-        DEBUG_ASSERT(framesRead <= framesToRead);
+//        DEBUG_ASSERT(framesRead <= framesToRead);
         frameIndex += framesRead;
-        DEBUG_ASSERT(pAudioSource->isValidFrameIndex(frameIndex));
+//        DEBUG_ASSERT(pAudioSource->isValidFrameIndex(frameIndex));
 
         // To compare apples to apples, let's only look at blocks that are
         // the full block size.
@@ -237,7 +234,6 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 progressUpdateInhibitTimer.start();
             }
         }
-
         // Since this is a background analysis queue, we should co-operatively
         // yield every now and then to try and reduce CPU contention. The
         // analyzer queue is CPU intensive so we want to get out of the way of
@@ -246,7 +242,7 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
         //QThread::usleep(10);
 
         // has something new entered the queue?
-        if (m_aiCheckPriorities.fetchAndStoreAcquire(false)) {
+        if (m_aiCheckPriorities.exchange(false)) {
             if (isLoadedTrackWaiting(tio)) {
                 qDebug() << "Interrupting analysis to give preference to a loaded track.";
                 dieflag = true;
@@ -404,7 +400,7 @@ void AnalyzerQueue::slotAnalyseTrack(TrackPointer tio)
 {
     // This slot is called from the decks and and samplers when the track was loaded.
     queueAnalyseTrack(tio);
-    m_aiCheckPriorities = true;
+    m_aiCheckPriorities.store( true);
 }
 
 // This is called from the GUI and from the AnalyzerQueue thread

@@ -32,18 +32,20 @@ class AudioInput;
 
 const QString kNetworkDeviceInternalName = "Network stream";
 
-class SoundDevice {
+class SoundDevice : public QObject{
+
+    Q_OBJECT
   public:
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();
 
-    inline const QString& getInternalName() const {
+    const QString& getInternalName() const {
         return m_strInternalName;
     }
-    inline const QString& getDisplayName() const {
+    const QString& getDisplayName() const {
         return m_strDisplayName;
     }
-    inline const QString& getHostAPI() const {
+    const QString& getHostAPI() const {
         return m_hostAPI;
     }
     void setSampleRate(double sampleRate);

@@ -112,7 +112,8 @@ public:
 
 }
 
-void BrowseThread::populateModel() {
+void BrowseThread::populateModel()
+{
     m_path_mutex.lock();
     MDir thisPath = m_path;
     BrowseTableModel* thisModelObserver = m_model_observer;
@@ -145,13 +146,13 @@ void BrowseThread::populateModel() {
             return populateModel();
         }
 
-        QString filepath = fileIt.next();
+        auto filepath = fileIt.next();
         TrackPointer pTrack(Track::newTemporary(filepath, thisPath.token()));
         SoundSourceProxy(pTrack).loadTrackMetadata();
 
         QList<QStandardItem*> row_data;
 
-        QStandardItem* item = new QStandardItem("0");
+        auto item = new QStandardItem("0");
         item->setData("0", Qt::UserRole);
         row_data.insert(COLUMN_PREVIEW, item);
 
@@ -212,7 +213,7 @@ void BrowseThread::populateModel() {
         item->setData(item->text(), Qt::UserRole);
         row_data.insert(COLUMN_COMMENT, item);
 
-        QString duration = pTrack->getDurationText(mixxx::Duration::Precision::SECONDS);
+        auto duration = pTrack->getDurationText(mixxx::Duration::Precision::SECONDS);
         item = new QStandardItem(duration);
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
@@ -245,13 +246,13 @@ void BrowseThread::populateModel() {
         item->setData(location, Qt::UserRole);
         row_data.insert(COLUMN_LOCATION, item);
 
-        QDateTime modifiedTime = pTrack->getFileModifiedTime().toLocalTime();
+        auto modifiedTime = pTrack->getFileModifiedTime().toLocalTime();
         item = new QStandardItem(modifiedTime.toString(Qt::DefaultLocaleShortDate));
         item->setToolTip(item->text());
         item->setData(modifiedTime, Qt::UserRole);
         row_data.insert(COLUMN_FILE_MODIFIED_TIME, item);
 
-        QDateTime creationTime = pTrack->getFileCreationTime().toLocalTime();
+        auto creationTime = pTrack->getFileCreationTime().toLocalTime();
         item = new QStandardItem(creationTime.toString(Qt::DefaultLocaleShortDate));
         item->setToolTip(item->text());
         item->setData(creationTime, Qt::UserRole);
