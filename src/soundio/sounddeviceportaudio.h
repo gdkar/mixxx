@@ -40,18 +40,19 @@ class ControlProxy;
 typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 
 class SoundDevicePortAudio : public SoundDevice {
+    Q_OBJECT
   public:
     SoundDevicePortAudio(UserSettingsPointer config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,
                          unsigned int devIndex);
-    virtual ~SoundDevicePortAudio();
+   ~SoundDevicePortAudio() override;
 
-    virtual SoundDeviceError open(bool isClkRefDevice, int syncBuffers);
-    virtual bool isOpen() const;
-    virtual SoundDeviceError close();
-    virtual void readProcess();
-    virtual void writeProcess();
-    virtual QString getError() const;
+    SoundDeviceError open(bool isClkRefDevice, int syncBuffers) override;
+    bool isOpen() const override;
+    SoundDeviceError close() override;
+    void readProcess() override;
+    void writeProcess() override;
+    QString getError() const override;
 
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)
@@ -82,7 +83,7 @@ class SoundDevicePortAudio : public SoundDevice {
     void updateAudioLatencyUsage(unsigned int framesPerBuffer);
 
     // PortAudio stream for this device.
-    PaStream* volatile m_pStream;
+    std::atomic<PaStream*> m_pStream;
     // PortAudio device index for this device.
     PaDeviceIndex m_devId;
     // Struct containing information about this device. Don't free() it, it
@@ -92,8 +93,8 @@ class SoundDevicePortAudio : public SoundDevice {
     PaStreamParameters m_outputParams;
     // Description of the input stream coming from the soundcard.
     PaStreamParameters m_inputParams;
-    FIFO<CSAMPLE>* m_outputFifo;
-    FIFO<CSAMPLE>* m_inputFifo;
+    std::unique_ptr<FIFO<CSAMPLE> > m_outputFifo;
+    std::unique_ptr<FIFO<CSAMPLE> > m_inputFifo;
     bool m_outputDrift;
     bool m_inputDrift;
 
@@ -116,5 +117,4 @@ class SoundDevicePortAudio : public SoundDevice {
     PaTime m_lastCallbackEntrytoDacSecs;
 
 };
-
 #endif

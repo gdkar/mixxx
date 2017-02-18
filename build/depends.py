@@ -1087,6 +1087,7 @@ class MixxxCore(Feature):
                    "mixer/samplerbank.cpp",
 
                    "soundio/sounddevice.cpp",
+                   "soundio/sounddevicenotfound.cpp",
                    "soundio/sounddevicenetwork.cpp",
                    "engine/sidechain/enginenetworkstream.cpp",
                    "soundio/soundmanager.cpp",
@@ -1138,7 +1139,6 @@ class MixxxCore(Feature):
                    "util/sample.cpp",
                    "util/samplebuffer.cpp",
                    "util/singularsamplebuffer.cpp",
-                   "util/circularsamplebuffer.cpp",
                    "util/rotary.cpp",
                    "util/logging.cpp",
                    "util/cmdlineargs.cpp",

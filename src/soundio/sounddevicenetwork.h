@@ -2,6 +2,7 @@
 #define SOUNDDEVICENETWORK_H
 
 #include <QString>
+#include <atomic>
 
 #include "soundio/sounddevice.h"
 
@@ -12,17 +13,18 @@ class SoundManager;
 class EngineNetworkStream;
 
 class SoundDeviceNetwork : public SoundDevice {
+    Q_OBJECT
   public:
     SoundDeviceNetwork(UserSettingsPointer config,
                        SoundManager *sm,
                        QSharedPointer<EngineNetworkStream> pNetworkStream);
-    virtual ~SoundDeviceNetwork();
+   ~SoundDeviceNetwork() override;
 
-    virtual SoundDeviceError open(bool isClkRefDevice, int syncBuffers);
-    virtual bool isOpen() const;
-    virtual SoundDeviceError close();
-    virtual void readProcess();
-    virtual void writeProcess();
+    SoundDeviceError open(bool isClkRefDevice, int syncBuffers) override;
+    bool isOpen() const override;
+    SoundDeviceError close() override;
+    void readProcess() override;
+    void writeProcess() override;
     virtual QString getError() const;
 
     unsigned int getDefaultSampleRate() const override
@@ -32,11 +34,11 @@ class SoundDeviceNetwork : public SoundDevice {
 
   private:
     QSharedPointer<EngineNetworkStream> m_pNetworkStream;
-    FIFO<CSAMPLE>* m_outputFifo;
-    FIFO<CSAMPLE>* m_inputFifo;
+    std::unique_ptr<FIFO<CSAMPLE> > m_outputFifo;
+    std::unique_ptr< FIFO<CSAMPLE> > m_inputFifo;
     bool m_outputDrift;
     bool m_inputDrift;
-    static volatile int m_underflowHappened;
+    static std::atomic<int> m_underflowHappened;
 };
 
 #endif // SOUNDDEVICENETWORK_H

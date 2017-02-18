@@ -66,7 +66,7 @@ class AnalyzerQueue : public QThread {
     void emptyCheck();
 
     bool m_exit;
-    QAtomicInt m_aiCheckPriorities;
+    std::atomic<bool> m_aiCheckPriorities;
 
     SampleBuffer m_sampleBuffer;
 
