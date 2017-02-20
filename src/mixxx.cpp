@@ -865,37 +865,29 @@ void MixxxMainWindow::createMenuBar() {
     setMenuBar(m_pMenuBar);
 }
 
-void MixxxMainWindow::connectMenuBar() {
+void MixxxMainWindow::connectMenuBar()
+{
     ScopedTimer t("MixxxMainWindow::connectMenuBar");
-    connect(this, SIGNAL(newSkinLoaded()),
-            m_pMenuBar, SLOT(onNewSkinLoaded()));
+    connect(this, SIGNAL(newSkinLoaded()),m_pMenuBar, SLOT(onNewSkinLoaded()));
 
     // Misc
     connect(m_pMenuBar, SIGNAL(quit()), this, SLOT(close()));
-    connect(m_pMenuBar, SIGNAL(showPreferences()),
-            this, SLOT(slotOptionsPreferences()));
-    connect(m_pMenuBar, SIGNAL(loadTrackToDeck(int)),
-            this, SLOT(slotFileLoadSongPlayer(int)));
+    connect(m_pMenuBar, SIGNAL(showPreferences()),this, SLOT(slotOptionsPreferences()));
+    connect(m_pMenuBar, SIGNAL(loadTrackToDeck(int)),this, SLOT(slotFileLoadSongPlayer(int)));
 
     // Fullscreen
-    connect(m_pMenuBar, SIGNAL(toggleFullScreen(bool)),
-            this, SLOT(slotViewFullScreen(bool)));
-    connect(this, SIGNAL(fullScreenChanged(bool)),
-            m_pMenuBar, SLOT(onFullScreenStateChange(bool)));
+    connect(m_pMenuBar, SIGNAL(toggleFullScreen(bool)),this, SLOT(slotViewFullScreen(bool)));
+    connect(this, SIGNAL(fullScreenChanged(bool)),m_pMenuBar, SLOT(onFullScreenStateChange(bool)));
 
     // Keyboard shortcuts
-    connect(m_pMenuBar, SIGNAL(toggleKeyboardShortcuts(bool)),
-            this, SLOT(slotOptionsKeyboard(bool)));
+    connect(m_pMenuBar, SIGNAL(toggleKeyboardShortcuts(bool)),this, SLOT(slotOptionsKeyboard(bool)));
 
     // Help
-    connect(m_pMenuBar, SIGNAL(showAbout()),
-            this, SLOT(slotHelpAbout()));
+    connect(m_pMenuBar, SIGNAL(showAbout()),this, SLOT(slotHelpAbout()));
 
     // Developer
-    connect(m_pMenuBar, SIGNAL(reloadSkin()),
-            this, SLOT(rebootMixxxView()));
-    connect(m_pMenuBar, SIGNAL(toggleDeveloperTools(bool)),
-            this, SLOT(slotDeveloperTools(bool)));
+    connect(m_pMenuBar, SIGNAL(reloadSkin()),this, SLOT(rebootMixxxView()));
+    connect(m_pMenuBar, SIGNAL(toggleDeveloperTools(bool)),this, SLOT(slotDeveloperTools(bool)));
 
     if (m_pRecordingManager) {
         connect(m_pRecordingManager, SIGNAL(isRecording(bool)),
@@ -945,7 +937,8 @@ void MixxxMainWindow::connectMenuBar() {
 
 }
 
-void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
+void MixxxMainWindow::slotFileLoadSongPlayer(int deck)
+{
     QString group = m_pPlayerManager->groupForDeck(deck-1);
 
     QString loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
@@ -962,33 +955,32 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
         if (ret != QMessageBox::Yes)
             return;
     }
-
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
-    QString trackPath =
-        QFileDialog::getOpenFileName(
+    auto pConfig = m_pSettingsManager->settings();
+    auto trackPath =
+        QFileDialog::getOpenFileUrl(
             this,
             loadTrackText,
-            pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR),
+            QUrl(pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR)),
             QString("Audio (%1)")
-                .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ")));
+                .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ") + ";; Anything (*)"));
 
 
-    if (!trackPath.isNull()) {
+    if (!trackPath.isEmpty() && trackPath.isValid()) {
         // The user has picked a file via a file dialog. This means the system
         // sandboxer (if we are sandboxed) has granted us permission to this
         // folder. Create a security bookmark while we have permission so that
         // we can access the folder on future runs. We need to canonicalize the
         // path so we first wrap the directory string with a QDir.
-        QFileInfo trackInfo(trackPath);
+        QFileInfo trackInfo(trackPath.toString());
         Sandbox::createSecurityToken(trackInfo);
-
-        m_pPlayerManager->slotLoadToDeck(trackPath, deck);
+        m_pPlayerManager->slotLoadToDeck(trackPath.toString(), deck);
     }
 }
 
 
-void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+void MixxxMainWindow::slotOptionsKeyboard(bool toggle)
+{
+    auto pConfig = m_pSettingsManager->settings();
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
@@ -1000,10 +992,11 @@ void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     }
 }
 
-void MixxxMainWindow::slotDeveloperTools(bool visible) {
+void MixxxMainWindow::slotDeveloperTools(bool visible)
+{
     if (visible) {
         if (m_pDeveloperToolsDlg == nullptr) {
-            UserSettingsPointer pConfig = m_pSettingsManager->settings();
+            auto pConfig = m_pSettingsManager->settings();
             m_pDeveloperToolsDlg = new DlgDeveloperTools(this, pConfig);
             connect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),
                     this, SLOT(slotDeveloperToolsClosed()));

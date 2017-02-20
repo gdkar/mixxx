@@ -17,7 +17,8 @@
 
 LoadToGroupController::LoadToGroupController(QObject* pParent, const QString& group)
         : QObject(pParent),
-          m_group(group) {
+          m_group(group)
+{
     m_pLoadControl = std::make_unique<ControlPushButton>(ConfigKey(group, "LoadSelectedTrack"));
     connect(m_pLoadControl.get(), SIGNAL(valueChanged(double)),
             this, SLOT(slotLoadToGroup(double)));
@@ -51,7 +52,8 @@ LibraryControl::LibraryControl(Library* pLibrary)
           m_pSidebarWidget(nullptr),
           m_numDecks("[Master]", "num_decks", this),
           m_numSamplers("[Master]", "num_samplers", this),
-          m_numPreviewDecks("[Master]", "num_preview_decks", this) {
+          m_numPreviewDecks("[Master]", "num_preview_decks", this)
+{
 
     slotNumDecksChanged(m_numDecks.get());
     slotNumSamplersChanged(m_numSamplers.get());

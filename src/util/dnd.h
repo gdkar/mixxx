@@ -36,7 +36,7 @@ class DragAndDropHelper {
             // case. toString() absolutely does not work when you pass the
             // result to a (this comment was never finished by the original
             // author).
-            QString file(url.toLocalFile());
+            auto file = (url.isLocalFile() ? url.toLocalFile() : url.toString());
 
             // If the file is on a network share, try just converting the URL to
             // a string...
@@ -50,13 +50,13 @@ class DragAndDropHelper {
 
             if (acceptPlaylists && (file.endsWith(".m3u") || file.endsWith(".m3u8"))) {
                 QScopedPointer<ParserM3u> playlist_parser(new ParserM3u());
-                QList<QString> track_list = playlist_parser->parse(file);
+                auto track_list = playlist_parser->parse(file);
                 foreach (const QString& playlistFile, track_list) {
                     addFileToList(playlistFile, &fileLocations);
                 }
             } else if (acceptPlaylists && url.toString().endsWith(".pls")) {
                 QScopedPointer<ParserPls> playlist_parser(new ParserPls());
-                QList<QString> track_list = playlist_parser->parse(file);
+                auto track_list = playlist_parser->parse(file);
                 foreach (const QString& playlistFile, track_list) {
                     addFileToList(playlistFile, &fileLocations);
                 }

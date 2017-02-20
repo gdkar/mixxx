@@ -67,8 +67,8 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
             << "library." + LIBRARYTABLE_COVERART_HASH;
 
     QSqlQuery query(pTrackCollection->database());
-    QString tableName = "library_cache_view";
-    QString queryString = QString(
+    auto tableName = QString("library_cache_view");
+    auto queryString = QString(
         "CREATE TEMPORARY VIEW IF NOT EXISTS %1 AS "
         "SELECT %2 FROM library "
         "INNER JOIN track_locations ON library.location = track_locations.id")
@@ -79,16 +79,14 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
     }
 
     // Strip out library. and track_locations.
-    for (QStringList::iterator it = columns.begin();
-         it != columns.end(); ++it) {
+    for (auto it = columns.begin(); it != columns.end(); ++it) {
         if (it->startsWith("library.")) {
             *it = it->replace("library.", "");
         } else if (it->startsWith("track_locations.")) {
             *it = it->replace("track_locations.", "");
         }
     }
-
-    BaseTrackCache* pBaseTrackCache = new BaseTrackCache(
+    auto pBaseTrackCache = new BaseTrackCache(
             pTrackCollection, tableName, LIBRARYTABLE_ID, columns, true);
     connect(&m_trackDao, SIGNAL(trackDirty(TrackId)),
             pBaseTrackCache, SLOT(slotTrackDirty(TrackId)));
@@ -120,34 +118,34 @@ MixxxLibraryFeature::~MixxxLibraryFeature() {
     delete m_pLibraryTableModel;
 }
 
-void MixxxLibraryFeature::bindWidget(WLibrary* pLibraryWidget,
-                                     KeyboardEventFilter* pKeyboard) {
-    m_pHiddenView = new DlgHidden(pLibraryWidget, m_pConfig, m_pLibrary,
-                                  m_pTrackCollection, pKeyboard);
+void MixxxLibraryFeature::bindWidget(WLibrary* pLibraryWidget,KeyboardEventFilter* pKeyboard)
+{
+    m_pHiddenView = new DlgHidden(pLibraryWidget, m_pConfig, m_pLibrary,m_pTrackCollection, pKeyboard);
     pLibraryWidget->registerView(kHiddenTitle, m_pHiddenView);
-    connect(m_pHiddenView, SIGNAL(trackSelected(TrackPointer)),
-            this, SIGNAL(trackSelected(TrackPointer)));
+    connect(m_pHiddenView, SIGNAL(trackSelected(TrackPointer)),this, SIGNAL(trackSelected(TrackPointer)));
 
-    m_pMissingView = new DlgMissing(pLibraryWidget, m_pConfig, m_pLibrary,
-                                    m_pTrackCollection, pKeyboard);
+    m_pMissingView = new DlgMissing(pLibraryWidget, m_pConfig, m_pLibrary,m_pTrackCollection, pKeyboard);
     pLibraryWidget->registerView(kMissingTitle, m_pMissingView);
-    connect(m_pMissingView, SIGNAL(trackSelected(TrackPointer)),
-            this, SIGNAL(trackSelected(TrackPointer)));
+    connect(m_pMissingView, SIGNAL(trackSelected(TrackPointer)),this, SIGNAL(trackSelected(TrackPointer)));
 }
 
-QVariant MixxxLibraryFeature::title() {
+QVariant MixxxLibraryFeature::title()
+{
     return tr("Tracks");
 }
 
-QIcon MixxxLibraryFeature::getIcon() {
+QIcon MixxxLibraryFeature::getIcon()
+{
     return QIcon(":/images/library/ic_library_tracks.png");
 }
 
-TreeItemModel* MixxxLibraryFeature::getChildModel() {
+TreeItemModel* MixxxLibraryFeature::getChildModel()
+{
     return &m_childModel;
 }
 
-void MixxxLibraryFeature::refreshLibraryModels() {
+void MixxxLibraryFeature::refreshLibraryModels()
+{
     if (m_pLibraryTableModel) {
         m_pLibraryTableModel->select();
     }
@@ -159,19 +157,22 @@ void MixxxLibraryFeature::refreshLibraryModels() {
     }
 }
 
-void MixxxLibraryFeature::activate() {
+void MixxxLibraryFeature::activate()
+{
     qDebug() << "MixxxLibraryFeature::activate()";
     emit(showTrackModel(m_pLibraryTableModel));
     emit(enableCoverArtDisplay(true));
 }
 
-void MixxxLibraryFeature::activateChild(const QModelIndex& index) {
+void MixxxLibraryFeature::activateChild(const QModelIndex& index)
+{
     QString itemName = index.data().toString();
     emit(switchToView(itemName));
     emit(enableCoverArtDisplay(true));
 }
 
-bool MixxxLibraryFeature::dropAccept(QList<QUrl> urls, QObject* pSource) {
+bool MixxxLibraryFeature::dropAccept(QList<QUrl> urls, QObject* pSource)
+{
     if (pSource) {
         return false;
     } else {
@@ -182,8 +183,8 @@ bool MixxxLibraryFeature::dropAccept(QList<QUrl> urls, QObject* pSource) {
         return trackIds.size() > 0;
     }
 }
-
-bool MixxxLibraryFeature::dragMoveAccept(QUrl url) {
+bool MixxxLibraryFeature::dragMoveAccept(QUrl url)
+{
     return SoundSourceProxy::isUrlSupported(url) ||
             Parser::isPlaylistFilenameSupported(url.toLocalFile());
 }
