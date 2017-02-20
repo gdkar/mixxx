@@ -224,8 +224,8 @@ bool TPolyFit::GaussJordan (Matrix &b,
   { NV is number of constant vectors }
 */
 
-    int ncol(b.size());
-    int irow, icol;
+    auto ncol = b.size();
+    auto irow = 0, icol = 0;
     vector<vector<int> >index;
     Matrix w;
 
@@ -278,24 +278,24 @@ bool TPolyFit::GaussJordan2(Matrix &b,
     double big, t;
     double pivot;
     double determ;
-    int irow, icol;
-    int ncol(b.size());
-    int nv = 1;                  // single constant vector
-    for(int i = 0; i < ncol; ++i)
+    auto irow = 0, icol = 0;
+    auto  ncol = b.size();
+    auto nv = 1;                  // single constant vector
+    for(auto i = 0; i < ncol; ++i)
     {
 	w[i][0] = y[i];      // copy constant vector
 	index[i][2] = -1;
     }
     determ = 1.0;
-    for(int i = 0; i < ncol; ++i)
+    for(auto i = 0; i < ncol; ++i)
     {
 	// Search for largest element
 	big = 0.0;
-	for(int j = 0; j < ncol; ++j)
+	for(auto j = 0; j < ncol; ++j)
 	{
 	    if(index[j][2] != 0)
 	    {
-		for(int k = 0; k < ncol; ++k)
+		for(auto k = 0; k < ncol; ++k)
 		{
 		    if(index[k][2] > 0) {
                         std::cerr << "ERROR: Error in PolyFit::GaussJordan2: matrix is singular" << std::endl;
@@ -320,10 +320,10 @@ bool TPolyFit::GaussJordan2(Matrix &b,
 	if(irow != icol)
 	{
 	    determ = -determ;
-	    for(int m = 0; m < ncol; ++m)
+	    for(auto m = 0; m < ncol; ++m)
 		swap (b [irow][m], b[icol][m]);
 	    if (nv > 0)
-		for (int m = 0; m < nv; ++m)
+		for (auto m = 0; m < nv; ++m)
 		    swap (w[irow][m], w[icol][m]);
 	} // end GJ3
 
@@ -332,23 +332,23 @@ bool TPolyFit::GaussJordan2(Matrix &b,
 	determ *= pivot;
 	b[icol][icol] = 1.0;
 
-	for(int m = 0; m < ncol; ++m)
+	for(auto m = 0; m < ncol; ++m)
 	    b[icol][m] /= pivot;
 	if(nv > 0)
-	    for(int m = 0; m < nv; ++m)
+	    for(auto m = 0; m < nv; ++m)
 		w[icol][m] /= pivot;
 
 	// Reduce nonpivot rows
-	for(int n = 0; n < ncol; ++n)
+	for(auto n = 0; n < ncol; ++n)
 	{
 	    if(n != icol)
 	    {
 		t = b[n][icol];
 		b[n][icol] = 0.0;
-		for(int m = 0; m < ncol; ++m)
+		for(auto m = 0; m < ncol; ++m)
 		    b[n][m] -= b[icol][m] * t;
 		if(nv > 0)
-		    for(int m = 0; m < nv; ++m)
+		    for(auto m = 0; m < nv; ++m)
 			w[n][m] -= w[icol][m] * t;
 	    }
 	}

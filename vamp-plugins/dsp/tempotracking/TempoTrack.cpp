@@ -596,13 +596,14 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
 	{
 	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*PI ) *sigma );
 	}
-
-	MathUtilities::getFrameMinMax( phaseScratch, scratchLength, &PhaseMin, &PhaseMax );
-
+        auto it_pair = std::minmax_element(phaseScratch,phaseScratch + scratchLength);
+        PhaseMin = *std::get<0>(it_pair);
+        PhaseMax = *std::get<1>(it_pair);
+        
 	for(int i = 0; i < scratchLength; i ++)
 	{
 	    temp = phaseScratch[ i ];
-	    phaseScratch[ i ] = (temp - PhaseMin)/PhaseMax;
+	    phaseScratch[ i ] = (phaseScratch[i]- PhaseMin)/PhaseMax;
 	}
 
 #ifdef DEBUG_TEMPO_TRACK

@@ -40,7 +40,7 @@ public:
     , df{std::make_unique<DetectionFunction>(config)}
     {
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
-        auto factor = MathUtilities::nextPowerOfTwo(rate / 3000);
+        auto factor = MathUtilities::nextPowerOfTwo(int(rate / 3000));
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
         downBeat = std::make_unique<DownBeat>(rate, factor, config.stepSize);
     }
