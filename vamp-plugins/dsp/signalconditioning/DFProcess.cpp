@@ -186,16 +186,10 @@ void DFProcess::medianFilter(double *src, double *dst)
 
 void DFProcess::removeDCNormalize( double *src, double*dst )
 {
-    double DFmax = 0;
-    double DFMin = 0;
-    double DFAlphaNorm = 0;
-
-    MathUtilities::getFrameMinMax( src, m_length, &DFMin, &DFmax );
-
-    MathUtilities::getAlphaNorm( src, m_length, m_alphaNormParam, &DFAlphaNorm );
-
-    for( unsigned int i = 0; i< m_length; i++)
-    {
-	dst[ i ] = ( src[ i ] - DFMin ) / DFAlphaNorm;
-    }
+/*    auto its = std::minmax_element(src,src + m_length);
+    auto DFMin = *std::get<0>(its);
+    auto DFMax = *std::get<1>(its);*/
+    auto DFMin = *std::min_element(src,src + m_length);
+    auto DFAlphaNormInv = 1./MathUtilities::powMeanPow( src, m_length, m_alphaNormParam );
+    std::transform(src,src + m_length, dst,[=](auto && x){return (x-DFMin)*DFAlphaNormInv;});
 }
