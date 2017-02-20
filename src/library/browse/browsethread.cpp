@@ -28,15 +28,15 @@ static QMutex s_Mutex;
  * make sense to use this class in non-GUI threads
  */
 BrowseThread::BrowseThread(QObject *parent)
-        : QThread(parent) {
-    m_bStopThread = false;
-    m_model_observer = NULL;
+        : QThread(parent)
+        , m_bStopThread(false)
+        , m_model_observer{}
+{
     //start Thread
     start(QThread::LowPriority);
-
 }
-
-BrowseThread::~BrowseThread() {
+BrowseThread::~BrowseThread()
+{
     qDebug() << "Wait to finish browser background thread";
     m_bStopThread = true;
     //wake up thread since it might wait for user input
@@ -46,57 +46,51 @@ BrowseThread::~BrowseThread() {
     wait();
     qDebug() << "Browser background thread terminated!";
 }
-
 // static
-BrowseThreadPointer BrowseThread::getInstanceRef() {
-    BrowseThreadPointer strong = m_weakInstanceRef.toStrongRef();
+BrowseThreadPointer BrowseThread::getInstanceRef()
+{
+    auto strong = m_weakInstanceRef.toStrongRef();
     if (!strong) {
-        s_Mutex.lock();
+        QMutexLocker _lock(&s_Mutex);
         strong = m_weakInstanceRef.toStrongRef();
         if (!strong) {
             strong = BrowseThreadPointer(new BrowseThread());
             m_weakInstanceRef = strong.toWeakRef();
         }
-        s_Mutex.unlock();
     }
     return strong;
 }
-
-void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client) {
-    m_path_mutex.lock();
-    m_path = path;
-    m_model_observer = client;
-    m_path_mutex.unlock();
+void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client)
+{
+    {
+        QMutexLocker _lock(&m_path_mutex);
+        m_path = path;
+    }
     m_locationUpdated.wakeAll();
 }
-
-void BrowseThread::run() {
+void BrowseThread::run()
+{
     QThread::currentThread()->setObjectName("BrowseThread");
-    m_mutex.lock();
-
+    QMutexLocker _lock(&m_mutex);
     while (!m_bStopThread) {
         //Wait until the user has selected a folder
         m_locationUpdated.wait(&m_mutex);
         Trace trace("BrowseThread");
 
         //Terminate thread if Mixxx closes
-        if(m_bStopThread) {
+        if(m_bStopThread)
             break;
-        }
         // Populate the model
         populateModel();
     }
-    m_mutex.unlock();
 }
 
 namespace {
-
 class YearItem: public QStandardItem {
 public:
     explicit YearItem(QString year):
         QStandardItem(year) {
     }
-
     QVariant data(int role) const {
         switch (role) {
         case Qt::DisplayRole:
@@ -109,18 +103,19 @@ public:
         }
     }
 };
-
 }
-
 void BrowseThread::populateModel()
 {
-    m_path_mutex.lock();
-    MDir thisPath = m_path;
-    BrowseTableModel* thisModelObserver = m_model_observer;
-    m_path_mutex.unlock();
+    MDir thisPath;
+    BrowseTableModel *thisModelObserver;
+    {
+        QMutexLocker _lock(&m_path_mutex);
+        thisPath = m_path;
+        thisModelObserver = m_model_observer;
+    }
 
     // Refresh the name filters in case we loaded new SoundSource plugins.
-    QStringList nameFilters(SoundSourceProxy::getSupportedFileNamePatterns());
+    auto nameFilters = SoundSourceProxy::getSupportedFileNamePatterns();
 
     QDirIterator fileIt(thisPath.dir().absolutePath(), nameFilters,
                         QDir::Files | QDir::NoDotAndDotDot);
@@ -129,28 +124,28 @@ void BrowseThread::populateModel()
     // This is a blocking operation
     // see signal/slot connection in BrowseTableModel
     emit(clearModel(thisModelObserver));
-
     QList< QList<QStandardItem*> > rows;
 
-    int row = 0;
+    auto row = 0;
     // Iterate over the files
     while (fileIt.hasNext()) {
         // If a user quickly jumps through the folders
         // the current task becomes "dirty"
-        m_path_mutex.lock();
-        MDir newPath = m_path;
-        m_path_mutex.unlock();
-
+        MDir newPath;
+        {
+            QMutexLocker _lock(&m_path_mutex);
+            newPath = m_path;
+        }
         if (thisPath.dir() != newPath.dir()) {
             qDebug() << "Abort populateModel()";
             return populateModel();
         }
 
         auto filepath = fileIt.next();
-        TrackPointer pTrack(Track::newTemporary(filepath, thisPath.token()));
+        auto pTrack = Track::newTemporary(filepath, thisPath.token());
         SoundSourceProxy(pTrack).loadTrackMetadata();
 
-        QList<QStandardItem*> row_data;
+        auto row_data = QList<QStandardItem*>{};
 
         auto item = new QStandardItem("0");
         item->setData("0", Qt::UserRole);
@@ -186,7 +181,7 @@ void BrowseThread::populateModel()
         item->setData(item->text().toInt(), Qt::UserRole);
         row_data.insert(COLUMN_TRACK_NUMBER, item);
 
-        const QString year(pTrack->getYear());
+        auto year = QString(pTrack->getYear());
         item = new YearItem(year);
         item->setToolTip(year);
         // The year column is sorted according to the numeric calendar year
@@ -259,8 +254,7 @@ void BrowseThread::populateModel()
         row_data.insert(COLUMN_FILE_CREATION_TIME, item);
 
         const mixxx::ReplayGain replayGain(pTrack->getReplayGain());
-        item = new QStandardItem(
-                mixxx::ReplayGain::ratioToString(replayGain.getRatio()));
+        item = new QStandardItem(mixxx::ReplayGain::ratioToString(replayGain.getRatio()));
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
         row_data.insert(COLUMN_REPLAYGAIN, item);

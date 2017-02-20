@@ -300,7 +300,8 @@ void Library::slotSwitchToView(const QString& view) {
     emit(switchToView(view));
 }
 
-void Library::slotLoadTrack(TrackPointer pTrack) {
+void Library::slotLoadTrack(TrackPointer pTrack)
+{
     emit(loadTrack(pTrack));
 }
 

@@ -12,7 +12,7 @@
 #include <QList>
 #include <QSharedPointer>
 #include <QWeakPointer>
-
+#include <atomic>
 #include "util/file.h"
 
 // This class is a singleton and represents a thread
@@ -46,7 +46,7 @@ class BrowseThread : public QThread {
 
     QMutex m_mutex;
     QWaitCondition m_locationUpdated;
-    volatile bool m_bStopThread;
+    std::atomic<bool> m_bStopThread;
 
     // You must hold m_path_mutex to touch m_path or m_model_observer
     QMutex m_path_mutex;

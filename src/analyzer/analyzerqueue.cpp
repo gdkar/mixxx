@@ -130,7 +130,7 @@ bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack)
 // This is called from the AnalyzerQueue thread
 TrackPointer AnalyzerQueue::dequeueNextBlocking()
 {
-    auto _lock = QMutexLocker(&m_qm);
+    QMutexLocker lock_(&m_qm);
     if (m_tioq.isEmpty()) {
         Event::end("AnalyzerQueue process");
         m_qwait.wait(&m_qm);

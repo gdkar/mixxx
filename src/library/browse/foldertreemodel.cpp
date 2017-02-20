@@ -32,8 +32,9 @@ FolderTreeModel::~FolderTreeModel() {
  * Note that BrowseFeature inserts folder trees dynamically and rowCount()
  * is only called if necessary.
  */
-bool FolderTreeModel::hasChildren(const QModelIndex& parent) const {
-    TreeItem *item = static_cast<TreeItem*>(parent.internalPointer());
+bool FolderTreeModel::hasChildren(const QModelIndex& parent) const
+{
+    auto item = static_cast<TreeItem*>(parent.internalPointer());
     /* Usually the child count is 0 becuase we do lazy initalization
      * However, for, buid-in items such as 'Quick Links' there exist
      * child items at init time
@@ -43,17 +44,16 @@ bool FolderTreeModel::hasChildren(const QModelIndex& parent) const {
     //Can only happen on Windows
     if(item->getData().toString() == DEVICE_NODE)
         return true;
-
     // In all other cases the getData() points to a folder
-    QString folder = item->getData().toString();
+    auto folder = item->getData().toString();
     return directoryHasChildren(folder);
 }
 
-bool FolderTreeModel::directoryHasChildren(const QString& path) const {
-    QHash<QString, bool>::const_iterator it = m_directoryCache.find(path);
-    if (it != m_directoryCache.end()) {
+bool FolderTreeModel::directoryHasChildren(const QString& path) const
+{
+    auto it = m_directoryCache.find(path);
+    if (it != m_directoryCache.end())
         return it.value();
-    }
 
     // Acquire a security token for the path.
     MDir dir(path);
@@ -71,8 +71,7 @@ bool FolderTreeModel::directoryHasChildren(const QString& path) const {
      *  Windows API or SystemCalls
      */
 
-    bool has_children = false;
-
+    auto has_children = false;
 #if defined (__WINDOWS__)
     QString folder = path;
     folder.replace("/","\\");
@@ -86,13 +85,13 @@ bool FolderTreeModel::directoryHasChildren(const QString& path) const {
     // http://stackoverflow.com/questions/2579948/checking-if-subfolders-exist-linux
 
     std::string dot("."), dotdot("..");
-    QByteArray ba = path.toLocal8Bit();
-    DIR *directory = opendir(ba);
-    int unknown_count = 0;
-    int total_count = 0;
-    if (directory != NULL) {
+    auto ba = path.toLocal8Bit();
+    auto directory = opendir(ba);
+    auto unknown_count = 0;
+    auto total_count = 0;
+    if (directory) {
         struct dirent *entry;
-        while (!has_children && ((entry = readdir(directory)) != NULL)) {
+        while (!has_children && ((entry = readdir(directory)) )) {
             if (entry->d_name != dot && entry->d_name != dotdot) {
                 total_count++;
                 if (entry->d_type == DT_UNKNOWN) {
@@ -109,11 +108,10 @@ bool FolderTreeModel::directoryHasChildren(const QString& path) const {
     // filesystems that do not fully implement readdir such as JFS.
     if (directory == NULL || (unknown_count == total_count && total_count > 0)) {
         QDir dir(path);
-        QFileInfoList all = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        auto all = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
         has_children = all.count() > 0;
     }
 #endif
-
     // Cache and return the result
     m_directoryCache[path] = has_children;
     return has_children;
