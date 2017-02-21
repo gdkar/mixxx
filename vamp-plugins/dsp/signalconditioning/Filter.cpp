@@ -18,7 +18,7 @@
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-
+#if 0
 Filter::Filter( FilterConfig Config )
 {
     m_ord = 0;
@@ -60,7 +60,6 @@ void Filter::reset()
 void Filter::process( double *src, double *dst, unsigned int length )
 {
     unsigned int SP,i,j;
-
     double xin,xout;
 
     for (SP=0;SP<length;SP++)
@@ -82,6 +81,4 @@ void Filter::process( double *src, double *dst, unsigned int length )
 
     } /* end of SP loop */
 }
-
-
-
+#endif

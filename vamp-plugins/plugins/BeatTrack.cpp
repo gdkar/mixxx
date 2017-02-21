@@ -15,7 +15,7 @@
 #include "BeatTrack.h"
 
 #include <dsp/onsets/DetectionFunction.h>
-#include <dsp/onsets/PeakPicking.h>
+//#include <dsp/onsets/PeakPicking.h>
 #include <dsp/tempotracking/TempoTrack.h>
 #include <dsp/tempotracking/TempoTrackV2.h>
 

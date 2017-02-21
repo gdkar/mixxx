@@ -41,7 +41,8 @@ E-mail:    davidtaylor@writeme.com
  ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-
+#include <vector>
+#include "maths/MathUtilities.h"
 using std::vector;
 
 class TPolyFit

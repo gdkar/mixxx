@@ -40,7 +40,7 @@ void FiltFilt::initialise( FilterConfig Config )
     m_filterConfig.ACoeffs = Config.ACoeffs;
     m_filterConfig.BCoeffs = Config.BCoeffs;
 
-    m_filter = new Filter( m_filterConfig );
+    m_filter = new Filter<double>( m_filterConfig );
 }
 
 void FiltFilt::deInitialise()

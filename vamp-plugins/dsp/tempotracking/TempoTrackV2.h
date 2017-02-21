@@ -37,7 +37,7 @@ public:
      * conversion from beat frame location to bpm in the tempo array.
      */
     TempoTrackV2(float sampleRate, size_t dfIncrement);
-    ~TempoTrackV2();
+   ~TempoTrackV2();
 
     // Returned beat periods are given in df increment units; inputtempo and tempi in bpm
     void calculateBeatPeriod(const vector<double> &df,
