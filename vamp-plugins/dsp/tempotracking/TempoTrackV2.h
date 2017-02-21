@@ -36,57 +36,48 @@ public:
      * Currently the sample rate and increment are used only for the
      * conversion from beat frame location to bpm in the tempo array.
      */
-    TempoTrackV2(float sampleRate, size_t dfIncrement);
+    TempoTrackV2(float sampleRate, size_t dfIncrement, size_t dfFrame);
+    TempoTrackV2() = default;
+    TempoTrackV2(TempoTrackV2 && ) noexcept = default;
+    TempoTrackV2 &operator=(TempoTrackV2&& ) noexcept = default;
    ~TempoTrackV2();
-
-    // Returned beat periods are given in df increment units; inputtempo and tempi in bpm
-    void calculateBeatPeriod(const vector<double> &df,
-                             vector<double> &beatPeriod,
-                             vector<double> &tempi) {
-        calculateBeatPeriod(df, beatPeriod, tempi, 120.0, false);
-    }
 
     // Returned beat periods are given in df increment units; inputtempo and tempi in bpm
     // MEPD 28/11/12 Expose inputtempo and constraintempo parameters
     // Note, if inputtempo = 120 and constraintempo = false, then functionality is as it was before
-    void calculateBeatPeriod(const vector<double> &df,
-                             vector<double> &beatPeriod,
-                             vector<double> &tempi,
-                             double inputtempo, bool constraintempo);
-
-    // Returned beat positions are given in df increment units
-    void calculateBeats(const vector<double> &df,
-                        const vector<double> &beatPeriod,
-                        vector<double> &beats) {
-        calculateBeats(df, beatPeriod, beats, 0.9, 4.0);
-    }
+    void calculateBeatPeriod(const vector<float> &df
+                           , vector<float> &beatPeriod
+                           , vector<float> &tempi
+                           , float inputtempo = 120.0
+                           , bool constraintempo = false);
 
     // Returned beat positions are given in df increment units
     // MEPD 28/11/12 Expose alpha and tightness parameters
     // Note, if alpha = 0.9 and tightness = 4, then functionality is as it was before
-    void calculateBeats(const vector<double> &df,
-                        const vector<double> &beatPeriod,
-                        vector<double> &beats,
-                        double alpha, double tightness);
+
+    void calculateBeats(const vector<float> &df
+                      , const vector<float> &beatPeriod
+                      , vector<float> &beats
+                      , float alpha = 0.9
+                      , float tightness = 0.4);
+
 
 private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;
-    typedef vector<double> d_vec_t;
-    typedef vector<vector<double> > d_mat_t;
+    typedef vector<float> d_vec_t;
+    typedef vector<vector<float> > d_mat_t;
 
     float m_rate;
     size_t m_increment;
+    size_t m_frame_size;
 
     void adapt_thresh(d_vec_t &df);
-    double mean_array(const d_vec_t &dfin, int start, int end);
+    float mean_array(const d_vec_t &dfin, int start, int end);
     void filter_df(d_vec_t &df);
     void get_rcf(const d_vec_t &dfframe, const d_vec_t &wv, d_vec_t &rcf);
     void viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv,
                         d_vec_t &bp, d_vec_t &tempi);
-    double get_max_val(const d_vec_t &df);
-    int get_max_ind(const d_vec_t &df);
-    void normalise_vec(d_vec_t &df);
 };
 
 #endif

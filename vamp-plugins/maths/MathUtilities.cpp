@@ -22,99 +22,6 @@
 
 namespace MathUtilities {
 
-void getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm)
-{
-    unsigned int i;
-    double temp = 0.0;
-    double a=0.0;
-
-    for( i = 0; i < len; i++)
-    {
-	temp = data[ i ];
-
-	a  += std::pow( std::abs(temp), double(alpha) );
-    }
-    a /= ( double )len;
-    a = std::pow( a, ( 1.0 / (double) alpha ) );
-
-    *ANorm = a;
-}
-
-double getAlphaNorm( const std::vector <double> &data, unsigned int alpha )
-{
-    unsigned int i;
-    unsigned int len = data.size();
-    double temp = 0.0;
-    double a=0.0;
-
-    for( i = 0; i < len; i++)
-    {
-	temp = data[ i ];
-
-	a  += std::pow( std::abs(temp), double(alpha) );
-    }
-    a /= ( double )len;
-    a = std::pow( a, ( 1.0 / (double) alpha ) );
-
-    return a;
-}
-double median(const double *src, unsigned int len)
-{
-    if (len == 0) return 0;
-
-    std::vector<double> scratch;
-    for (int i = 0; i < len; ++i) scratch.push_back(src[i]);
-    std::sort(scratch.begin(), scratch.end());
-
-    int middle = len/2;
-    if (len % 2 == 0) {
-        return (scratch[middle] + scratch[middle - 1]) / 2;
-    } else {
-        return scratch[middle];
-    }
-}
-
-double sum(const double *src, unsigned int len)
-{
-    unsigned int i ;
-    double retVal =0.0;
-
-    for(  i = 0; i < len; i++)
-    {
-	retVal += src[ i ];
-    }
-
-    return retVal;
-}
-
-double mean(const double *src, unsigned int len)
-{
-    double retVal =0.0;
-
-    if (len == 0) return 0;
-
-    double s = sum( src, len );
-
-    retVal =  s  / (double)len;
-
-    return retVal;
-}
-
-double mean(const std::vector<double> &src,
-                           unsigned int start,
-                           unsigned int count)
-{
-    double sum = 0.;
-
-    if (count == 0) return 0;
-
-    for (int i = 0; i < (int)count; ++i)
-    {
-        sum += src[start + i];
-    }
-
-    return sum / count;
-}
 int compareInt (const void * a, const void * b)
 {
   return ( *(int*)a - *(int*)b );
@@ -192,30 +99,6 @@ void normalise(std::vector<double> &data, NormaliseType type)
     }
 }
 
-void adaptiveThreshold(std::vector<double> &data)
-{
-    int sz = int(data.size());
-    if (sz == 0) return;
-
-    std::vector<double> smoothed(sz);
-
-    int p_pre = 8;
-    int p_post = 7;
-
-    for (int i = 0; i < sz; ++i) {
-
-        int first = std::max(0,      i - p_pre);
-        int last  = std::min(sz - 1, i + p_post);
-
-        smoothed[i] = mean(data, first, last - first + 1);
-    }
-
-    for (int i = 0; i < sz; i++) {
-        data[i] -= smoothed[i];
-        if (data[i] < 0.0)
-            data[i] = 0.0;
-    }
-}
 double
 factorial(int x)
 {

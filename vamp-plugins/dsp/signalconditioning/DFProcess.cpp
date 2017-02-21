@@ -57,8 +57,8 @@ void DFProcess::initialise( DFProcConfig Config )
 
     m_isMedianPositive = Config.isMedianPositive;
 
-    filtSrc = new double[ m_length ];
-    filtDst = new double[ m_length ];
+    filtSrc = new float[ m_length ];
+    filtDst = new float[ m_length ];
 
 
     //Low Pass Smoothing Filter Config
@@ -66,7 +66,7 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FilterConfigParams.ACoeffs = Config.LPACoeffs;
     m_FilterConfigParams.BCoeffs = Config.LPBCoeffs;
 
-    m_FiltFilt = FiltFilt<double>( m_FilterConfigParams );
+    m_FiltFilt = FiltFilt<float>( m_FilterConfigParams );
 
     //add delta threshold
     m_delta = Config.delta;
@@ -80,7 +80,7 @@ void DFProcess::deInitialise()
     delete [] m_filtScratchOut;
 }
 
-void DFProcess::process(double *src, double* dst)
+void DFProcess::process(float *src, float* dst)
 {
     if (m_length == 0)
         return;
@@ -91,17 +91,17 @@ void DFProcess::process(double *src, double* dst)
 }
 
 
-void DFProcess::medianFilter(double *src, double *dst)
+void DFProcess::medianFilter(float *src, float *dst)
 {
     int i,k,j,l;
     int index = 0;
 
-    double val = 0;
+    float val = 0;
 
-    double* y = new double[ m_winPost + m_winPre + 1];
-    memset( y, 0, sizeof( double ) * ( m_winPost + m_winPre + 1) );
+    float* y = new float[ m_winPost + m_winPre + 1];
+    memset( y, 0, sizeof( float ) * ( m_winPost + m_winPre + 1) );
 
-    double* scratch = new double[ m_length ];
+    float* scratch = new float[ m_length ];
 
     for( i = 0; i < m_winPre; i++)
     {
@@ -169,7 +169,7 @@ void DFProcess::medianFilter(double *src, double *dst)
     delete [] y;
     delete [] scratch;
 }
-void DFProcess::removeDCNormalize( double *src, double*dst )
+void DFProcess::removeDCNormalize( float *src, float*dst )
 {
 /*    auto its = std::minmax_element(src,src + m_length);
     auto DFMin = *std::get<0>(its);

@@ -36,8 +36,8 @@ public:
      * enough space for size/2 + 1 values. The redundant conjugate
      * half of the output is not returned.
      */
-    void processTimeDomain(const double *src,
-                           double *mag, double *phase, double *unwrapped);
+    void processTimeDomain(const float *src,
+                           float *mag, float *phase, float *unwrapped);
 
     /**
      * Given one frame of frequency-domain samples, return the
@@ -50,8 +50,8 @@ public:
      * mag, phase, and unwrapped must each be non-NULL and point to
      * enough space for size/2+1 values.
      */
-    void processFrequencyDomain(const double *reals, const double *imags,
-                                double *mag, double *phase, double *unwrapped);
+    void processFrequencyDomain(const float *reals, const float *imags,
+                                float *mag, float *phase, float *unwrapped);
 
     /**
      * Reset the stored phases to zero. Note that this may be
@@ -62,19 +62,19 @@ public:
     void reset();
 
 protected:
-    void FFTShift(double *src);
-    void getMagnitudes(double *mag);
-    void getPhases(double *theta);
-    void unwrapPhases(double *theta, double *unwrapped);
+    void FFTShift(float *src);
+    void getMagnitudes(float *mag);
+    void getPhases(float *theta);
+    void unwrapPhases(float *theta, float *unwrapped);
 
     int m_n;
     int m_hop;
     FFTReal *m_fft;
-    double *m_time;
-    double *m_imag;
-    double *m_real;
-    double *m_phase;
-    double *m_unwrapped;
+    float *m_time;
+    float *m_imag;
+    float *m_real;
+    float *m_phase;
+    float *m_unwrapped;
 };
 
 #endif
