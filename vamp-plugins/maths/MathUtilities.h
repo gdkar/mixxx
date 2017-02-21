@@ -26,6 +26,12 @@
 #include <iterator>
 #include <limits>
 #include <complex>
+#include <cstdint>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <cstdarg>
+#include <limits>
 
 #include "nan-inf.h"
 

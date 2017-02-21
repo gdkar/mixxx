@@ -38,7 +38,7 @@ private:
 
     unsigned int m_ord;
 
-    Filter* m_filter;
+    Filter<double>* m_filter;
 
     double* m_filtScratchIn;
     double* m_filtScratchOut;
