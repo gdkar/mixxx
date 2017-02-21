@@ -83,7 +83,7 @@ private:
 
     FilterConfig m_FilterConfigParams;
 
-    FiltFilt* m_FiltFilt;
+    FiltFilt<double> m_FiltFilt;
 
     bool m_isMedianPositive;
     float m_delta; //add delta threshold

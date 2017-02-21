@@ -66,7 +66,7 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FilterConfigParams.ACoeffs = Config.LPACoeffs;
     m_FilterConfigParams.BCoeffs = Config.LPBCoeffs;
 
-    m_FiltFilt = new FiltFilt( m_FilterConfigParams );
+    m_FiltFilt = FiltFilt<double>( m_FilterConfigParams );
 
     //add delta threshold
     m_delta = Config.delta;
@@ -75,24 +75,18 @@ void DFProcess::initialise( DFProcConfig Config )
 void DFProcess::deInitialise()
 {
     delete [] filtSrc;
-
     delete [] filtDst;
-
     delete [] m_filtScratchIn;
-
     delete [] m_filtScratchOut;
-
-    delete m_FiltFilt;
 }
 
 void DFProcess::process(double *src, double* dst)
 {
-    if (m_length == 0) return;
+    if (m_length == 0)
+        return;
 
     removeDCNormalize( src, filtSrc );
-
-    m_FiltFilt->process( filtSrc, filtDst, m_length );
-
+    m_FiltFilt.process( filtSrc, filtDst, m_length );
     medianFilter( filtDst, dst );
 }
 
@@ -156,25 +150,18 @@ void DFProcess::medianFilter(double *src, double *dst)
     }
 
 
-    for( i = 0; i < m_length; i++ )
-    {
+    for( i = 0; i < m_length; i++ ) {
 	//add a delta threshold used as an offset when computing the smoothed detection function
 	//(helps to discard noise when detecting peaks)
 	val = src[ i ] - scratch[ i ] - m_delta;
 
-	if( m_isMedianPositive )
-	{
-	    if( val > 0 )
-	    {
+	if( m_isMedianPositive ) {
+	    if( val > 0 ) {
 		dst[ i ]  = val;
-	    }
-	    else
-	    {
+	    } else {
 		dst[ i ]  = 0;
 	    }
-	}
-	else
-	{
+	} else {
 	    dst[ i ]  = val;
 	}
     }
@@ -182,8 +169,6 @@ void DFProcess::medianFilter(double *src, double *dst)
     delete [] y;
     delete [] scratch;
 }
-
-
 void DFProcess::removeDCNormalize( double *src, double*dst )
 {
 /*    auto its = std::minmax_element(src,src + m_length);
