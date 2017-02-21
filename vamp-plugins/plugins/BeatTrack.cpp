@@ -16,7 +16,7 @@
 
 #include <dsp/onsets/DetectionFunction.h>
 //#include <dsp/onsets/PeakPicking.h>
-#include <dsp/tempotracking/TempoTrack.h>
+//#include <dsp/tempotracking/TempoTrack.h>
 #include <dsp/tempotracking/TempoTrackV2.h>
 
 using std::string;
@@ -45,11 +45,14 @@ public:
 
     DFConfig dfConfig;
     std::unique_ptr<DetectionFunction> df;
-    vector<double> dfOutput;
+    vector<float > dfOutput;
     Vamp::RealTime origin;
 };
 
-
+BeatTracker::InputDomain BeatTracker::getInputDomain() const
+{
+    return FrequencyDomain;
+}
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(),
@@ -245,19 +248,16 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
     m_d.reset();
 
-    if (channels < getMinChannelCount() ||
-    channels > getMaxChannelCount()) {
+    if (channels < getMinChannelCount() || channels > getMaxChannelCount()) {
         std::cerr << "BeatTracker::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
     }
-
     if (stepSize != getPreferredStepSize()) {
         std::cerr << "ERROR: BeatTracker::initialise: Unsupported step size for this sample rate: "
                   << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
-
     if (blockSize != getPreferredBlockSize()) {
         std::cerr << "WARNING: BeatTracker::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
@@ -361,8 +361,8 @@ BeatTracker::process(const float *const *inputBuffers,
 
     size_t len = m_d->dfConfig.frameLength / 2 + 1;
 
-    auto reals = std::make_unique<double[]>(len);
-    auto imags = std::make_unique<double[]>(len);
+    auto reals = std::make_unique<float[]>(len);
+    auto imags = std::make_unique<float[]>(len);
 
     // We only support a single input channel
 
@@ -392,16 +392,17 @@ BeatTracker::FeatureSet
 BeatTracker::getRemainingFeatures()
 {
     if (!m_d) {
-    cerr << "ERROR: BeatTracker::getRemainingFeatures: "
-         << "BeatTracker has not been initialised"
-         << endl;
-    return FeatureSet();
+        cerr << "ERROR: BeatTracker::getRemainingFeatures: "
+            << "BeatTracker has not been initialised"
+            << endl;
+        return FeatureSet();
     }
 
-    if (m_method == METHOD_OLD) return beatTrackOld();
-    else return beatTrackNew();
+//    if (m_method == METHOD_OLD) return beatTrackOld();
+//    else return
+    return beatTrackNew();
 }
-
+#if 0
 BeatTracker::FeatureSet
 BeatTracker::beatTrackOld()
 {
@@ -479,19 +480,18 @@ BeatTracker::beatTrackOld()
 
     return returnFeatures;
 }
-
+#endif
 BeatTracker::FeatureSet
 BeatTracker::beatTrackNew()
 {
-    vector<double> df;
-    vector<double> beatPeriod;
-    vector<double> tempi;
+    vector<float> df;
+    vector<float> beatPeriod;
+    vector<float> tempi;
 
-    size_t nonZeroCount = m_d->dfOutput.size();
+    auto nonZeroCount = m_d->dfOutput.size();
     while (nonZeroCount > 0) {
-        if (m_d->dfOutput[nonZeroCount-1] > 0.0) {
+        if (m_d->dfOutput[nonZeroCount-1] > 0.0)
             break;
-        }
         --nonZeroCount;
     }
 
@@ -501,61 +501,51 @@ BeatTracker::beatTrackNew()
         df.push_back(m_d->dfOutput[i]);
         beatPeriod.push_back(0.0);
     }
-    if (df.empty()) return FeatureSet();
+    if (df.empty())
+        return FeatureSet();
 
-    TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize);
-
+    TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize, m_d->dfConfig.frameLength);
 
     // MEPD - note this function is now passed 2 new parameters, m_inputtempo and m_constraintempo
     tt.calculateBeatPeriod(df, beatPeriod, tempi, m_inputtempo, m_constraintempo);
-
-    vector<double> beats;
-
+    auto beats = vector<float>{};
     // MEPD - note this function is now passed 2 new parameters, m_alpha and m_tightness
     tt.calculateBeats(df, beatPeriod, beats, m_alpha, m_tightness);
 
-    FeatureSet returnFeatures;
+    auto returnFeatures = FeatureSet{};
 
-    char label[100];
+    char label[100] = { 0, };
 
     for (size_t i = 0; i < beats.size(); ++i) {
+        auto frame = beats[i] * m_d->dfConfig.stepSize;
+        Feature feature;
+        feature.hasTimestamp = true;
+        feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+            (frame, lrintf(m_inputSampleRate));
 
-    size_t frame = beats[i] * m_d->dfConfig.stepSize;
+        float bpm = 0.0;
 
-    Feature feature;
-    feature.hasTimestamp = true;
-    feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-        (frame, lrintf(m_inputSampleRate));
+        if (i+1 < beats.size()) {
+            auto frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
+            // one beat is frameIncrement frames, so there are
+            // samplerate/frameIncrement bps, so
+            // 60*samplerate/frameIncrement bpm
 
-    float bpm = 0.0;
-    int frameIncrement = 0;
-
-    if (i+1 < beats.size()) {
-
-        frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
-
-        // one beat is frameIncrement frames, so there are
-        // samplerate/frameIncrement bps, so
-        // 60*samplerate/frameIncrement bpm
-
-        if (frameIncrement > 0) {
-        bpm = (60.0 * m_inputSampleRate) / frameIncrement;
-        bpm = int(bpm * 100.0 + 0.5) / 100.0;
+            if (frameIncrement > 0) {
+                bpm = (60.0 * m_inputSampleRate) / frameIncrement;
+                bpm = int(bpm * 1000.0 + 0.5) / 1000.0;
                 sprintf(label, "%.2f bpm", bpm);
                 feature.label = label;
+            }
         }
+
+        returnFeatures[0].push_back(feature); // beats are output 0
     }
 
-    returnFeatures[0].push_back(feature); // beats are output 0
-    }
-
-    double prevTempo = 0.0;
-
-    for (size_t i = 0; i < tempi.size(); ++i) {
-
-    size_t frame = i * m_d->dfConfig.stepSize;
-
-        if (tempi[i] > 1 && int(tempi[i] * 100) != int(prevTempo * 100)) {
+    auto prevTempo = 0.0f;
+    for (auto i = 0ul; i < tempi.size(); ++i) {
+        auto frame = i * m_d->dfConfig.stepSize;
+        if (tempi[i] > 1 && int(tempi[i] * 1000) != int(prevTempo * 1000)) {
             Feature feature;
             feature.hasTimestamp = true;
             feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
@@ -567,6 +557,5 @@ BeatTracker::beatTrackNew()
             prevTempo = tempi[i];
         }
     }
-
     return returnFeatures;
 }

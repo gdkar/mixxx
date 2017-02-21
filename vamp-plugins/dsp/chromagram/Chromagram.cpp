@@ -150,17 +150,14 @@ double* Chromagram::process( const double *real, const double *imag )
     }
 
     // initialise chromadata to 0
-    for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
-
-    double cmax = 0.0;
-    double cval = 0;
+    for (unsigned i = 0; i < m_BPO; i++)
+        m_chromadata[i] = 0;
     // Calculate ConstantQ frame
     m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
 
     // add each octave of cq data into Chromagram
-    const unsigned octaves = (int)floor(double( m_uK/m_BPO))-1;
-    for (unsigned octave = 0; octave <= octaves; octave++)
-    {
+    auto octaves = size_t(ssize_t(double( m_uK/m_BPO))-1);
+    for (auto octave = 0ul; octave <= octaves; octave++) {
 	unsigned firstBin = octave*m_BPO;
 	for (unsigned i = 0; i < m_BPO; i++)
 	{

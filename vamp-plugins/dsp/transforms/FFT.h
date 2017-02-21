@@ -35,7 +35,7 @@ public:
      *
      * The inverse transform is scaled by 1/nsamples.
      */
-    void process(bool inverse,
+    void _process(bool inverse,
                  const float *realIn, const float *imagIn,
                  float*realOut, float *imagOut);
 
@@ -92,7 +92,7 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forward(const float *realIn,
+    void _forward(const float *realIn,
                  float *realOut, float *imagOut);
 
     template<class I, class O>
@@ -126,7 +126,7 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forwardMagnitude(const float *realIn, float *magOut);
+    void _forwardMagnitude(const float *realIn, float *magOut);
     template<class I, class O>
     void forwardMagnitude(const I *realIn, O *realOut)
     {
@@ -155,10 +155,10 @@ public:
      *
      * The inverse transform is scaled by 1/nsamples.
      */
-    void inverse(const float *realIn, const float *imagIn,
+    void _inverse(const float *realIn, const float *imagIn,
                  float *realOut);
     template<class I, class O>
-    void forward(const I *realIn, const I *imagIn,O *realOut)
+    void inverse(const I *realIn, const I *imagIn,O *realOut)
     {
         using float_ptr = float*;
         auto rin = float_ptr{},iin = float_ptr{},rout=float_ptr{};

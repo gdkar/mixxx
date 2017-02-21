@@ -107,7 +107,7 @@ FFT::~FFT()
 }
 
 void
-FFT::process(bool inverse,
+FFT::_process(bool inverse,
              const float *p_lpRealIn, const float *p_lpImagIn,
              float *p_lpRealOut, float *p_lpImagOut)
 {
@@ -183,19 +183,19 @@ FFTReal::~FFTReal()
 }
 
 void
-FFTReal::forward(const float*ri, float *ro, float *io)
+FFTReal::_forward(const float*ri, float *ro, float *io)
 {
     m_d->forward(ri, ro, io);
 }
 
 void
-FFTReal::forwardMagnitude(const float *ri, float *mo)
+FFTReal::_forwardMagnitude(const float *ri, float *mo)
 {
     m_d->forwardMagnitude(ri, mo);
 }
 
 void
-FFTReal::inverse(const float *ri, const float *ii, float *ro)
+FFTReal::_inverse(const float *ri, const float *ii, float *ro)
 {
     m_d->inverse(ri, ii, ro);
 }

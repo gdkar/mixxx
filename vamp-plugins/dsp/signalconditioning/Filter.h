@@ -26,8 +26,8 @@
  */
 struct FilterConfig{
     unsigned int ord;
-    double* ACoeffs;
-    double* BCoeffs;
+    float* ACoeffs;
+    float* BCoeffs;
 };
 
 /**
@@ -60,8 +60,8 @@ public:
         auto send = src + length;
         auto in_beg = m_inBuffer.get(); auto in_mid = in_beg + m_ord; auto in_end = in_mid + 1;
         auto out_beg= m_outBuffer.get();auto out_mid= out_beg + m_ord;auto out_end= out_mid + 1;
-        auto b_beg = m_BCoeffs.get();auto b_end = b_beg + m_ord + 1;
-        auto a_beg = m_ACoeffs.get();auto a_mid = a_beg + 1;auto a_end = a_mid + m_ord;
+        auto b_beg = m_BCoeffs.get();//auto b_end = b_beg + m_ord + 1;
+        auto a_beg = m_ACoeffs.get();auto a_mid = a_beg + 1;//auto a_end = a_mid + m_ord;
         for(; src != send;) {
             *in_mid = *src++;
             std::rotate(in_beg, in_mid, in_end);

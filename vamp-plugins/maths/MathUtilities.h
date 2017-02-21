@@ -55,28 +55,55 @@ namespace MathUtilities
     /**
      * Return the mean of the given array of the given length.
      */
-    double mean( const double* src, unsigned int len );
+    template<class I>
+    typename std::iterator_traits<I>::value_type mean(I src, size_t len)
+    {
+        using T = typename std::iterator_traits<I>::value_type;
+        return len ? std::accumulate(src,src + len,T{})/len : T{};
+    }
 
     /**
      * Return the mean of the subset of the given vector identified by
      * start and count.
      */
-    double mean( const std::vector<double> &data,
-                        unsigned int start, unsigned int count );
+    template<class C>
+    typename C::value_type mean(const C &data, size_t start, size_t count)
+    {
+        return mean(std::begin(data) + start, count);
+    }
 
     /**
      * Return the sum of the values in the given array of the given
      * length.
      */
-    double sum( const double* src, unsigned int len );
+    template<class I>
+     typename std::iterator_traits<I>::value_type sum( I src, size_t len )
+     {
+        using T = typename std::iterator_traits<I>::value_type;
+        return std::accumulate(src,src+len,T{});
+     }
 
     /**
      * Return the median of the values in the given array of the given
      * length. If the array is even in length, the returned value will
      * be half-way between the two values adjacent to median.
      */
-    double median( const double* src, unsigned int len );
-
+    template<class I>
+    typename std::iterator_traits<I>::value_type median( I src, size_t len)
+    {
+        using T = typename std::iterator_traits<I>::value_type;
+        if (len == 0)
+            return 0;
+        auto scratch = std::vector<T>(src,src + len);
+        auto s_beg = std::begin(scratch),s_mid = s_beg + (len/2),s_end=std::end(scratch);
+        std::nth_element(s_beg,s_mid,s_end);
+        if(len % 2) {
+            auto s_mid2 = std::min_element(s_mid + 1,s_end);
+            return (*s_mid + *s_mid2) * T(0.5);
+        }else{
+            return *s_mid;
+        }
+    }
     /**
      * The principle argument function. Map the phase angle ang into
      * the range [-pi,pi).
@@ -154,12 +181,130 @@ namespace MathUtilities
     void normalise(std::vector<double> &data,
                           NormaliseType n = NormaliseUnitMax);
 
+    template<class C>
+    void adaptiveThreshold(C &data)
+    {
+        using T = typename C::value_type;
+        int sz = int(data.size());
+        if (sz == 0)
+            return;
+
+        std::vector<T> smoothed(sz);
+
+        auto p_pre = 8;
+        auto p_post = 7;
+
+        for (auto i = 0; i < sz; ++i) {
+            auto first = std::max(0,      i - p_pre);
+            auto last  = std::min(sz - 1, i + p_post);
+
+            smoothed[i] = mean(data, first, last - first + 1);
+        }
+        for (auto i = 0; i < sz; i++) {
+            data[i] -= smoothed[i];
+            if (data[i] < 0.0)
+                data[i] = 0.0;
+        }
+    }
+#if 0
     /**
      * Threshold the input/output vector data against a moving-mean
      * average filter.
      */
-    void adaptiveThreshold(std::vector<double> &data);
+    template<class C>
+    void adaptiveThreshold(C &data)
+    {
+        using T = typename C::value_type;
+        int sz = int(data.size());
+        if (sz == 0)
+            return;
+        std::array<T,16> sbuf{};
+        auto mask = 15;
+        auto sidx = 0;
+        auto it = std::begin(data),ib = it, et = std::end(data);
+        auto acc = T{};
+        auto div = T{};
+        for(auto stp = ib + std::min(8,sz); it != stp;) {
+            sbuf[sidx&mask] = *it++;
+            acc += sbuf[(sidx++)&mask];div += 1.0f;
+        }
+        if(it == et) {
+            std::transform(ib,et,ib,[val=(acc/sidx)](auto && x){return std::max(0.0f,x-val);});
+            return;
+        }
+        for(auto stp = ib + std::min(16,sz); it != stp;) {
+            acc += (sbuf[sidx++&mask] = *it++);
+            div += 1.0f;
+            *ib = std::max(0.0f,*ib - (acc / div));
+            ++ib;
+        }
+        for(; it != et; ++it) {
+            acc -=  sbuf[sidx    &mask];
+            acc += (sbuf[(sidx++)&mask] = *it++);
+            *ib = std::max(0.0f, *ib - (acc /div));
+            ++ib;
+        }
+        for(; ib != et; ++ib) {
+            acc -= sbuf[sidx++&mask];
+            div -= 1.0f;
+            *ib = std::max(0.0f, *ib - (acc/div));
+            ++ib;
+        }
+    }
+#endif
+#if 0
+    template<class C>
+    void adaptiveThreshold(C &data)
+    {
+        using T = typename C::value_type;
+        if(data.empty())
+            return;
+        int p_pre = 8;
+        int p_post = 7;
 
+        auto smoothed = std::vector<T>(data.size() + p_pre);
+        auto s_mid = std::begin(smoothed) + p_pre;
+        std::copy(std::begin(data),std::end(data),s_mid);
+        std::partial_sum(s_mid, std::end(smoothed),s_mid);
+        auto s_mov = s_mid;
+        auto s_end = std::end(smoothed);
+        auto s_beg = std::begin(smoothed);
+        auto acc = 0.f;
+        for(; s_mov - s_mid < p_post && s_mov != s_end;)
+            acc += *s_mov++;
+        for(;s_beg != s_mid && s_mov != s_end;) {
+            acc += *s_mov++;
+            *s_beg++ = acc / (s_mov - s_mid);
+        }
+        for(;s_mov != s_end;) {
+            acc += *s_mov++ - *s_beg;
+            *s_beg = acc / ( s_mov - s_beg);
+            ++s_beg;
+        }
+        for(;s_beg != s_mov;) {
+            acc -= *s_beg;
+            *s_beg = acc / (s_mov - s_beg);
+            ++s_beg;
+        }
+        auto hwr = [](auto && x){return T(0.5) * (x + std::abs(x));};
+        std::transform(std::begin(data),std::end(data),std::begin(smoothed),std::begin(data),
+            [=](auto && d, auto && s){return hwr(d - s);});
+/*        auto acc = std::accumulate(s_mid,s_mid +
+        for (int i = 0; i < sz; ++i) {
+
+            int first = std::max(0,      i - p_pre);
+            int last  = std::min(sz - 1, i + p_post);
+
+            smoothed[i] = mean(data, first, last - first + 1);
+        }
+
+        for (int i = 0; i < sz; i++) {
+            data[i] -= smoothed[i];
+            if (data[i] < 0.0)
+                data[i] = 0.0;
+        }*/
+    }
+#endif
     /**
      * Return true if x is 2^n for some integer n >= 0.
      */
@@ -192,6 +337,14 @@ namespace MathUtilities
             constexpr int operator()(uint64_t t) { return __builtin_clzl(t);}
             using restype = int;
         };
+        template<> struct _clz<uint16_t> {
+            constexpr int operator()(uint16_t t) { return __builtin_clz(uint32_t(t));}
+            using restype = int;
+        };
+        template<> struct _clz<int16_t> {
+            constexpr int operator()(int16_t t) { return __builtin_clz(uint32_t(t));}
+            using restype = int;
+        };
     }
     template<class T>
     constexpr typename builtin::_clz<T>::restype clz(T t)
@@ -209,7 +362,7 @@ namespace MathUtilities
       , bool
         > is_pow_2(T x)
     {
-        return x > T{0} && !(x&(x-T(1)));
+        return (x > T{0}) && !(x&(x-T(1)));
     }
     template<class T>
     constexpr std::enable_if_t<
@@ -236,7 +389,7 @@ namespace MathUtilities
       , bool
         > nextPowerOfTwo(T x)
     {
-        return T{1} << ilog2(x);
+        return T{1} << ilog2(x-T{1});
     }
     template<class T>
     constexpr std::enable_if_t<
@@ -244,7 +397,7 @@ namespace MathUtilities
       , bool
         > previousPowerOfTwo(T x)
     {
-        return T{1} << ilog2(x-1);
+        return T{1} << (ilog2(x)-1);
     }
     /**
      * Return the next lower integer power of two from x, e.g. 1300 ->
