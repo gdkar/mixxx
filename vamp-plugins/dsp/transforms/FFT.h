@@ -8,7 +8,8 @@
 
 #ifndef FFT_H
 #define FFT_H
-
+#include "maths/MathUtilities.h"
+#include <alloca.h>
 class FFT
 {
 public:
@@ -18,7 +19,7 @@ public:
      * power of two.
      */
     FFT(int nsamples);
-    ~FFT();
+   ~FFT();
 
     /**
      * Carry out a forward or inverse transform (depending on the
@@ -35,10 +36,36 @@ public:
      * The inverse transform is scaled by 1/nsamples.
      */
     void process(bool inverse,
-                 const double *realIn, const double *imagIn,
-                 double *realOut, double *imagOut);
+                 const float *realIn, const float *imagIn,
+                 float*realOut, float *imagOut);
 
+    template<class I, class O>
+    void process(bool inverse,
+        const I *realIn, const I *imagIn,
+        O *realOut, O *imagOut)
+    {
+        using float_ptr = float*;
+        auto rin = float_ptr{},iin=float_ptr{},rout=float_ptr{},iout=float_ptr{};
+        if(realIn) {
+            rin = (float*)alloca(m_size * sizeof(float));
+            std::copy_n(realIn,m_size,rin);
+        }
+        if(imagIn) {
+            iin = (float*)alloca(m_size * sizeof(float));
+            std::copy_n(imagIn,m_size,iin);
+        }
+        if(realOut)
+            rout = (float*)alloca(m_size * sizeof(float));
+        if(imagOut)
+            iout = (float*)alloca(m_size * sizeof(float));
+        process(inverse, (const float*)rin,(const float*)iin, (float*)rout, (float*)iout);
+        if(realOut)
+            std::copy_n(rout,m_size,realOut);
+        if(imagOut)
+            std::copy_n(iout,m_size,imagOut);
+    }
 private:
+    int m_size;
     class D;
     D *m_d;
 };
@@ -65,8 +92,29 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forward(const double *realIn,
-                 double *realOut, double *imagOut);
+    void forward(const float *realIn,
+                 float *realOut, float *imagOut);
+
+    template<class I, class O>
+    void forward(const I *realIn, O *realOut, O *imagOut)
+    {
+        using float_ptr = float*;
+        auto rin = float_ptr{},rout=float_ptr{},iout=float_ptr{};
+        if(realIn) {
+            rin = (float*)alloca(m_size * sizeof(float));
+            std::copy_n(realIn,m_size,rin);
+        }
+        if(realOut)
+            rout = (float*)alloca(m_size* sizeof(float));
+        if(imagOut)
+            iout = (float*)alloca(m_size* sizeof(float));
+        forward((const float*)rin, (float*)rout, (float*)iout);
+        if(realOut)
+            std::copy_n(rout,m_size ,realOut);
+        if(imagOut)
+            std::copy_n(iout,m_size ,imagOut);
+    }
+
 
     /**
      * Carry out a forward real-to-complex transform of size nsamples,
@@ -78,8 +126,21 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forwardMagnitude(const double *realIn, double *magOut);
+    void forwardMagnitude(const float *realIn, float *magOut);
+    template<class I, class O>
+    void forwardMagnitude(const I *realIn, O *realOut)
+    {
+        using float_ptr = float*;
+        auto rin = float_ptr{},rout=float_ptr{};
+        if(!realIn || !realOut)
+            return;
+        rin = (float*)alloca(m_size * sizeof(float));
+        std::copy_n(realIn,m_size,rin);
+        rout = (float*)alloca(m_size* sizeof(float));
 
+        forwardMagnitude((const float*)rin, (float*)rout);
+        std::copy_n(rout,m_size,realOut);
+    }
     /**
      * Carry out an inverse real transform (i.e. complex-to-real) of
      * size nsamples, where nsamples is the value provided to the
@@ -94,10 +155,29 @@ public:
      *
      * The inverse transform is scaled by 1/nsamples.
      */
-    void inverse(const double *realIn, const double *imagIn,
-                 double *realOut);
-
+    void inverse(const float *realIn, const float *imagIn,
+                 float *realOut);
+    template<class I, class O>
+    void forward(const I *realIn, const I *imagIn,O *realOut)
+    {
+        using float_ptr = float*;
+        auto rin = float_ptr{},iin = float_ptr{},rout=float_ptr{};
+        if(realIn) {
+            rin = (float*)alloca((m_size/2+1) * sizeof(float));
+            std::copy_n(realIn,(m_size/2+1),rin);
+        }
+        if(imagIn) {
+            iin = (float*)alloca((m_size/2+1)* sizeof(float));
+            std::copy_n(imagIn,(m_size/2+1),iin);
+        }
+        if(realOut)
+            rout = (float*)alloca(m_size * sizeof(float));
+        inverse((const float*)rin, (const float*)iin, (float*)rout);
+        if(realOut)
+            std::copy_n(rout,m_size,realOut);
+    }
 private:
+    int m_size;
     class D;
     D *m_d;
 };

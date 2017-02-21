@@ -23,21 +23,25 @@
 namespace  {
 template<class T>
 struct fftwf_deleter {
-    void operator() ( T * ptr)
-    {
-        fftwf_free(ptr);
-    }
+    using element_type    = T;
+    using size_type       = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer         = typename std::remove_extent<T>::type*;
+
+    void operator() ( pointer ptr) const { fftwf_free(ptr); }
 };
+template<class T>
+using fftwf_ptr = std::unique_ptr<T,fftwf_deleter<T> >;
 }
 class FFT::D
 {
 public:
     D(int n)
-    : m_n(n)
-    , m_freal_in((float*)fftw_malloc( n * sizeof(float)))
-    , m_fimag_in((float*)fftw_malloc( n * sizeof(float)))
-    , m_freal_out((float*)fftw_malloc( n * sizeof(float)))
-    , m_fimag_out((float*)fftw_malloc( n * sizeof(float)))
+    : m_n{n}
+    , m_freal_in{(float*)fftwf_malloc( n * sizeof(float))}
+    , m_fimag_in{(float*)fftwf_malloc( n * sizeof(float))}
+    , m_freal_out{(float*)fftwf_malloc( n * sizeof(float))}
+    , m_fimag_out{(float*)fftwf_malloc( n * sizeof(float))}
     {
         auto dims= fftw_iodim{ n, 1, 1 };
         m_plan = fftwf_plan_guru_split_dft(1, &dims, 0, nullptr, m_freal_in.get(), m_fimag_in.get(), m_freal_out.get(), m_fimag_out.get(), FFTW_MEASURE);
@@ -48,10 +52,10 @@ public:
     }
 
     void process(bool inverse,
-                 const double *ri,
-                 const double *ii,
-                 double *ro,
-                 double *io) {
+                 const float *ri,
+                 const float*ii,
+                 float*ro,
+                 float*io) {
         if(inverse) {
             std::swap(ri, ii);
             std::swap(ro, io);
@@ -92,6 +96,7 @@ private:
 };
 
 FFT::FFT(int n) :
+    m_size(n),
     m_d(new D(n))
 {
 }
@@ -103,8 +108,8 @@ FFT::~FFT()
 
 void
 FFT::process(bool inverse,
-             const double *p_lpRealIn, const double *p_lpImagIn,
-             double *p_lpRealOut, double *p_lpImagOut)
+             const float *p_lpRealIn, const float *p_lpImagIn,
+             float *p_lpRealOut, float *p_lpImagOut)
 {
     m_d->process(inverse,
                  p_lpRealIn, p_lpImagIn,
@@ -115,11 +120,11 @@ class FFTReal::D
 {
 public:
     D(int n)
-    : m_n(n)
-    , m_c(n / 2 + 1)
-    , m_fbuf((float*)fftw_malloc( n * sizeof(float)))
-    , m_fimag((float*)fftw_malloc( m_c * sizeof(float)))
-    , m_freal((float*)fftw_malloc( m_c * sizeof(float)))
+    : m_n{n}
+    , m_c{n / 2 + 1}
+    , m_fbuf{(float*)fftwf_malloc( n * sizeof(float))}
+    , m_fimag{(float*)fftwf_malloc( m_c * sizeof(float))}
+    , m_freal{(float*)fftwf_malloc( m_c * sizeof(float))}
     {
         auto dims= fftw_iodim{ n, 1, 1 };
         m_planf = fftwf_plan_guru_split_dft_r2c(1, &dims, 0, nullptr, m_fbuf.get(), m_freal.get(), m_fimag.get(), FFTW_MEASURE);
@@ -131,7 +136,7 @@ public:
         fftwf_destroy_plan(m_plani);
     }
 
-    void forward(const double *ri, double *ro, double *io) {
+    void forward(const float *ri, float *ro, float *io) {
         std::copy_n(ri, m_n, m_fbuf.get());
         fftwf_execute(m_planf);
         std::reverse_copy(m_freal.get(), m_freal.get() + m_c - 1, std::copy(m_freal.get(), m_freal.get() + m_c, ro));
@@ -139,7 +144,7 @@ public:
         std::transform(io + m_c, io + m_n, io + m_c, [](auto x){return -x;});
     }
 
-    void forwardMagnitude(const double *ri, double *mo) {
+    void forwardMagnitude(const float *ri, float *mo) {
 
         std::copy_n(ri, m_n, m_fbuf.get());
         fftwf_execute(m_planf);
@@ -147,7 +152,7 @@ public:
         std::reverse_copy(mo, mo + m_c - 1, mo + m_c);
     }
 
-    void inverse(const double *ri, const double *ii, double *ro) {
+    void inverse(const float *ri, const float *ii, float *ro) {
         std::copy_n(ri, m_c, m_freal.get());
         std::copy_n(ii, m_c, m_fimag.get());
         fftwf_execute(m_plani);
@@ -167,6 +172,7 @@ private:
 };
 
 FFTReal::FFTReal(int n) :
+    m_size(n),
     m_d(new D(n))
 {
 }
@@ -177,19 +183,19 @@ FFTReal::~FFTReal()
 }
 
 void
-FFTReal::forward(const double *ri, double *ro, double *io)
+FFTReal::forward(const float*ri, float *ro, float *io)
 {
     m_d->forward(ri, ro, io);
 }
 
 void
-FFTReal::forwardMagnitude(const double *ri, double *mo)
+FFTReal::forwardMagnitude(const float *ri, float *mo)
 {
     m_d->forwardMagnitude(ri, mo);
 }
 
 void
-FFTReal::inverse(const double *ri, const double *ii, double *ro)
+FFTReal::inverse(const float *ri, const float *ii, float *ro)
 {
     m_d->inverse(ri, ii, ro);
 }
