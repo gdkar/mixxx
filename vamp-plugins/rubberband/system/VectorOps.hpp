@@ -32,7 +32,7 @@
 #include "system/Math.hpp"
 #include "sysutils.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 // Note that all functions with a "target" vector have their arguments
 // in the same order as memcpy and friends, i.e. target vector first.

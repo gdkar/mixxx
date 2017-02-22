@@ -5,7 +5,7 @@
 #include "rubberband/system/Allocators.hpp"
 #include "rubberband/system/VectorOps.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<typename T, typename S>
 void shiftAndFold(T *target, int targetSize,
                         S *src,

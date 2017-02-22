@@ -6,7 +6,7 @@
 #include "TimeAlias.hpp"
 #include "ReassignedSpectrum.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 struct RMFFT {
 public:

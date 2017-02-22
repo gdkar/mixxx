@@ -2,7 +2,7 @@
 
 #include "rubberband/system/sysutils.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 class RMSpectrum {
     int m_size;

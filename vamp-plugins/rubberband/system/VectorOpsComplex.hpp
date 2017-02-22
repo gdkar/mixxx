@@ -28,7 +28,7 @@
 #include "VectorOps.hpp"
 
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 template<class T>
 void c_phasor(T &real, T &imag, T phi)

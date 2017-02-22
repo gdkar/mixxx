@@ -30,7 +30,7 @@
 
 #include "rubberband/system/sysutils.hpp"
 #include "KaiserWindow.hpp"
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 enum WindowType {
     InvalidWindow,

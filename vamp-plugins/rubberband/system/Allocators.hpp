@@ -65,7 +65,7 @@
 #include <boost/simd/hyperbolic.hpp>
 #include <boost/simd/as.hpp>
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 namespace bs = boost::simd;
 namespace ba = boost::alignment;

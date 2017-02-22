@@ -5,7 +5,7 @@
 #include "rubberband/system/Allocators.hpp"
 #include <fftw3.h>
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class InputIt, class OutputIt>
 OutputIt time_derivative_window(InputIt wbegin, InputIt wend, OutputIt dst)
 {

@@ -2,7 +2,7 @@ _Pragma("once")
 
 #include "rubberband/system/sysutils.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class Iter>
 struct Range {
     using size_type       = size_t;//typename std::iterator_traits<Iter>::size_type;

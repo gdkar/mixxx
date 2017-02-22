@@ -2,7 +2,7 @@
 
 #include "rubberband/system/sysutils.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 template<class InputIt, class OutputIt>
 OutputIt time_weighted_window(InputIt wbegin, InputIt wend, OutputIt dst)

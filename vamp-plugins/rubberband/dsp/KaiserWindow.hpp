@@ -115,7 +115,7 @@ constexpr float i1f(float xx)
 
 }
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class It>
 It make_kaiser_window(It _beg, It _end, float alpha)
 {

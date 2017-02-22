@@ -75,14 +75,11 @@
 #include "VectorOps.hpp"
 #include "VectorOpsComplex.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 template<class T>
 constexpr T princarg(T a) { return std::remainder(a, bs::Twopi<T>());}
 
 } // end namespace
-
-// The following should be functions in the RubberBand namespace, really
-
 
 #endif

@@ -1,6 +1,6 @@
 #include "dsp/ReassignedFFT.hpp"
 #include "dsp/KaiserWindow.hpp"
-using namespace RubberBand ;
+using namespace RBMixxxVamp ;
 namespace detail {
 struct _wisdom_reg {
     _wisdom_reg(){
