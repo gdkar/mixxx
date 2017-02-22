@@ -20,6 +20,7 @@
 #include <iostream>
 
 #include "maths/MathUtilities.h"
+#include <valarray>
 
 #define   EPS float(0.0000008) // just some arbitrary small number
 
@@ -194,42 +195,53 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 }
 
 void
-TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &beat_period, d_vec_t &tempi)
+TempoTrackV2::viterbi_decode(
+    const d_mat_t &rcfmat
+  , const d_vec_t &wv
+  , d_vec_t &beat_period
+  , d_vec_t &tempi)
 {
     // following Kevin Murphy's Viterbi decoding to get best path of
     // beat periods through rfcmat
+    auto T = rcfmat.size();
+    if (T < 2)
+        return; // can't do anything at all meaningful
 
+    auto Q = rcfmat.front().size();
     // make transition matrix
     auto tmat = d_mat_t(wv.size(),d_vec_t(wv.size(),0.f));
     // variance of Gaussians in transition matrix
     // formed of Gaussians on diagonal - implies slow tempo change
     auto sigma = 8.0f;
     // don't want really short beat periods, or really long ones
-    for (auto i=20ul;i <wv.size()-20ul; ++i) {
-        for (auto j=20ul; j<wv.size()-20ul; ++j) {
+    for (auto i=10ul;i <wv.size()-10ul; ++i) {
+        for (auto j=10ul; j<wv.size()-10ul; ++j)
             tmat[i][j] = gaussian(float(j),sigma,float(i));
-        }
+        normalize(tmat[i]);
     }
 
-
-    auto T = rcfmat.size();
-
-    if (T < 2)
-        return; // can't do anything at all meaningful
     // parameters for Viterbi decoding... this part is taken from
     // Murphy's matlab
-    auto Q = rcfmat.front().size();
     auto delta = d_mat_t(T, d_vec_t(Q,0.f));
     auto psi   = i_mat_t(T, i_vec_t(Q,0));
 
 
     // initialize first column of delta
-    for (auto j=0ul; j<Q; j++) {
-        delta[0][j] = wv[j] * rcfmat[0][j];
-    }
+    std::transform(
+        std::begin(wv)
+       ,std::end(wv)
+       ,std::begin(rcfmat.front())
+       ,std::begin(delta.front())
+       ,std::multiplies<void>{});
+
     normalize(delta[0]);
+
     for (auto t=1ul; t<T; t++) {
         for (auto j=0ul; j<Q; j++) {
+/*            auto prob = std::inner_product(
+                std::begin(delta[t-1])
+               ,std::end(delta[t-1])
+               ,std::begin(tmat[j]));*/
             auto maxv = delta[t-1][0] * tmat[j][0];
             auto maxi = 0ul;
             for(auto i = 1ul; i < Q; ++i) {
@@ -240,37 +252,34 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
                 }
             }
             delta[t][j] = maxv * rcfmat[t][j];
-            psi[t][j] = maxi;
+            psi  [t][j] = maxi;
         }
         normalize(delta[t]);
     }
     auto bestpath = i_vec_t(T);
-    auto tmp_vec = delta[T-1];
 
     // find starting point - best beat period for "last" frame
-    bestpath.back() = std::max_element(std::begin(delta.back()),std::end(delta.back()))-std::begin(delta.back());
+    bestpath.back() = std::max_element(
+        std::begin(delta.back())
+      , std::end(delta.back())
+        ) - std::begin(delta.back());
     // backtrace through index of maximum values in psi
     for (auto t=T-1; t-- ;)
         bestpath[t] = psi[t+1][bestpath[t+1]];
 
-    // weird but necessary hack -- couldn't get above loop to terminate at t >= 0
-
-    auto lastind = 0ul;
     auto step = wv.size();
-    for (auto  i=0ul; i<T; i++) {
-        for (auto j=0ul; j<step; j++) {
-            lastind = i*step+j;
-            beat_period[lastind] = bestpath[i];
-        }
-//        std::cerr << "bestpath[" << i << "] = " << bestpath[i] << " (used for beat_periods " << i*step << " to " << i*step+step-1 << ")" << std::endl;
-    }
+    auto per = std::begin(beat_period);
+    for (auto pth : bestpath)
+        per = std::fill_n(per, step, pth);
 
     //fill in the last values...
-    for (auto i=lastind; i<beat_period.size(); i++)
-        beat_period[i] = beat_period[lastind];
+    std::fill(per, std::end(beat_period), *(per-1));
 
-    for (auto i = 0; i < beat_period.size(); i++)
-        tempi.push_back((60. * m_rate / m_increment)/beat_period[i]);
+    std::transform(
+        std::begin(beat_period)
+      , std::end(beat_period)
+      , std::back_inserter(tempi)
+      , [factor=((60.0f*m_rate)/m_increment)](auto && x){return factor/x;});
 }
 // MEPD 28/11/12
 // this function has been updated to allow the "alpha" and "tightness" parameters
@@ -284,39 +293,27 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
     if (df.empty() || beat_period.empty())
         return;
 
-    d_vec_t cumscore(df.size()); // store cumulative score
-//    i_vec_t backlink(df.size()); // backlink (stores best beat locations at each time instant)
-//    d_vec_t localscore(df.size()); // localscore, for now this is the same as the detection function
+    auto cumscore = d_vec_t(df.size());
     auto localscore = df;
     auto backlink   = i_vec_t(df.size(), -1);
-/*    for (unsigned int i=0; i<df.size(); i++) {
-        backlink[i] = -1;
-    }*/
-    //double tightness = 4.;
-    //double alpha = 0.9;
-    // MEPD 28/11/12
-    // debug statements that can be removed.
-//    std::cerr << "alpha" << alpha << std::endl;
-//    std::cerr << "tightness" << tightness << std::endl;
 
     // main loop
     for (auto i=0ul; i<localscore.size(); i++) {
-        auto prange_min = -2*beat_period[i];
-        auto prange_max = std::round(-0.5*beat_period[i]);
+        auto prange_min = int(-2*beat_period[i]);
+        auto prange_max = int(std::round(-0.5*beat_period[i]));
 
         // transition range
-        auto txwt =d_vec_t(prange_max - prange_min + 1);
-        auto scorecands =d_vec_t(txwt.size());
+        auto txwt = d_vec_t(prange_max - prange_min + 1);
+        auto scorecands = d_vec_t(txwt.size());
 
+        auto mu = beat_period[i];
         for (auto j=0ul;j<txwt.size();j++) {
-            auto mu = static_cast<float> (beat_period[i]);
-            txwt[j] = std::exp( -0.5*sqr(tightness * std::log((round(2*mu)-j)/mu)));
+            auto cscore_ind = i + prange_min + j;
+            if (cscore_ind >= 0) {
+            txwt[j] = std::exp( -0.5*sqr(tightness * std::log((std::round(2*mu)-j)/mu)));
 
             // IF IN THE ALLOWED RANGE, THEN LOOK AT CUMSCORE[I+PRANGE_MIN+J
             // ELSE LEAVE AT DEFAULT VALUE FROM INITIALISATION:  D_VEC_T SCORECANDS (TXWT.SIZE());
-
-            int cscore_ind = i+prange_min+j;
-            if (cscore_ind >= 0) {
                 scorecands[j] = txwt[j] * cumscore[cscore_ind];
             }
         }
@@ -326,17 +323,14 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
         auto vv = *it;
         auto xx = it - std::begin(scorecands);
 
-        cumscore[i] = alpha*vv + (1.-alpha)*localscore[i];
-        backlink[i] = i+prange_min+xx;
+        cumscore[i] = alpha * vv + (1-alpha)*localscore[i];
+        backlink[i] = i + prange_min + xx;
 
 //        std::cerr << "backlink[" << i << "] <= " << backlink[i] << std::endl;
     }
     // STARTING POINT, I.E. LAST BEAT.. PICK A STRONG POINT IN cumscore VECTOR
-    auto tmp_vec = d_vec_t(cumscore.end() - beat_period.back(),cumscore.end());
-    auto startpoint = (std::max_element(
-        std::begin(tmp_vec)
-       ,std::end(tmp_vec
-        )) - std::begin(tmp_vec)) + cumscore.size() - beat_period.back();
+    auto it = std::end(cumscore) - beat_period.back();
+    auto startpoint = (std::max_element(it ,std::end(cumscore)) - std::begin(cumscore));
 
     // can happen if no results obtained earlier (e.g. input too short)
     if (startpoint >= backlink.size())
@@ -344,8 +338,7 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
 
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
-    i_vec_t ibeats;
-    ibeats.push_back(startpoint);
+    auto ibeats = i_vec_t{startpoint};
 //    std::cerr << "startpoint = " << startpoint << std::endl;
     while (backlink[ibeats.back()] > 0) {
 //        std::cerr << "backlink[" << ibeats.back() << "] = " << backlink[ibeats.back()] << std::endl;

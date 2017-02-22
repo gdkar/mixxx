@@ -18,7 +18,10 @@ public:
      * transforms of size nsamples. nsamples does not have to be a
      * power of two.
      */
-    FFT(int nsamples);
+    FFT(int nsamples );
+    constexpr FFT() = default;
+    constexpr FFT(FFT && o) noexcept = default;
+    FFT &operator = (FFT && o) noexcept;
    ~FFT();
 
     /**
@@ -44,6 +47,8 @@ public:
         const I *realIn, const I *imagIn,
         O *realOut, O *imagOut)
     {
+        if(!m_d)
+            return;
         using float_ptr = float*;
         auto rin = float_ptr{},iin=float_ptr{},rout=float_ptr{},iout=float_ptr{};
         if(realIn) {
@@ -58,16 +63,16 @@ public:
             rout = (float*)alloca(m_size * sizeof(float));
         if(imagOut)
             iout = (float*)alloca(m_size * sizeof(float));
-        process(inverse, (const float*)rin,(const float*)iin, (float*)rout, (float*)iout);
+        _process(inverse, (const float*)rin,(const float*)iin, (float*)rout, (float*)iout);
         if(realOut)
             std::copy_n(rout,m_size,realOut);
         if(imagOut)
             std::copy_n(iout,m_size,imagOut);
     }
 private:
-    int m_size;
+    int m_size{};
     class D;
-    D *m_d;
+    D *m_d{};
 };
 
 class FFTReal
@@ -81,7 +86,11 @@ public:
      * std::invalid_argument if nsamples is odd.)
      */
     FFTReal(int nsamples);
-    ~FFTReal();
+    constexpr FFTReal() = default;
+    constexpr FFTReal(FFTReal && o) noexcept = default;
+    FFTReal &operator = (FFTReal && o) noexcept;
+
+   ~FFTReal();
 
     /**
      * Carry out a forward real-to-complex transform of size nsamples,
@@ -98,6 +107,8 @@ public:
     template<class I, class O>
     void forward(const I *realIn, O *realOut, O *imagOut)
     {
+        if(!m_d)
+            return;
         using float_ptr = float*;
         auto rin = float_ptr{},rout=float_ptr{},iout=float_ptr{};
         if(realIn) {
@@ -108,7 +119,7 @@ public:
             rout = (float*)alloca(m_size* sizeof(float));
         if(imagOut)
             iout = (float*)alloca(m_size* sizeof(float));
-        forward((const float*)rin, (float*)rout, (float*)iout);
+        _forward((const float*)rin, (float*)rout, (float*)iout);
         if(realOut)
             std::copy_n(rout,m_size ,realOut);
         if(imagOut)
@@ -130,6 +141,8 @@ public:
     template<class I, class O>
     void forwardMagnitude(const I *realIn, O *realOut)
     {
+        if(!m_d)
+            return;
         using float_ptr = float*;
         auto rin = float_ptr{},rout=float_ptr{};
         if(!realIn || !realOut)
@@ -138,7 +151,7 @@ public:
         std::copy_n(realIn,m_size,rin);
         rout = (float*)alloca(m_size* sizeof(float));
 
-        forwardMagnitude((const float*)rin, (float*)rout);
+        _forwardMagnitude((const float*)rin, (float*)rout);
         std::copy_n(rout,m_size,realOut);
     }
     /**
@@ -160,6 +173,8 @@ public:
     template<class I, class O>
     void inverse(const I *realIn, const I *imagIn,O *realOut)
     {
+        if(!m_d)
+            return;
         using float_ptr = float*;
         auto rin = float_ptr{},iin = float_ptr{},rout=float_ptr{};
         if(realIn) {
@@ -172,14 +187,14 @@ public:
         }
         if(realOut)
             rout = (float*)alloca(m_size * sizeof(float));
-        inverse((const float*)rin, (const float*)iin, (float*)rout);
+        _inverse((const float*)rin, (const float*)iin, (float*)rout);
         if(realOut)
             std::copy_n(rout,m_size,realOut);
     }
 private:
-    int m_size;
+    int m_size{};
     class D;
-    D *m_d;
+    D *m_d{};
 };
 
 #endif

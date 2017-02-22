@@ -44,7 +44,7 @@ public:
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
         downBeat = std::make_unique<DownBeat>(rate, factor, config.stepSize);
     }
-    ~BarBeatTrackerData() = default;
+   ~BarBeatTrackerData() = default;
     void reset() {
         df = std::make_unique<DetectionFunction>(dfConfig);
         dfOutput.clear();
@@ -250,8 +250,9 @@ BarBeatTracker::reset()
 size_t
 BarBeatTracker::getPreferredStepSize() const
 {
-    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
-    if (step < 1) step = 1;
+    auto step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    if (step < 1)
+        step = 1;
 //    std::cerr << "BarBeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
@@ -259,12 +260,11 @@ BarBeatTracker::getPreferredStepSize() const
 size_t
 BarBeatTracker::getPreferredBlockSize() const
 {
-    size_t theoretical = getPreferredStepSize() * 2;
+    return getPreferredStepSize() * 2;
 
     // I think this is not necessarily going to be a power of two, and
     // the host might have a problem with that, but I'm not sure we
     // can do much about it here
-    return theoretical;
 }
 
 BarBeatTracker::OutputList
@@ -325,10 +325,10 @@ BarBeatTracker::process(const float *const *inputBuffers,
                         Vamp::RealTime timestamp)
 {
     if (!m_d) {
-    cerr << "ERROR: BarBeatTracker::process: "
-         << "BarBeatTracker has not been initialised"
-         << endl;
-    return FeatureSet();
+        cerr << "ERROR: BarBeatTracker::process: "
+            << "BarBeatTracker has not been initialised"
+            << endl;
+        return FeatureSet();
     }
 
     // We use time domain input, because DownBeat requires it -- so we
@@ -338,17 +338,17 @@ BarBeatTracker::process(const float *const *inputBuffers,
 
     // We only support a single input channel
 
-    const int fl = m_d->dfConfig.frameLength;
+    auto fl = m_d->dfConfig.frameLength;
 #ifndef __GNUC__
     auto dfinput = (float*)alloca(fl * sizeof(float));
 #else
     float dfinput[fl];
 #endif
-    for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
-
+    std::copy_n(inputBuffers[0],fl,dfinput);
     auto output = m_d->df->processTimeDomain(dfinput);
 
-    if (m_d->dfOutput.empty()) m_d->origin = timestamp;
+    if (m_d->dfOutput.empty())
+        m_d->origin = timestamp;
 
 //    std::cerr << "df[" << m_d->dfOutput.size() << "] is " << output << std::endl;
     m_d->dfOutput.push_back(output);
@@ -381,21 +381,18 @@ BarBeatTracker::getRemainingFeatures()
 BarBeatTracker::FeatureSet
 BarBeatTracker::barBeatTrack()
 {
-    vector<float> df;
-    vector<float> beatPeriod;
+    auto df = vector<float>{std::begin(m_d->dfOutput)+2,std::end(m_d->dfOutput)};
+    auto beatPeriod = vector<float>(0,m_d->dfOutput.size()-2);;
     vector<float> tempi;
 
-    for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
-        df.push_back(m_d->dfOutput[i]);
-        beatPeriod.push_back(0.0);
-    }
-    if (df.empty()) return FeatureSet();
+    if (df.empty())
+        return FeatureSet();
 
     TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize, m_d->dfConfig.frameLength);
 
     // changes are as per the BeatTrack.cpp - allow m_inputtempo and m_constraintempo to be set be the user
     tt.calculateBeatPeriod(df, beatPeriod, tempi, m_inputtempo, m_constraintempo);
-    vector<float> beats;
+    auto beats = vector<float>{};
     // changes are as per the BeatTrack.cpp - allow m_alpha and m_tightness to be set be the user
     tt.calculateBeats(df, beatPeriod, beats, m_alpha, m_tightness);
 
@@ -405,36 +402,35 @@ BarBeatTracker::barBeatTrack()
    // tt.calculateBeats(df, beatPeriod, beats, 0.9, 4.); // use default parameters until i fix this plugin too
 
     vector<int> downbeats;
-    size_t downLength = 0;
-    const float *downsampled = m_d->downBeat->getBufferedAudio(downLength);
+    auto downLength = 0ul;
+    auto downsampled = m_d->downBeat->getBufferedAudio(downLength);
     m_d->downBeat->findDownBeats(downsampled, downLength, beats, downbeats);
 
-    vector<float> beatsd;
+    auto beatsd = vector<float>{};
     m_d->downBeat->getBeatSD(beatsd);
 
 //    std::cerr << "BarBeatTracker: found downbeats at: ";
 //    for (int i = 0; i < downbeats.size(); ++i) std::cerr << downbeats[i] << " " << std::endl;
 
-    FeatureSet returnFeatures;
+    auto returnFeatures = FeatureSet{};
 
-    char label[20];
+    char label[20] = { 0, };
 
-    int dbi = 0;
-    int beat = 0;
-    int bar = 0;
+    auto dbi = 0;
+    auto beat = 0;
+    auto bar = 0;
 
     if (!downbeats.empty()) {
         // get the right number for the first beat; this will be
         // incremented before use (at top of the following loop)
-        int firstDown = downbeats[0];
+        auto firstDown = downbeats[0];
         beat = m_bpb - firstDown - 1;
-        if (beat == m_bpb) beat = 0;
+        if (beat == m_bpb)
+            beat = 0;
     }
 
-    for (size_t i = 0; i < beats.size(); ++i) {
-
-    size_t frame = beats[i] * m_d->dfConfig.stepSize;
-
+    for (auto i = 0ul; i < beats.size(); ++i) {
+        auto frame = beats[i] * m_d->dfConfig.stepSize;
         if (dbi < downbeats.size() && i == downbeats[dbi]) {
             beat = 0;
             ++bar;
@@ -449,26 +445,24 @@ BarBeatTracker::barBeatTrack()
         // 1 -> bars
         // 2 -> beat counter function
 
-    Feature feature;
-    feature.hasTimestamp = true;
-    feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-        (frame, lrintf(m_inputSampleRate));
+        auto feature = Feature{};
+        feature.hasTimestamp = true;
+        feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime(frame, lrintf(m_inputSampleRate));
 
         sprintf(label, "%d", beat + 1);
         feature.label = label;
-    returnFeatures[0].push_back(feature); // labelled beats
+        returnFeatures[0].push_back(feature); // labelled beats
 
         feature.values.push_back(beat + 1);
         returnFeatures[2].push_back(feature); // beat function
 
-        if (i > 0 && i <= beatsd.size()) {
+        if (i > 0ul && i <= beatsd.size()) {
             feature.values.clear();
             feature.values.push_back(beatsd[i-1]);
             feature.label = "";
             returnFeatures[3].push_back(feature); // beat spectral difference
         }
-
-        if (beat == 0) {
+        if (beat == 0ul) {
             feature.values.clear();
             sprintf(label, "%d", bar);
             feature.label = label;
