@@ -7,7 +7,7 @@ _Pragma("once")
 #include "Range.hpp"
 #include "ModIterator.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class T>
 class RingBuffer {
 protected:

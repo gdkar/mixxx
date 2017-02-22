@@ -26,7 +26,7 @@
 
 #include "rubberband/system/sysutils.hpp"
 
-namespace RubberBand
+namespace RBMixxxVamp
 {
 
 template <typename T>

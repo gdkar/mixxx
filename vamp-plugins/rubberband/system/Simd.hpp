@@ -66,7 +66,7 @@
 #include <boost/simd/function/deinterleave_second.hpp>
 
 #include "system/Allocators.hpp"
-namespace RubberBand {
+namespace RBMixxxVamp {
 
 namespace bs = boost::simd;
 namespace ba = boost::alignment;

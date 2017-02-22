@@ -4,7 +4,7 @@ _Pragma("once")
 #include "rubberband/system/sysutils.hpp"
 #include "Range.hpp"
 #include "SlowModIterator.hpp"
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class T>
 class MiniRing {
 protected:

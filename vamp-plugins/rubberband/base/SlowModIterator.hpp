@@ -3,7 +3,7 @@ _Pragma("once")
 #include "Range.hpp"
 #include "rubberband/system/sysutils.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class T>
 struct slow_mod_iterator {
     using iterator_category = std::random_access_iterator_tag;

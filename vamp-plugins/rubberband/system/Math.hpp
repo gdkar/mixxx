@@ -13,7 +13,7 @@
 #include <memory>
 #include "Simd.hpp"
 
-namespace RubberBand {
+namespace RBMixxxVamp {
 template<class T> constexpr const T T_PI = T{M_PI};
 template<class T> constexpr const T T_TWO_PI = T{2*M_PI};
 template<class T> constexpr const T T_PI_2 = T{0.5*M_PI};
