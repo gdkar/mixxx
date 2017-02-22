@@ -51,18 +51,18 @@ public:
 
 BeatTracker::InputDomain BeatTracker::getInputDomain() const
 {
-    return FrequencyDomain;
+    return TimeDomain;
 }
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(),
     m_method(METHOD_NEW),
     m_dfType(DF_COMPLEXSD),
-    m_whiten(false),
     m_alpha(0.9),  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
     m_tightness(4.),
     m_inputtempo(120.), 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
-    m_constraintempo(false) // MEPD new exposed parameter for beat tracker, default value = false (as old version)
+    m_constraintempo(false), // MEPD new exposed parameter for beat tracker, default value = false (as old version)
+    m_whiten(false)
     // calling the beat tracker with these default parameters will give the same output as the previous existing version
 
 {
@@ -359,19 +359,9 @@ BeatTracker::process(const float *const *inputBuffers,
         return FeatureSet();
     }
 
-    size_t len = m_d->dfConfig.frameLength / 2 + 1;
-
-    auto reals = std::make_unique<float[]>(len);
-    auto imags = std::make_unique<float[]>(len);
-
-    // We only support a single input channel
-
-    for (size_t i = 0; i < len; ++i) {
-        reals[i] = inputBuffers[0][i*2];
-        imags[i] = inputBuffers[0][i*2+1];
-    }
-
-    auto output = m_d->df->processFrequencyDomain(reals.get(), imags.get());
+//    auto output = m_d->df->processFrequencyDomain(reals.get(), imags.get());
+    auto output = m_d->df->processTimeDomain(inputBuffers[0]);
+//    reals.get(), imags.get());
 
     if (m_d->dfOutput.empty())
         m_d->origin = timestamp;
@@ -541,7 +531,6 @@ BeatTracker::beatTrackNew()
 
         returnFeatures[0].push_back(feature); // beats are output 0
     }
-
     auto prevTempo = 0.0f;
     for (auto i = 0ul; i < tempi.size(); ++i) {
         auto frame = i * m_d->dfConfig.stepSize;

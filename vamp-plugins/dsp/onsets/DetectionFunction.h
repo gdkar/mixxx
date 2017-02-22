@@ -28,8 +28,8 @@
 #define DF_BROADBAND (5)
 
 struct DFConfig{
-    unsigned int stepSize; // DF step in samples
-    unsigned int frameLength; // DF analysis window - usually 2*step. Must be even!
+    size_t stepSize; // DF step in samples
+    size_t frameLength; // DF analysis window - usually 2*step. Must be even!
     int DFType; // type of detection function ( see defines )
     float dbRise; // only used for broadband df (and required for it)
     bool adaptiveWhitening; // perform adaptive whitening
@@ -41,7 +41,10 @@ class DetectionFunction
 {
 public:
     float * getSpectrumMagnitude();
+    DetectionFunction() = default;
     DetectionFunction( DFConfig Config );
+    DetectionFunction(DetectionFunction && ) noexcept = default;
+    DetectionFunction&operator=(DetectionFunction && ) noexcept = default;
     virtual ~DetectionFunction();
 
     /**
@@ -60,37 +63,35 @@ private:
     void whiten();
     float runDF();
 
-    float HFC( unsigned int length, float * src);
-    float specDiff( unsigned int length, float * src);
-    float phaseDev(unsigned int length, float *srcPhase);
-    float complexSD(unsigned int length, float *srcMagnitude, float *srcPhase);
-    float broadband(unsigned int length, float *srcMagnitude);
+    float HFC( size_t length, float * src);
+    float specDiff( size_t length, float * src);
+    float phaseDev(size_t length, float *srcPhase);
+    float complexSD(size_t length, float *srcMagnitude, float *srcPhase);
+    float broadband(size_t length, float *srcMagnitude);
 
 private:
-    void initialise( DFConfig Config );
-    void deInitialise();
 
-    int m_DFType;
-    unsigned int m_dataLength;
-    unsigned int m_halfLength;
-    unsigned int m_stepSize;
-    float m_dbRise;
-    bool m_whiten;
-    float m_whitenRelaxCoeff;
-    float m_whitenFloor;
+    int     m_DFType{};
+    size_t  m_dataLength{};
+    size_t  m_halfLength{m_dataLength/2+1};
+    size_t  m_stepSize{};
+    float   m_dbRise{};
+    bool    m_whiten{};
+    float   m_whitenRelaxCoeff{};
+    float   m_whitenFloor{};
 
-    float * m_magHistory;
-    float * m_phaseHistory;
-    float * m_phaseHistoryOld;
-    float * m_magPeaks;
+    std::unique_ptr<float[]> m_magHistory{};
+    std::unique_ptr<float[]> m_phaseHistory{};
+    std::unique_ptr<float[]> m_phaseHistoryOld{};
+    std::unique_ptr<float[]> m_magPeaks{};
 
-    float * m_windowed; // Array for windowed analysis frame
-    float * m_magnitude; // Magnitude of analysis frame ( frequency domain )
-    float * m_thetaAngle;// Phase of analysis frame ( frequency domain )
-    float * m_unwrapped; // Unwrapped phase of analysis frame
+    std::unique_ptr<float[]> m_windowed{}; // Array for windowed analysis frame
+    std::unique_ptr<float[]> m_magnitude{}; // Magnitude of analysis frame ( frequency domain )
+    std::unique_ptr<float[]> m_thetaAngle{};// Phase of analysis frame ( frequency domain )
+    std::unique_ptr<float[]> m_unwrapped{}; // Unwrapped phase of analysis frame
 
-    Window<float> *m_window;
-    PhaseVocoder* m_phaseVoc;	// Phase Vocoder
+    Window<float> m_window{HanningWindow,int(m_dataLength)};
+    PhaseVocoder m_phaseVoc{int(m_dataLength),int(m_stepSize)};	// Phase Vocoder
 };
 
 #endif

@@ -150,6 +150,6 @@ void Window<T>::encache()
     }
 
     m_cache = mult;
-}
+};
 
 #endif

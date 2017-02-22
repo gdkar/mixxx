@@ -97,8 +97,22 @@ private:
 
 FFT::FFT(int n) :
     m_size(n),
-    m_d(new D(n))
+    m_d(n ? new D(n) : nullptr)
 {
+}
+FFT &FFT::operator = (FFT && o) noexcept
+{
+    using std::swap;
+    swap(m_size,o.m_size);
+    swap(m_d,o.m_d);
+    return *this;
+}
+FFTReal &FFTReal::operator = (FFTReal && o) noexcept
+{
+    using std::swap;
+    swap(m_size,o.m_size);
+    swap(m_d,o.m_d);
+    return *this;
 }
 
 FFT::~FFT()
@@ -173,7 +187,7 @@ private:
 
 FFTReal::FFTReal(int n) :
     m_size(n),
-    m_d(new D(n))
+    m_d(n ? new D(n) : nullptr)
 {
 }
 

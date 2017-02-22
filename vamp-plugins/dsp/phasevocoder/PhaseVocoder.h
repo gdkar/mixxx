@@ -16,12 +16,19 @@
 #ifndef PHASEVOCODER_H
 #define PHASEVOCODER_H
 
-class FFTReal;
-
+#include "dsp/transforms/FFT.h"
+#include <vector>
+#include <numeric>
+#include <cmath>
+#include <algorithm>
+#include <utility>
 class PhaseVocoder
 {
 public:
     PhaseVocoder(int size, int hop);
+    PhaseVocoder() = default;
+    PhaseVocoder(PhaseVocoder && ) noexcept = default;
+    PhaseVocoder&operator=(PhaseVocoder && ) noexcept = default;
     virtual ~PhaseVocoder();
 
     /**
@@ -60,21 +67,22 @@ public:
      * phase values as they grow.
      */
     void reset();
-
+    using vector_type =std::vector<float>;
 protected:
     void FFTShift(float *src);
     void getMagnitudes(float *mag);
     void getPhases(float *theta);
     void unwrapPhases(float *theta, float *unwrapped);
 
-    int m_n;
-    int m_hop;
-    FFTReal *m_fft;
-    float *m_time;
-    float *m_imag;
-    float *m_real;
-    float *m_phase;
-    float *m_unwrapped;
+    int      m_n{};
+    int      m_hop{};
+    FFTReal  m_fft{m_n};
+
+    vector_type m_time = vector_type(m_n);
+    vector_type m_imag = vector_type(m_n);
+    vector_type m_real = vector_type(m_n);
+    vector_type m_phase = vector_type(m_n/2+1);
+    vector_type m_unwrapped = vector_type(m_n/2+1);
 };
 
 #endif

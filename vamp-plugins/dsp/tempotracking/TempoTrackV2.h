@@ -18,6 +18,8 @@
 #define TEMPOTRACKV2_H
 
 #include <vector>
+#include "maths/MathUtilities.h"
+
 using namespace std;
 
 //!!! Question: how far is this actually sample rate dependent?  I
@@ -68,7 +70,7 @@ private:
     typedef vector<float> d_vec_t;
     typedef vector<vector<float> > d_mat_t;
 
-    float m_rate;
+    float  m_rate;
     size_t m_increment;
     size_t m_frame_size;
 
