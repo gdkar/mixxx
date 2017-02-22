@@ -17,7 +17,7 @@ mixxxminimal_sources = [
 	"dsp/onsets/DetectionFunction.cpp",
 	"dsp/phasevocoder/PhaseVocoder.cpp",
 	"dsp/rateconversion/Decimator.cpp",
-#	"dsp/signalconditioning/DFProcess.cpp",
+#	"dp/signalconditioning/DFProcess.cpp",
 #	"dsp/signalconditioning/FiltFilt.cpp",
 	"dsp/tempotracking/DownBeat.cpp",
 #	"dsp/tempotracking/TempoTrack.cpp",
@@ -34,6 +34,8 @@ mixxxminimal_sources = [
 	"plugins/TonalChangeDetect.cpp",
 	"plugins/MixxxBpmDetection.cpp",
 	"libmain.cpp",
+
+        "rubberband/dsp/ReassignedFFT.cpp",
 ]
 
 #Tell SCons to build the plugin
