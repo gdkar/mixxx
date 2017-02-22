@@ -60,8 +60,8 @@ public:
     void calculateBeats(const vector<float> &df
                       , const vector<float> &beatPeriod
                       , vector<float> &beats
-                      , float alpha = 0.9
-                      , float tightness = 0.4);
+                      , float alpha = 0.9f
+                      , float tightness = 0.4f);
 
 
 private:

@@ -214,8 +214,8 @@ TempoTrackV2::viterbi_decode(
     // formed of Gaussians on diagonal - implies slow tempo change
     auto sigma = 8.0f;
     // don't want really short beat periods, or really long ones
-    for (auto i=10ul;i <wv.size()-10ul; ++i) {
-        for (auto j=10ul; j<wv.size()-10ul; ++j)
+    for (auto i=20ul;i <wv.size()-20ul; ++i) {
+        for (auto j=20ul; j<wv.size()-20ul; ++j)
             tmat[i][j] = gaussian(float(j),sigma,float(i));
         normalize(tmat[i]);
     }
@@ -294,36 +294,33 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
         return;
 
     auto cumscore = d_vec_t(df.size());
-    auto localscore = df;
     auto backlink   = i_vec_t(df.size(), -1);
 
     // main loop
-    for (auto i=0ul; i<localscore.size(); i++) {
-        auto prange_min = int(-2*beat_period[i]);
-        auto prange_max = int(std::round(-0.5*beat_period[i]));
+    for (auto i=0ul; i<df.size(); i++) {
+        auto prange_min = -2*int(beat_period[i]);
+        auto prange_max = -int(std::round(0.5*beat_period[i]));
 
         // transition range
         auto txwt = d_vec_t(prange_max - prange_min + 1);
         auto scorecands = d_vec_t(txwt.size());
 
-        auto mu = beat_period[i];
+        auto mu = float(beat_period[i]);
         for (auto j=0ul;j<txwt.size();j++) {
-            auto cscore_ind = i + prange_min + j;
+            auto cscore_ind = int(i) + prange_min + int(j);
+            txwt[j] = std::exp( -0.5f*sqr(tightness * std::log((2.0f*mu-j)/mu)));
             if (cscore_ind >= 0) {
-            txwt[j] = std::exp( -0.5*sqr(tightness * std::log((std::round(2*mu)-j)/mu)));
-
             // IF IN THE ALLOWED RANGE, THEN LOOK AT CUMSCORE[I+PRANGE_MIN+J
             // ELSE LEAVE AT DEFAULT VALUE FROM INITIALISATION:  D_VEC_T SCORECANDS (TXWT.SIZE());
                 scorecands[j] = txwt[j] * cumscore[cscore_ind];
             }
         }
-
         // find max value and index of maximum value
         auto it = std::max_element(std::begin(scorecands),std::end(scorecands));
         auto vv = *it;
         auto xx = it - std::begin(scorecands);
 
-        cumscore[i] = alpha * vv + (1-alpha)*localscore[i];
+        cumscore[i] = alpha * vv + (1-alpha)*df[i];
         backlink[i] = i + prange_min + xx;
 
 //        std::cerr << "backlink[" << i << "] <= " << backlink[i] << std::endl;
@@ -338,7 +335,8 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
 
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
-    auto ibeats = i_vec_t{startpoint};
+    auto ibeats = i_vec_t{};
+    ibeats.push_back(startpoint);
 //    std::cerr << "startpoint = " << startpoint << std::endl;
     while (backlink[ibeats.back()] > 0) {
 //        std::cerr << "backlink[" << ibeats.back() << "] = " << backlink[ibeats.back()] << std::endl;
