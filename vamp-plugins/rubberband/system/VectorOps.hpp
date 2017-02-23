@@ -24,12 +24,10 @@
 #ifndef _RUBBERBAND_VECTOR_OPS_H_
 #define _RUBBERBAND_VECTOR_OPS_H_
 
-#include "base/Profiler.h"
-
 #include <cstring>
-#include "system/Simd.hpp"
-#include "system/Allocators.hpp"
-#include "system/Math.hpp"
+#include "Simd.hpp"
+#include "Allocators.hpp"
+#include "Math.hpp"
 #include "sysutils.hpp"
 
 namespace RBMixxxVamp {
