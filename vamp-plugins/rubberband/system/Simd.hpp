@@ -65,7 +65,7 @@
 #include <boost/simd/function/deinterleave_first.hpp>
 #include <boost/simd/function/deinterleave_second.hpp>
 
-#include "system/Allocators.hpp"
+#include "Allocators.hpp"
 namespace RBMixxxVamp {
 
 namespace bs = boost::simd;

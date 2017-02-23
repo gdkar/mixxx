@@ -1,5 +1,5 @@
-#include "dsp/ReassignedFFT.hpp"
-#include "dsp/KaiserWindow.hpp"
+#include "ReassignedFFT.hpp"
+#include "KaiserWindow.hpp"
 using namespace RBMixxxVamp ;
 namespace detail {
 struct _wisdom_reg {
