@@ -118,7 +118,9 @@ VampAnalyzer::~VampAnalyzer()
 }
 
 bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
-                        const int samplerate, const int TotalSamples, bool bFastAnalysis) {
+                        const int samplerate, const int TotalSamples, bool bFastAnalysis,
+                        QString options)
+{
     m_iRemainingSamples = TotalSamples;
     m_rate = samplerate;
 
@@ -153,7 +155,7 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
 
     auto plugin = pluginlist.at(0);
     m_key = loader->composePluginKey(pluginlibrary.toStdString(),plugin.toStdString());
-    m_plugin.reset(loader->loadPlugin(m_key, m_rate,Vamp::HostExt::PluginLoader::ADAPT_ALL_SAFE));
+    m_plugin.reset(loader->loadPlugin(m_key, m_rate,PluginLoader::ADAPT_ALL_SAFE));
 
     if (!m_plugin) {
         qDebug() << "VampAnalyzer: Cannot load Vamp Plug-in.";
@@ -194,6 +196,8 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
         m_iStepSize = m_iBlockSize;
         qDebug() << "Vampanalyzer: setting m_iStepSize to" << m_iStepSize;
     }
+    if(!options.isNull())
+        SetParameters(options);
 
     if (!m_plugin->initialise(2, m_iStepSize, m_iBlockSize)) {
         qDebug() << "VampAnalyzer: Cannot initialize plugin";
@@ -315,11 +319,60 @@ bool VampAnalyzer::End()
 
 bool VampAnalyzer::SetParameter(const QString parameter, double value)
 {
-    Q_UNUSED(parameter);
-    Q_UNUSED(value);
-    return true;
+    if(m_plugin) {
+        m_plugin->setParameter(parameter.toStdString(), float(value));
+        qDebug() << "Setting parameter" << parameter << "to value" << value;
+        return true;
+    }else{
+        qDebug() << "failed to set parameter" << parameter << "to value" << value;
+        return false;
+    }
 }
-
+bool VampAnalyzer::SetParameters(QStringList parameters)
+{
+    qDebug() << "Setting Vamp Plugin Parameters";
+    auto ok = false;
+    if(m_plugin) {
+        auto paramlist = m_plugin->getParameterDescriptors();
+        auto parammap = QMap<QString,Parameter>{};
+        for(auto && desc : paramlist)
+            parammap[QString::fromStdString(desc.identifier)]=desc;
+        auto params = QVector<std::pair<QString,float> >{};
+        for(auto paramstr: parameters) {
+            auto parts = paramstr.split("=");
+            if(parts.size() != 2)
+                continue;
+            auto id = parts[0];
+            if(!parammap.contains(id))
+                continue;
+            auto value = parts[1].toFloat(&ok);
+            if(!ok) {
+                auto val = parts[1].toStdString();
+                value = 0.0f;
+                auto && desc = parammap[id];
+                if(!desc.valueNames.empty()) {
+                    for(auto && dname : desc.valueNames) {
+                        if(dname == val) {
+                            ok = true;
+                            break;
+                        }else{
+                            value += 1.0f;
+                        }
+                    }
+                }
+            }
+            if(ok)
+                params.append({id,value});
+        }
+        for(auto && x : params)
+            SetParameter(std::get<0>(x),std::get<1>(x));
+    }
+    return ok;
+}
+bool VampAnalyzer::SetParameters(QString parameters)
+{
+    return SetParameters(parameters.split(" "));
+}
 void VampAnalyzer::SelectOutput(int outputnumber)
 {
     auto outputs = m_plugin->getOutputDescriptors();

@@ -29,19 +29,22 @@ class VampPluginLoader {
     virtual ~VampPluginLoader();
 
   public:
+    using Plugin = Vamp::Plugin;
+    using PluginLoader = Vamp::HostExt::PluginLoader;
+    using PluginKey = PluginLoader::PluginKey;
+    using PluginKeyList = PluginLoader::PluginKeyList;
+    using PluginCategoryHierarchy = PluginLoader::PluginCategoryHierarchy;
+
     static VampPluginLoader* getInstance();
-    PluginLoader::PluginKeyList listPlugins();
-    Vamp::Plugin *loadPlugin(Vamp::HostExt::PluginLoader::PluginKey,
-                             float inputSampleRate, int adapterFlags = 0);
-    PluginLoader::PluginKey composePluginKey(std::string libraryName,
-                                             std::string identifier);
-    PluginLoader::PluginCategoryHierarchy getPluginCategory(
-        Vamp::HostExt::PluginLoader::PluginKey plugin);
+    PluginKeyList listPlugins();
+    Plugin *loadPlugin(PluginKey, float inputSampleRate, int adapterFlags = 0);
+    PluginKey composePluginKey(std::string libraryName, std::string identifier);
+    PluginCategoryHierarchy getPluginCategory(PluginKey plugin);
 
   private:
     static VampPluginLoader* s_instance;
     static QMutex s_mutex;
-    Vamp::HostExt::PluginLoader* m_pVampPluginLoader;
+    PluginLoader* m_pVampPluginLoader;
     DISALLOW_COPY_AND_ASSIGN(VampPluginLoader);
 };
 

@@ -21,14 +21,26 @@
 
 class VampAnalyzer {
   public:
+    using Plugin = Vamp::Plugin;
+    using PluginLoader = Vamp::HostExt::PluginLoader;
+    using PluginKey = PluginLoader::PluginKey;
+    using PluginKeyList = PluginLoader::PluginKeyList;
+    using PluginCategoryHierarchy = PluginLoader::PluginCategoryHierarchy;
+    using Parameter = Vamp::Plugin::ParameterDescriptor;
+    using ParameterList = Vamp::Plugin::ParameterList;
+    using Feature = Vamp::Plugin::Feature;
+    using FeatureList = Vamp::Plugin::FeatureList;
+
     VampAnalyzer();
     virtual ~VampAnalyzer();
 
     bool Init(const QString pluginlibrary, const QString pluginid,
-              const int samplerate, const int TotalSamples, bool bFastAnalysis);
+              const int samplerate, const int TotalSamples, bool bFastAnalysis, QString options = QString{});
     bool Process(const CSAMPLE *pIn, const int iLen);
     bool End();
     bool SetParameter(const QString parameter, const double value);
+    bool SetParameters(QStringList parametrs);
+    bool SetParameters(QString parametrs);
 
     QVector<double> GetInitFramesVector();
     QVector<double> GetEndFramesVector();
@@ -44,14 +56,20 @@ class VampAnalyzer {
     void SelectOutput(const int outputnumber);
 
   private:
-    Vamp::HostExt::PluginLoader::PluginKey m_key;
-    int m_iSampleCount, m_iOUT, m_iRemainingSamples,
-        m_iBlockSize, m_iStepSize, m_rate, m_iOutput;
+    PluginKey m_key;
+    int m_iSampleCount;
+    int m_iOUT;
+    int m_iRemainingSamples;
+    int m_iBlockSize;
+    int m_iStepSize;
+    int m_rate;
+    int m_iOutput;
+
     std::array<CSAMPLE  *,2> m_pluginbuf;
     std::array<std::unique_ptr<CSAMPLE[]>,2> m_pluginstore;
     std::unique_ptr<Vamp::Plugin> m_plugin;
-    Vamp::Plugin::ParameterList mParameters;
-    Vamp::Plugin::FeatureList m_Results;
+    ParameterList m_Parameters;
+    FeatureList   m_Results;
 
     bool m_bDoNotAnalyseMoreSamples;
     bool m_FastAnalysisEnabled;

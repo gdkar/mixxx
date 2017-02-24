@@ -70,12 +70,12 @@ bool AnalyzerBeats::initialize(TrackPointer tio, int sampleRate, int totalSample
     m_bPreferencesFastAnalysis = m_pConfig->getValue<bool>(
             ConfigKey(BPM_CONFIG_KEY, BPM_FAST_ANALYSIS_ENABLED));
 
-    QString library = m_pConfig->getValueString(
-            ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_LIBRARY));
-    QString pluginID = m_pConfig->getValueString(
-            ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID));
+    auto library = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_LIBRARY));
+    auto pluginID = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID));
+    auto pluginOpts = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_OPTIONS));
 
     m_pluginId = pluginID;
+    m_pluginOpts = pluginOpts;
     m_iSampleRate = sampleRate;
     m_iTotalSamples = totalSamples;
 
@@ -84,8 +84,14 @@ bool AnalyzerBeats::initialize(TrackPointer tio, int sampleRate, int totalSample
 
     if (bShouldAnalyze) {
         m_pVamp = std::make_unique<VampAnalyzer>();
-        bShouldAnalyze = m_pVamp->Init(library, pluginID, m_iSampleRate, totalSamples,
-                                       m_bPreferencesFastAnalysis);
+        bShouldAnalyze = m_pVamp->Init(
+            library
+          , pluginID
+          , m_iSampleRate
+          , totalSamples
+          , m_bPreferencesFastAnalysis
+          , m_pluginOpts
+            );
         if (!bShouldAnalyze)
             m_pVamp.reset();
     }

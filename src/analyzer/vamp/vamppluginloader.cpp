@@ -17,7 +17,7 @@ QMutex VampPluginLoader::s_mutex;
 
 VampPluginLoader::VampPluginLoader()
 {
-    m_pVampPluginLoader = Vamp::HostExt::PluginLoader::getInstance();
+    m_pVampPluginLoader = PluginLoader::getInstance();
 }
 
 VampPluginLoader::~VampPluginLoader() {

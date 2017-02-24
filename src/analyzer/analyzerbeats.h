@@ -33,6 +33,7 @@ class AnalyzerBeats: public Analyzer {
     UserSettingsPointer m_pConfig;
     std::unique_ptr<VampAnalyzer> m_pVamp;
     QString m_pluginId;
+    QString m_pluginOpts;
     bool m_bPreferencesReanalyzeOldBpm;
     bool m_bPreferencesFixedTempo;
     bool m_bPreferencesOffsetCorrection;

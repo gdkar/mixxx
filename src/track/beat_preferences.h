@@ -7,6 +7,7 @@
 // since user config files contain these.
 #define VAMP_ANALYZER_BEAT_LIBRARY "AnalyserBeatLibrary"
 #define VAMP_ANALYZER_BEAT_PLUGIN_ID "AnalyserBeatPluginID"
+#define VAMP_ANALYZER_BEAT_PLUGIN_OPTIONS "AnalyserBeatPluginOptions"
 
 #define BPM_CONFIG_KEY "[BPM]"
 
