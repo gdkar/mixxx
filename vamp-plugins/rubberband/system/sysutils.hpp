@@ -70,15 +70,28 @@
 #include <sys/mman.h>
 #include <dlfcn.h>
 
-#include "Allocators.hpp"
+#include "Simd.hpp"
 #include "Math.hpp"
 #include "VectorOps.hpp"
 #include "VectorOpsComplex.hpp"
 
 namespace RBMixxxVamp {
+template<class T>
+constexpr std::enable_if_t<bs::is_scalar<T>{},T> princarg(T a)
+{
+    return std::remainder(a, bs::Twopi<T>());
+}
 
 template<class T>
-constexpr T princarg(T a) { return std::remainder(a, bs::Twopi<T>());}
+constexpr std::enable_if_t<(bs::cardinal_of<T>{}>1ul),T> princarg(T a)
+{
+    using R = bs::real_of_t<T>;
+    constexpr auto w = int(bs::cardinal_of_t<T>{});
+    auto ret = T{0};
+    for(auto i = 0; i < w; ++i)
+        ret[i] = std::remainder(a[i],bs::Twopi<R>());
+    return ret;
+}
 
 } // end namespace
 

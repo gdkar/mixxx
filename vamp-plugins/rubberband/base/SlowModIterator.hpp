@@ -1,17 +1,22 @@
 _Pragma("once")
 
+#include <cstdint>
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 #include "Range.hpp"
-#include "rubberband/system/sysutils.hpp"
+#include "rubberband/system/Math.hpp"
 
 namespace RBMixxxVamp {
-template<class T>
+template<class T, class R = T&, class P = T*>
 struct slow_mod_iterator {
     using iterator_category = std::random_access_iterator_tag;
     using value_type      = T;
     using size_type       = std::size_t;
     using difference_type = std::ptrdiff_t;
-    using reference       = T&;
-    using pointer         = T*;
+    using reference       = R;
+    using pointer         = P;
 
     pointer         m_ptr {nullptr};
     difference_type m_idx {0};

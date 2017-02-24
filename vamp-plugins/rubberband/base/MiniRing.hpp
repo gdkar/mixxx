@@ -1,7 +1,22 @@
 _Pragma("once")
 
+#include <memory>
+#include <climits>
+#include <cfloat>
+#include <exception>
+#include <stdexcept>
+#include <cstdint>
+#include <cstdlib>
+#include <iterator>
+#include <cmath>
+#include <cstring>
+#include <atomic>
+#include <utility>
+#include <algorithm>
+#include <limits>
+#include <numeric>
 
-#include "rubberband/system/sysutils.hpp"
+#include "rubberband/system/Math.hpp"
 #include "Range.hpp"
 #include "SlowModIterator.hpp"
 namespace RBMixxxVamp {
@@ -14,14 +29,15 @@ protected:
     std::vector<T>         m_data{m_size};
 public:
     using value_type = T;
-    using size_type       = size_t;
+    using container_type = std::vector<T>;
+    using size_type       = typename container_type::size_type;
     using difference_type = int64_t;
-    using reference       = T&;
-    using const_reference = const T&;
-    using pointer         = T*;
-    using const_pointer   = const T*;
-    using iterator        = slow_mod_iterator<T>;
-    using const_iterator  = slow_mod_iterator<const T>;
+    using reference       = typename container_type::reference;
+    using const_reference = typename container_type::const_reference;
+    using pointer         = typename container_type::pointer;
+    using const_pointer   = typename container_type::const_pointer;
+    using iterator        = slow_mod_iterator<value_type, reference,pointer>;
+    using const_iterator  = slow_mod_iterator<value_type, const_reference,const_pointer>;
     using range_type      = Range<iterator>;
     MiniRing() = default;
     explicit MiniRing(size_type cap, const T & item = T{})
@@ -56,9 +72,30 @@ public:
     pointer data()   { return m_data.data();}
     size_type size() const { return write_index() - read_index();}
     size_type space()const { return (read_index() + capacity()) - write_index();}
-    bool      full() const { return (read_index() + capacity()) == write_index();}
-    bool      empty()const { return read_index() == write_index();}
+    bool      full() const { return space() == 0ul;}
+    bool      empty()const { return size() == 0ul;}
 
+    void clear()
+    {
+        m_ridx = m_widx;
+        std::fill(std::begin(m_data),std::end(m_data),value_type{});
+    }
+    void reset(int64_t idx)
+    {
+        m_ridx = m_widx = idx;
+    }
+    void resize(size_t new_size)
+    {
+        if(new_size == capacity())
+            return;
+        if(new_size < size()) {
+            m_ridx = m_widx - new_size;
+        }
+        std::rotate(std::begin(m_data),std::begin(m_data) + read_offset(),std::end(m_data));
+        m_data.resize(new_size);
+        m_size = new_size;
+        std::rotate(std::begin(m_data),std::end(m_data) - read_offset(),std::end(m_data));
+    }
     iterator begin()              { return iterator(data(),read_index(),capacity());}
     const_iterator begin()  const { return const_iterator(data(),read_index(),capacity());}
     const_iterator cbegin() const { return begin();}
@@ -84,8 +121,37 @@ public:
     const_reference at (difference_type idx) const
     {
         if(idx <= -size() || idx >= size())
-            throw std::out_of_range();
+            throw std::out_of_range("item out of range.");
         return m_data[((idx < 0 ? write_index() : read_index()) + idx) % capacity()];
+    }
+    void push_back_expanding()
+    {
+        if(full())
+            resize(std::max(capacity(), 8ul)* 3 / 2);
+        m_widx++;
+    }
+    void push_back_expanding(const_reference item)
+    {
+        if(full())
+            resize(std::max(capacity(), 8ul)* 3 / 2);
+        *end() = item;
+        m_widx++;
+    }
+    void push_back_expanding(value_type&& item)
+    {
+        if(full())
+            resize(std::max(capacity(), 8ul)* 3 / 2);
+        *end() = std::forward<value_type>(item);
+        m_widx++;
+    }
+    template<class... Args>
+    void emplace_back_expanding(Args &&... args)
+    {
+        push_back_expanding();
+        auto &x = *end();
+        x.~T();
+        ::new (&x) T (std::forward<Args>(args)...);
+        m_widx++;
     }
     void push_back()
     {
@@ -97,13 +163,15 @@ public:
     {
         if(full())
             pop_front();
-        back() = item; m_widx ++;
+        *end() = item;
+        m_widx++;
     }
     void push_back(T && item)
     {
         if(full())
             pop_front();
-        back() = std::forward<T>(item); m_widx++;
+        *end() = std::forward<T>(item);
+        m_widx++;
     }
     template<class... Args>
     void emplace_back(Args &&...args)
