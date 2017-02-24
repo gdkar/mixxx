@@ -26,31 +26,25 @@ DlgPrefBeats::DlgPrefBeats(QWidget *parent, UserSettingsPointer _config)
     loadSettings();
 
     // Connections
-    connect(plugincombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(pluginSelected(int)));
-    connect(banalyzerenabled, SIGNAL(stateChanged(int)),
-            this, SLOT(analyzerEnabled(int)));
-    connect(bfixedtempo, SIGNAL(stateChanged(int)),
-            this, SLOT(fixedtempoEnabled(int)));
-    connect(boffset, SIGNAL(stateChanged(int)),
-            this, SLOT(offsetEnabled(int)));
+    connect(plugincombo, SIGNAL(currentIndexChanged(int)),this, SLOT(pluginSelected(int)));
+    connect(banalyzerenabled, SIGNAL(stateChanged(int)),  this, SLOT(analyzerEnabled(int)));
+    connect(bfixedtempo, SIGNAL(stateChanged(int)),       this, SLOT(fixedtempoEnabled(int)));
+    connect(boffset, SIGNAL(stateChanged(int)),           this, SLOT(offsetEnabled(int)));
 
-    connect(bFastAnalysis, SIGNAL(stateChanged(int)),
-            this, SLOT(fastAnalysisEnabled(int)));
+    connect(bFastAnalysis, SIGNAL(stateChanged(int)),     this, SLOT(fastAnalysisEnabled(int)));
 
-    connect(txtMinBpm, SIGNAL(valueChanged(int)),
-            this, SLOT(minBpmRangeChanged(int)));
-    connect(txtMaxBpm, SIGNAL(valueChanged(int)),
-            this, SLOT(maxBpmRangeChanged(int)));
+    connect(txtMinBpm, SIGNAL(valueChanged(int)),         this, SLOT(minBpmRangeChanged(int)));
+    connect(txtMaxBpm, SIGNAL(valueChanged(int)),         this, SLOT(maxBpmRangeChanged(int)));
 
-    connect(bReanalyse,SIGNAL(stateChanged(int)),
-            this, SLOT(slotReanalyzeChanged(int)));
+    connect(bReanalyse,SIGNAL(stateChanged(int)),         this, SLOT(slotReanalyzeChanged(int)));
 }
 
-DlgPrefBeats::~DlgPrefBeats() {
+DlgPrefBeats::~DlgPrefBeats()
+{
 }
 
-void DlgPrefBeats::loadSettings() {
+void DlgPrefBeats::loadSettings()
+{
     if(m_pconfig->getValueString(
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID)).isEmpty()) {
         slotResetToDefaults();
@@ -58,9 +52,10 @@ void DlgPrefBeats::loadSettings() {
         return;
     }
 
-    QString pluginid = m_pconfig->getValueString(
-        ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID));
+    auto pluginid = m_pconfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID));
     m_selectedAnalyzer = pluginid;
+
+    m_analyzerOptions = m_pconfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_OPTIONS));
 
     m_banalyzerEnabled = static_cast<bool>(m_pconfig->getValueString(
         ConfigKey(BPM_CONFIG_KEY, BPM_DETECTION_ENABLED)).toInt());
@@ -77,16 +72,17 @@ void DlgPrefBeats::loadSettings() {
     m_FastAnalysisEnabled = static_cast<bool>(m_pconfig->getValueString(
         ConfigKey(BPM_CONFIG_KEY, BPM_FAST_ANALYSIS_ENABLED)).toInt());
 
-    if (!m_listIdentifier.contains(pluginid)) {
+    if (!m_listIdentifier.contains(pluginid))
         slotResetToDefaults();
-    }
+
     m_minBpm = m_pconfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_START)).toInt();
     m_maxBpm = m_pconfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_END)).toInt();
 
     slotUpdate();
 }
 
-void DlgPrefBeats::slotResetToDefaults() {
+void DlgPrefBeats::slotResetToDefaults()
+{
     if (!m_listIdentifier.isEmpty()) {
         if (m_listIdentifier.contains("qm-tempotracker:0")) {
             m_selectedAnalyzer = "qm-tempotracker:0";
@@ -106,42 +102,50 @@ void DlgPrefBeats::slotResetToDefaults() {
     m_bReanalyze = false;
     m_minBpm = 70;
     m_maxBpm = 140;
+    m_analyzerOptions = QString{};
     slotUpdate();
 }
 
-void DlgPrefBeats::pluginSelected(int i) {
+void DlgPrefBeats::pluginSelected(int i)
+{
     if (i==-1)
         return;
     m_selectedAnalyzer = m_listIdentifier[i];
     slotUpdate();
 }
 
-void DlgPrefBeats::analyzerEnabled(int i) {
+void DlgPrefBeats::analyzerEnabled(int i)
+{
     m_banalyzerEnabled = static_cast<bool>(i);
     slotUpdate();
 }
 
-void DlgPrefBeats::fixedtempoEnabled(int i) {
+void DlgPrefBeats::fixedtempoEnabled(int i)
+{
     m_bfixedtempoEnabled = static_cast<bool>(i);
     slotUpdate();
 }
 
-void DlgPrefBeats::offsetEnabled(int i) {
+void DlgPrefBeats::offsetEnabled(int i)
+{
     m_boffsetEnabled = static_cast<bool>(i);
     slotUpdate();
 }
 
-void DlgPrefBeats::minBpmRangeChanged(int value) {
+void DlgPrefBeats::minBpmRangeChanged(int value)
+{
     m_minBpm = value;
     slotUpdate();
 }
 
-void DlgPrefBeats::maxBpmRangeChanged(int value) {
+void DlgPrefBeats::maxBpmRangeChanged(int value)
+{
     m_maxBpm = value;
     slotUpdate();
 }
 
-void DlgPrefBeats::slotUpdate() {
+void DlgPrefBeats::slotUpdate()
+{
     bfixedtempo->setEnabled(m_banalyzerEnabled);
     boffset->setEnabled((m_banalyzerEnabled && m_bfixedtempoEnabled));
     plugincombo->setEnabled(m_banalyzerEnabled);
@@ -151,9 +155,8 @@ void DlgPrefBeats::slotUpdate() {
     txtMinBpm->setEnabled(m_banalyzerEnabled && m_bfixedtempoEnabled);
     bReanalyse->setEnabled(m_banalyzerEnabled);
 
-    if (!m_banalyzerEnabled) {
+    if (!m_banalyzerEnabled)
         return;
-    }
 
     if (m_selectedAnalyzer != "qm-tempotracker:0") {
         bfixedtempo->setEnabled(false);
@@ -164,7 +167,7 @@ void DlgPrefBeats::slotUpdate() {
     boffset->setChecked(m_boffsetEnabled);
     bFastAnalysis->setChecked(m_FastAnalysisEnabled);
 
-    int comboselected = m_listIdentifier.indexOf(m_selectedAnalyzer);
+    auto comboselected = m_listIdentifier.indexOf(m_selectedAnalyzer);
     if (comboselected == -1) {
         qDebug()<<"DlgPrefBeats: Plugin("<<m_selectedAnalyzer<<") not found in slotUpdate()";
         return;
@@ -176,17 +179,20 @@ void DlgPrefBeats::slotUpdate() {
     bReanalyse->setChecked(m_bReanalyze);
 }
 
-void DlgPrefBeats::slotReanalyzeChanged(int value) {
+void DlgPrefBeats::slotReanalyzeChanged(int value)
+{
     m_bReanalyze = static_cast<bool>(value);
     slotUpdate();
 }
 
-void DlgPrefBeats::fastAnalysisEnabled(int i) {
+void DlgPrefBeats::fastAnalysisEnabled(int i)
+{
     m_FastAnalysisEnabled = static_cast<bool>(i);
     slotUpdate();
 }
 
-void DlgPrefBeats::slotApply() {
+void DlgPrefBeats::slotApply()
+{
     int selected = m_listIdentifier.indexOf(m_selectedAnalyzer);
     if (selected == -1)
         return;
@@ -195,6 +201,9 @@ void DlgPrefBeats::slotApply() {
         VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_LIBRARY), ConfigValue(m_listLibrary[selected]));
     m_pconfig->set(ConfigKey(
         VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_ID), ConfigValue(m_selectedAnalyzer));
+    m_pconfig->set(ConfigKey(
+        VAMP_CONFIG_KEY, VAMP_ANALYZER_BEAT_PLUGIN_OPTIONS), ConfigValue(m_analyzerOptions));
+
     m_pconfig->set(ConfigKey(
         BPM_CONFIG_KEY, BPM_DETECTION_ENABLED), ConfigValue(m_banalyzerEnabled ? 1 : 0));
     m_pconfig->set(ConfigKey(
@@ -211,47 +220,46 @@ void DlgPrefBeats::slotApply() {
     m_pconfig->save();
 }
 
-void DlgPrefBeats::populate() {
+
+void DlgPrefBeats::populate()
+{
+//    VampAnalyzer::initializePluginPaths();
     m_listIdentifier.clear();
     m_listName.clear();
     m_listLibrary.clear();
-    disconnect(plugincombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(pluginSelected(int)));
+    disconnect(plugincombo, SIGNAL(currentIndexChanged(int)),this, SLOT(pluginSelected(int)));
     plugincombo->clear();
     plugincombo->setDuplicatesEnabled(false);
-    connect(plugincombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(pluginSelected(int)));
-    mixxx::VampPluginLoader vampPluginLoader;
-    std::vector<PluginLoader::PluginKey> plugins = vampPluginLoader.listPlugins();
+    auto vampPluginLoader =  mixxx::VampPluginLoader{};
+    auto plugins = vampPluginLoader.listPlugins();
+    connect(plugincombo, SIGNAL(currentIndexChanged(int)),this, SLOT(pluginSelected(int)));
+
     qDebug() << "VampPluginLoader::listPlugins() returned" << plugins.size() << "plugins";
-    for (unsigned int iplugin=0; iplugin < plugins.size(); iplugin++) {
+
+    for (auto iplugin=0ul; iplugin < plugins.size(); iplugin++) {
         // TODO(XXX): WTF, 48000
-        Plugin *plugin = vampPluginLoader.loadPlugin(plugins[iplugin], 48000);
+        auto plugin = std::unique_ptr<Vamp::Plugin>(loader->loadPlugin(plugins[iplugin], 48000));
         //TODO: find a way to add beat trackers only
         if (plugin) {
-            Plugin::OutputList outputs = plugin->getOutputDescriptors();
-            for (unsigned int ioutput=0; ioutput < outputs.size(); ioutput++) {
-                QString displayname = QString::fromStdString(plugin->getIdentifier()) + ":"
-                                            + QString::number(ioutput);
-                QString displaynametext = QString::fromStdString(plugin->getName());
+            auto outputs = plugin->getOutputDescriptors();
+            for (auto ioutput=0ul; ioutput < outputs.size(); ioutput++) {
+                auto displayname = QString::fromStdString(plugin->getIdentifier()) + ":" + QString::number(ioutput);
+                auto displaynametext = QString::fromStdString(plugin->getName());
                 qDebug() << "Plugin output displayname:" << displayname << displaynametext;
-                bool goodones = ((displayname.contains("mixxxbpmdetection")||
+                auto goodones = ((displayname.contains("mixxxbpmdetection")||
                                   displayname.contains("qm-tempotracker:0"))||
                                  displayname.contains("beatroot:0")||
                                  displayname.contains("marsyas_ibt:0")||
                                  displayname.contains("aubiotempo:0"));
                 if (goodones) {
                     m_listName << displaynametext;
-                    QString pluginlibrary = QString::fromStdString(plugins[iplugin]).section(":",0,0);
+                    auto pluginlibrary = QString::fromStdString(plugins[iplugin]).section(":",0,0);
                     m_listLibrary << pluginlibrary;
-                    QString displayname = QString::fromStdString(plugin->getIdentifier()) + ":"
-                            + QString::number(ioutput);
+                    auto displayname = QString::fromStdString(plugin->getIdentifier()) + ":" + QString::number(ioutput);
                     m_listIdentifier << displayname;
                     plugincombo->addItem(displaynametext, displayname);
                 }
             }
-            delete plugin;
-            plugin = 0;
         }
     }
 }

@@ -19,18 +19,10 @@ using Vamp::PluginHostAdapter;
 
 VampPluginLoader::VampPluginLoader()
 {
-    m_pVampPluginLoader = Vamp::HostExt::PluginLoader::getInstance();
+    m_pVampPluginLoader = PluginLoader::getInstance();
 }
 
 VampPluginLoader::~VampPluginLoader() = default;
-
-VampPluginLoader* VampPluginLoader::getInstance()
-{
-    QMutexLocker lock(&s_mutex);
-    if (!s_instance)
-        s_instance = new VampPluginLoader();
-    return s_instance;
-}
 
 PluginLoader::PluginKey VampPluginLoader::composePluginKey(
     std::string libraryName, std::string identifier)

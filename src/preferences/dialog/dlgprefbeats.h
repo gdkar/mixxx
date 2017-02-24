@@ -41,9 +41,11 @@ class DlgPrefBeats : public DlgPreferencePage, public Ui::DlgBeatsDlg {
 
     // Pointer to config object
     UserSettingsPointer m_pconfig;
-    QList<QString> m_listName;
-    QList<QString> m_listLibrary, m_listIdentifier;
+    QStringList m_listName;
+    QStringList m_listLibrary;
+    QStringList m_listIdentifier;
     QString m_selectedAnalyzer;
+    QString m_analyzerOptions;
     int m_minBpm;
     int m_maxBpm;
     bool m_banalyzerEnabled, m_bfixedtempoEnabled, m_boffsetEnabled, m_FastAnalysisEnabled, m_bReanalyze;
