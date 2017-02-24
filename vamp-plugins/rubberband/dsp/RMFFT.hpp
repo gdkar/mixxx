@@ -4,7 +4,7 @@
 #include "TimeWeightedWindow.hpp"
 #include "TimeDerivativeWindow.hpp"
 #include "TimeAlias.hpp"
-#include "ReassignedSpectrum.hpp"
+#include "RMSpectrum.hpp"
 
 namespace RBMixxxVamp {
 
