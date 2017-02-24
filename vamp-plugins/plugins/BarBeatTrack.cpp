@@ -227,7 +227,7 @@ BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     }
 
     DFConfig dfConfig;
-    dfConfig.DFType = DF_COMPLEXSD;
+    dfConfig.DFType = int(DFType::COMPLEXSD);
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
     dfConfig.dbRise = 3;
@@ -431,7 +431,7 @@ BarBeatTracker::barBeatTrack()
 
     for (auto i = 0ul; i < beats.size(); ++i) {
         auto frame = beats[i] * m_d->dfConfig.stepSize;
-        if (dbi < downbeats.size() && i == downbeats[dbi]) {
+        if (dbi < (int)downbeats.size() && i == downbeats[dbi]) {
             beat = 0;
             ++bar;
             ++dbi;

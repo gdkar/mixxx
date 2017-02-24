@@ -57,7 +57,7 @@ BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(),
     m_method(METHOD_NEW),
-    m_dfType(DF_COMPLEXSD),
+    m_dfType(int(DFType::COMPLEXSD)),
     m_alpha(0.9),  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
     m_tightness(4.),
     m_inputtempo(120.), 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
@@ -128,14 +128,19 @@ BeatTracker::getParameterDescriptors() const
     desc.name = "Onset Detection Function Type";
     desc.description = "Method used to calculate the onset detection function";
     desc.minValue = 0;
-    desc.maxValue = 4;
-    desc.defaultValue = 3;
+    desc.maxValue = 8;
+    desc.defaultValue = 4;
     desc.valueNames.clear();
+
+    desc.valueNames.push_back("None");
     desc.valueNames.push_back("High-Frequency Content");
     desc.valueNames.push_back("Spectral Difference");
     desc.valueNames.push_back("Phase Deviation");
     desc.valueNames.push_back("Complex Domain");
     desc.valueNames.push_back("Broadband Energy Rise");
+    desc.valueNames.push_back("Phase Derivative");
+    desc.valueNames.push_back("Group Delay");
+    desc.valueNames.push_back("Spectral Derivative");
     list.push_back(desc);
 
     desc.identifier = "whiten";
@@ -148,6 +153,17 @@ BeatTracker::getParameterDescriptors() const
     desc.quantizeStep = 1;
     desc.unit = "";
     desc.valueNames.clear();
+    list.push_back(desc);
+    // MEPD new exposed parameter - used in the dynamic programming part of the beat tracker
+    //Alpha Parameter of Beat Tracker
+    desc.identifier = "tightness";
+    desc.name = "Tightness";
+    desc.description = "Inertia - Flexibility Trade Off";
+    desc.minValue =  0.1;
+    desc.maxValue = 1000;
+    desc.defaultValue = 4.;
+    desc.unit = "";
+    desc.isQuantized = false;
     list.push_back(desc);
 
     // MEPD new exposed parameter - used in the dynamic programming part of the beat tracker
@@ -198,12 +214,17 @@ float
 BeatTracker::getParameter(std::string name) const
 {
     if (name == "dftype") {
-        switch (m_dfType) {
-        case DF_HFC: return 0;
-        case DF_SPECDIFF: return 1;
-        case DF_PHASEDEV: return 2;
-        default: case DF_COMPLEXSD: return 3;
-        case DF_BROADBAND: return 4;
+        switch (DFType(m_dfType)) {
+        case DFType::NONE:     return 0;
+        case DFType::HFC:      return 1;
+        case DFType::SPECDIFF: return 2;
+        case DFType::PHASEDEV: return 3;
+        default:
+        case DFType::COMPLEXSD:return 4;
+        case DFType::BROADBAND:return 5;
+        case DFType::D2PHI    :return 6;
+        case DFType::GROUPDELAY:return 7;
+        case DFType::SPECDERIV:return 8;
         }
     } else if (name == "method") {
         return m_method;
@@ -224,11 +245,16 @@ BeatTracker::setParameter(std::string name, float value)
 {
     if (name == "dftype") {
         switch (lrintf(value)) {
-        case 0: m_dfType = DF_HFC; break;
-        case 1: m_dfType = DF_SPECDIFF; break;
-        case 2: m_dfType = DF_PHASEDEV; break;
-        default: case 3: m_dfType = DF_COMPLEXSD; break;
-        case 4: m_dfType = DF_BROADBAND; break;
+        case 0: m_dfType = int(DFType::NONE); break;
+        case 1: m_dfType = int(DFType::HFC); break;
+        case 2: m_dfType = int(DFType::SPECDIFF); break;
+        case 3: m_dfType = int(DFType::PHASEDEV); break;
+        default:
+        case 4: m_dfType = int(DFType::COMPLEXSD); break;
+        case 5: m_dfType = int(DFType::BROADBAND); break;
+        case 6: m_dfType = int(DFType::D2PHI); break;
+        case 7: m_dfType = int(DFType::GROUPDELAY); break;
+        case 8: m_dfType = int(DFType::SPECDERIV); break;
         }
     } else if (name == "method") {
         m_method = lrintf(value);
