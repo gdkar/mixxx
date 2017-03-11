@@ -22,7 +22,8 @@
 #include "maths/MathUtilities.h"
 #include <valarray>
 
-#define   EPS float(0.0000008) // just some arbitrary small number
+static constexpr float EPS = 1e-6f;
+//#define   EPS float(1e-6) // just some arbitrary small number
 
 TempoTrackV2::TempoTrackV2(float rate, size_t increment, size_t frame_size) :
     m_rate(rate), m_increment(increment), m_frame_size{frame_size} { }
@@ -134,7 +135,7 @@ TempoTrackV2::calculateBeatPeriod(const vector<float> &df,
             wv[i] = rayleigh(float(i),rayparam, 0.0f);
         }
     }
-
+    normalize(wv);
     // matrix to store output of comb filter bank, increment column of matrix at each frame
     d_mat_t rcfmat;
     auto col_counter = -1;
@@ -186,7 +187,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     {
         auto rcfsum =0.f;
         for(auto & rcfv : rcf) {
-            rcfv += EPS ;rcfsum += rcfv;
+            rcfv += EPS; rcfsum += rcfv;
         }
         auto rcfi = 1/(rcfsum + EPS);
         for(auto &rcfv : rcf)
@@ -212,7 +213,7 @@ TempoTrackV2::viterbi_decode(
     auto tmat = d_mat_t(wv.size(),d_vec_t(wv.size(),0.f));
     // variance of Gaussians in transition matrix
     // formed of Gaussians on diagonal - implies slow tempo change
-    auto sigma = 8.0f;
+    auto sigma = 2.0f;
     // don't want really short beat periods, or really long ones
     for (auto i=20ul;i <wv.size()-20ul; ++i) {
         for (auto j=20ul; j<wv.size()-20ul; ++j)
@@ -242,9 +243,9 @@ TempoTrackV2::viterbi_decode(
                 std::begin(delta[t-1])
                ,std::end(delta[t-1])
                ,std::begin(tmat[j]));*/
-            auto maxv = delta[t-1][0] * tmat[j][0];
-            auto maxi = 0ul;
-            for(auto i = 1ul; i < Q; ++i) {
+            auto maxi = j;
+            auto maxv = delta[t-1][j] * tmat[j][j];
+            for(auto i = 0ul; i < Q; ++i) {
                 auto thisv = delta[t-1][i] * tmat[j][i];
                 if(thisv > maxv) {
                     maxv = thisv;

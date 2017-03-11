@@ -24,11 +24,7 @@ public:
     vector_type dM_dw  { size_type(spacing()), bs::allocator<float>{}};
     vector_type dPhi_dw{ size_type(spacing()), bs::allocator<float>{} };
 
-    vector_type       lgd       { size_type(spacing()), bs::allocator<float>{} };
-    vector_type       lgd_weight{ size_type(spacing()), bs::allocator<float>{} };
-    simd_vec<int64_t> rm_when{ size_type(spacing()), bs::allocator<float>{} };
-
-//    vector_type d2Phi_dtdw{size_type(spacing()), bs::allocator<float>{} };
+    vector_type d2Phi_dtdw{size_type(spacing()), bs::allocator<float>{} };
 
     RMSpectrum(int _size = 0) : m_size(_size) {}
     RMSpectrum(RMSpectrum && ) noexcept = default;
@@ -48,14 +44,6 @@ public:
     const float * mag_data() const { return &X_mag[0];}
     const float * M_data() const { return &X_log[0];}
     const float * Phi_data() const { return &X_log[spacing()];}
-
-    float * local_group_delay() { return &lgd[0];}
-    float * local_group_delay_weight() { return &lgd_weight[0];}
-    int64_t * reassigned_time() { return &rm_when[0];}
-
-    const float * local_group_delay() const { return &lgd[0];}
-    const float * local_group_delay_weight() const { return &lgd_weight[0];}
-    const int64_t * reassigned_time() const { return &rm_when[0];}
 
     float * dM_dt_data() { return &dM_dt[0];}
     float * dPhi_dt_data() { return &dPhi_dt[0];}
@@ -102,12 +90,9 @@ public:
         m_spacing = (m_coef + 15) & ~15;
         X.resize(m_spacing * 2);
         X_log.resize(m_spacing * 2);
-        for(auto p : { &X_mag,&dM_dw, &dPhi_dw, &dM_dt, &dPhi_dt,
-            &lgd, &lgd_weight
-//            ,&d2Phi_dtdw, &impulse_position, &impulse_quality}
+        for(auto p : { &X_mag,&dM_dw, &dPhi_dw, &dM_dt, &dPhi_dt, &d2Phi_dtdw
             })
             p->resize(m_spacing);
-        rm_when.resize(m_spacing);
     }
     void reset(int _size, int64_t _when)
     {
