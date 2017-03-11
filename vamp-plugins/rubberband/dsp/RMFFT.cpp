@@ -111,6 +111,7 @@ void RMFFT::_finish_process( RMSpectrum & dst, int64_t _when )
     const auto _real = &m_X[0], _imag    = &m_X[m_spacing]
         ,_real_Dh = &m_X_Dh[0], _imag_Dh = &m_X_Dh[m_spacing]
         ,_real_Th = &m_X_Th[0], _imag_Th = &m_X_Th[m_spacing]
+        ,_real_TDh= &m_X_TDh[0],_imag_TDh= &m_X_TDh[m_spacing]
         ;
     auto _cmul = [](auto r0, auto i0, auto r1, auto i1) {
         return std::make_pair(r0 * r1 - i0 * i1, r0 * i1 + r1 * i0);
@@ -129,7 +130,7 @@ void RMFFT::_finish_process( RMSpectrum & dst, int64_t _when )
         auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
 //            auto _X_mag = bs::hypot(_X_i,_X_r);
             bs::store(bs::sqrt(_X_mag), dst.mag_data() + i);
-            bs::store(bs::log(_X_mag), dst.M_data() + i);
+            bs::store(0.5*bs::log(_X_mag), dst.M_data() + i);
             bs::store(bs::atan2(_X_i,_X_r), dst.Phi_data() + i);
         }
 
@@ -144,6 +145,12 @@ void RMFFT::_finish_process( RMSpectrum & dst, int64_t _when )
 
         bs::store(-std::get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( std::get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
+
+        auto _TDh_over_X = reg(_real_TDh + i) * _X_r - reg(_imag_TDh + i) * _X_i;
+        auto _Th_Dh_over_XX = std::get<0>(_Th_over_X) * std::get<0>(_Dh_over_X)
+                            - std::get<1>(_Th_over_X) * std::get<1>(_Dh_over_X);
+        bs::store(_TDh_over_X - _Th_Dh_over_XX,&dst.d2Phi_dtdw[0] + i);
+
     }
     for(auto i = 0; i < m_coef; ++i) {
         auto _X_r = *(_real + i), _X_i = *(_imag + i);
@@ -165,6 +172,11 @@ void RMFFT::_finish_process( RMSpectrum & dst, int64_t _when )
 
         bs::store(-std::get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( std::get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
+
+        auto _TDh_over_X = *(_real_TDh + i) * _X_r - *(_imag_TDh + i) * _X_i;
+        auto _Th_Dh_over_XX = std::get<0>(_Th_over_X) * std::get<0>(_Dh_over_X)
+                            - std::get<1>(_Th_over_X) * std::get<1>(_Dh_over_X);
+        bs::store(_TDh_over_X - _Th_Dh_over_XX,&dst.d2Phi_dtdw[0] + i);
     }
 }
 int RMFFT::spacing() const

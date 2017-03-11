@@ -260,10 +260,10 @@ float DetectionFunction::specDeriv()
     auto acc = reg(0.f);
     auto hwr = [](auto x){return x + bs::abs(x);};
     for ( ; i + w <= len; i += w)
-        acc += hwr(reg(dmag + i) * bs::sqrt(reg(mag + i)));
+        acc += bs::abs(reg(dmag + i) * reg(mag + i));
     auto result = bs::sum(acc);
     for ( ; i <= len; ++i )
-        result += hwr(*(dmag + i) * bs::sqrt(*(mag + i)));
+        result += bs::abs(*(dmag + i) * *(mag + i));
     return result;
 }
 float DetectionFunction::d2Phi()
