@@ -25,19 +25,23 @@ class Track;
 class BpmDetector;
 
 // Manages everything around tracks.
-class TrackCollection : public QObject
-{
+class TrackCollection : public QObject {
     Q_OBJECT
 
   public:
     static const int kRequiredSchemaVersion;
+
     explicit TrackCollection(UserSettingsPointer pConfig);
     ~TrackCollection() override;
+
     bool checkForTables();
+
     void resetLibaryCancellation();
+
     QSqlDatabase& database() {
         return m_dbConnection.database();
     }
+
     const CrateStorage& crates() const {
         return m_crates;
     }
