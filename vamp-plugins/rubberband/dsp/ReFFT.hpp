@@ -1,44 +1,51 @@
 #pragma once
-
 #include "rubberband/system/sysutils.hpp"
 #include "TimeWeightedWindow.hpp"
 #include "TimeDerivativeWindow.hpp"
 #include "TimeAlias.hpp"
-#include "RMSpectrum.hpp"
+#include "ReSpectrum.hpp"
 
 namespace RBMixxxVamp {
 
-struct RMFFT {
-public:
-    using vector_type = simd_vec<float>;
+struct ReFFT {
+    using value_type = float;
+    using vector_type = simd_vec<value_type>;
     using size_type = vector_type::size_type;
     using difference_type = vector_type::difference_type;
+    using allocator_type = bs::allocator<value_type>;
+    using pointer = typename std::allocator_traits<allocator_type>::pointer;
+    using const_pointer = typename std::allocator_traits<allocator_type>::const_pointer;
     int m_size{}; /// <- transform size
     int m_coef{m_size ? (m_size / 2 + 1) : 0}; /// <- number of non-redundant forier coefficients
     int m_spacing{ (m_coef + 15) & ~15}; /// <- padded number of coefficients to play nicely wiht simd when packing split-complex format into small contigous arrays.
     int m_smooth_width{32};
+    float m_epsilon = 1e-6f;
+    allocator_type m_alloc{};
+    vector_type m_h  {size_type(size()), m_alloc};  /// <- transform window
+    vector_type m_Dh {size_type(size()), m_alloc};  /// <- time derivative of window
+    vector_type m_Th {size_type(size()), m_alloc};  /// <- time multiplied window
+    vector_type m_TDh{size_type(size()), m_alloc};  /// <- time multiplied time derivative window;
 
-    vector_type m_h  {size_type(size()), bs::allocator<float>{}};  /// <- transform window
-    vector_type m_Dh {size_type(size()), bs::allocator<float>{}};  /// <- time derivative of window
-    vector_type m_Th {size_type(size()), bs::allocator<float>{}};  /// <- time multiplied window
-    vector_type m_TDh{size_type(size()), bs::allocator<float>{}};  /// <- time multiplied time derivative window;
+    vector_type m_flat{size_type(size()), m_alloc}; /// <- input windowing scratch space.
+    vector_type m_split{size_type(spacing()) * 2, m_alloc}; /// <- frequency domain scratch space.
 
-    vector_type m_flat{size_type(size()), bs::allocator<float>{}}; /// <- input windowing scratch space.
-    vector_type m_split{size_type(spacing()) * 2, bs::allocator<float>{}}; /// <- frequency domain scratch space.
-
-    vector_type m_X    {size_type(spacing()) * 2, bs::allocator<float>{}}; /// <- transform of windowed signal
-    vector_type m_X_Dh {size_type(spacing()) * 2, bs::allocator<float>{}}; /// <- transform of time derivative windowed signal
-    vector_type m_X_Th {size_type(spacing()) * 2, bs::allocator<float>{}}; /// <- transform of time multiplied window
-    vector_type m_X_TDh{size_type(spacing()) * 2, bs::allocator<float>{}}; /// <- transform of time multiplied time derivative window.
+    vector_type m_X    {size_type(spacing()) * 2, m_alloc}; /// <- transform of windowed signal
+    vector_type m_X_Dh {size_type(spacing()) * 2, m_alloc}; /// <- transform of time derivative windowed signal
+    vector_type m_X_Th {size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied window
+    vector_type m_X_TDh{size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied time derivative window.
 
     fftwf_plan          m_plan_r2c{0};  /// <- real to complex plan;
     fftwf_plan          m_plan_c2r{0};  /// <0 complex to real plan.
-    void _finish_process(RMSpectrum & dst, int64_t _when);
-    RMFFT() = default;
-    RMFFT ( RMFFT && ) noexcept ;
-    RMFFT &operator = ( RMFFT && ) noexcept ;
-    void swap(RMFFT & o) noexcept;
-    RMFFT ( int _size );
+    void _finish_process(ReSpectrum & dst, int64_t _when);
+    template<class A = allocator_type>
+    ReFFT(const A &al = allocator_type{}) : m_alloc{al} {}
+    ReFFT ( ReFFT && ) noexcept ;
+    ReFFT &operator = ( ReFFT && ) noexcept ;
+    void swap(ReFFT & o) noexcept;
+    void initPlans();
+    template<class A = allocator_type>
+    ReFFT ( int _size, const A& al = allocator_type{})
+    : m_size{_size}, m_alloc(al){ if(_size) initPlans(); }
     template<class It>
     It setWindow(It wbegin, It wend)
     {
@@ -79,28 +86,24 @@ public:
         time_weighted_window(m_h.cbegin(),m_h.cend(),m_Th.begin());
         time_weighted_window(m_Dh.cbegin(),m_Dh.cend(),m_TDh.begin());
     }
-    template<class It>
-    RMFFT ( int _size, It _W)
-    : RMFFT(_size)
-    {
-        setWindow(_W, std::next(_W, _size));
-    }
-    template<class It>
-    RMFFT( It wbegin, It wend)
-    :RMFFT(std::distance(wbegin,wend))
+    template<class It, class A = allocator_type>
+    ReFFT( It wbegin, It wend, const A & al = allocator_type{})
+    :ReFFT(int(std::distance(wbegin,wend)), al)
     {
         setWindow(wbegin,wend);
     }
-    template<class It>
-    RMFFT( It wbegin, It wend, It dt_begin, It dt_end)
-    :RMFFT(std::distance(wbegin,wend))
+    template<class It, class A = allocator_type>
+    ReFFT( It wbegin, It wend, It dt_begin, It dt_end, const A & al = allocator_type{})
+    :ReFFT(int(std::distance(wbegin,wend)), al)
     {
         setWindow(wbegin,wend,dt_begin,dt_end);
     }
-    static RMFFT Kaiser(int _size, float alpha);
-   ~RMFFT();
+    static ReFFT Kaiser(int _size, float alpha);
+   ~ReFFT();
+    void updateGroupDelay(ReSpectrum &dst);
+
     template<class It>
-    void process( It src, It send, RMSpectrum & dst, int64_t when = 0)
+    void process( It src, It send, ReSpectrum & dst, int64_t when = 0, bool do_group_delay = false)
     {
         {
             auto do_window = [&](auto &w, auto &v) {
@@ -115,9 +118,11 @@ public:
             do_window(m_TDh,m_X_TDh);
         }
         _finish_process(dst,when);
+        if(do_group_delay)
+            updateGroupDelay(dst);
     }
     template<class It>
-    void process( It src, RMSpectrum & dst, int64_t when = 0)
+    void process( It src, ReSpectrum & dst, int64_t when = 0, bool do_group_delay=false)
     {
         {
             auto do_window = [&](auto &w, auto &v) {
@@ -132,6 +137,8 @@ public:
             do_window(m_TDh,m_X_TDh);
         }
         _finish_process(dst,when);
+        if(do_group_delay)
+            updateGroupDelay(dst);
     }
     template<class It, class iIt>
     void inverse( It dst, iIt _M, iIt _Phi)

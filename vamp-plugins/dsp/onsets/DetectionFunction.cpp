@@ -30,7 +30,7 @@ DetectionFunction::DetectionFunction( DFConfig Config ) :
    ,m_whiten(Config.adaptiveWhitening)
    ,m_whitenRelaxCoeff(Config.whiteningRelaxCoeff)
    ,m_whitenFloor(Config.whiteningFloor)
-   ,m_fft(RMFFT::Kaiser(m_dataLength,6.0f))
+   ,m_fft(ReFFT::Kaiser(m_dataLength,4.0f))
 
 {
     if (m_whitenRelaxCoeff <= 0)
@@ -39,15 +39,6 @@ DetectionFunction::DetectionFunction( DFConfig Config ) :
         m_whitenFloor = 0.01;
 
     m_magPeaks = std::make_unique<float[]>( m_halfLength );
-/*    m_magHistory = std::make_unique<float[]>( m_halfLength );
-    m_phaseHistory = std::make_unique<float[]>( m_halfLength );
-    m_phaseHistoryOld = std::make_unique<float[]>( m_halfLength );
-
-    m_magnitude = std::make_unique<float[]>( m_halfLength );
-    m_thetaAngle = std::make_unique<float[]>( m_halfLength );
-    m_unwrapped = std::make_unique<float[]>( m_halfLength );
-
-    m_windowed = std::make_unique<float[]>( m_dataLength );*/
 }
 DetectionFunction::~DetectionFunction() = default;
 
@@ -58,27 +49,11 @@ float DetectionFunction::processTimeDomain(const float*samples)
     m_fft.process(samples, spec, m_position + m_dataLength/2);
     m_position += m_stepSize;
 
-/*    m_window.cut(samples, m_windowed.get());
-    m_phaseVoc.processTimeDomain(m_windowed.get(),m_magnitude.get(), m_thetaAngle.get(), m_unwrapped.get());*/
     if (m_whiten)
         whiten();
 
     return runDF();
 }
-
-/*float DetectionFunction::processFrequencyDomain(const float *reals,
-                                                 const float *imags)
-{
-    m_phaseVoc.processFrequencyDomain(
-          reals
-        , imags
-        , &m_magnitude[0]
-        , &m_thetaAngle[0]
-        , &m_unwrapped[0]);
-    if (m_whiten)
-        whiten();
-    return runDF();
-}*/
 
 void DetectionFunction::whiten()
 {
@@ -105,40 +80,24 @@ float DetectionFunction::runDF()
     case (DFType::HFC):
 	retVal = HFC();
 	break;
-
     case (DFType::SPECDIFF):
 	retVal = specDiff();
 	break;
     case (DFType::SPECDERIV):
 	retVal = specDeriv();
 	break;
-
     case (DFType::PHASEDEV):
-        // Using the instantaneous phases here actually provides the
-        // same results (for these calculations) as if we had used
-        // unwrapped phases, but without the possible accumulation of
-        // phase error over time
 	retVal = phaseDev();
 	break;
     case (DFType::D2PHI):
-        // Using the instantaneous phases here actually provides the
-        // same results (for these calculations) as if we had used
-        // unwrapped phases, but without the possible accumulation of
-        // phase error over time
 	retVal = d2Phi();
 	break;
     case (DFType::GROUPDELAY):
-        // Using the instantaneous phases here actually provides the
-        // same results (for these calculations) as if we had used
-        // unwrapped phases, but without the possible accumulation of
-        // phase error over time
 	retVal = groupDelay();
 	break;
-
     case (DFType::COMPLEXSD):
 	retVal = complexSD();
 	break;
-
     case (DFType::BROADBAND):
         retVal = broadband();
         break;

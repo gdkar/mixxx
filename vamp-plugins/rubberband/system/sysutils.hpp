@@ -92,6 +92,41 @@ constexpr std::enable_if_t<(bs::cardinal_of<T>{}>1ul),T> princarg(T a)
         ret[i] = std::remainder(a[i],bs::Twopi<R>());
     return ret;
 }
+template<class F, class... T>
+constexpr void cexpr_for_each(F && f, T &&... t)
+{
+    using absorb = int[];
+    void(absorb { (std::forward<F>(f)(std::forward<T>(t)),void(),0)...});
+}
+template<class F, class Tup, size_t... I>
+constexpr void tuple_for_each_helper(F && f, Tup && tup, std::index_sequence<I...>)
+{
+    cexpr_for_each(std::forward<F>(f),std::get<I>(std::forward<Tup>(tup))...);
+}
+template<class F, class Tup>
+constexpr void tuple_for_each(F && f, Tup && tup)
+{
+    tuple_for_each_helper(std::forward<F>(f), std::forward<Tup>(tup),std::make_index_sequence<std::tuple_size<Tup>::value>{});
+}
+
+template<class F, class... T>
+constexpr decltype(auto) cexpr_fmap(F && f, T &&... t)
+{
+    using std::forward;
+    using result_type = std::tuple<decltype(forward<F>(f)(forward<T>(t)))...>;
+    return result_type{std::forward<F>(f)(std::forward<T>(t))...};
+}
+template<class F, class Tup, size_t... I>
+constexpr decltype(auto) tuple_fmap_helper(F && f, Tup && tup, std::index_sequence<I...>)
+{
+    return cexpr_fmap(std::forward<F>(f),std::get<I>(std::forward<Tup>(tup))...);
+}
+template<class F, class Tup, size_t... I>
+constexpr decltype(auto) tuple_fmap(F && f, Tup && tup)
+{
+    return tuple_fmap_helper(std::forward<F>(f),std::forward<Tup>(tup),
+        std::make_index_sequence<std::tuple_size<Tup>::value>{});
+}
 
 } // end namespace
 

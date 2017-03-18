@@ -1,8 +1,5 @@
 _Pragma("once")
 
-
-#include "system/Math.hpp"
-#include "system/Simd.hpp"
 #include "rubberband/system/sysutils.hpp"
 #include "Range.hpp"
 #include "ModIterator.hpp"
@@ -15,21 +12,21 @@ protected:
     std::atomic<int64_t>   m_widx{0};
 
     size_t                 m_capacity{0};
-    size_t                 m_mask    {m_capacity - 1};
+    size_t                 m_mask    {m_capacity ? (m_capacity - 1ul) : 0ul};
     aligned_ptr<T[]>       m_data{m_capacity ? make_aligned<T[]>(m_capacity) : nullptr};
 public:
-    using value_type = T;
-    using size_type       = size_t;
-    using difference_type = int64_t;
-    using reference       = T&;
-    using const_reference = const T&;
-    using pointer         = T*;
-    using const_pointer   = const T*;
-    using iterator        = mod_iterator<T>;
-    using const_iterator  = mod_iterator<const T>;
-    using range_type      = Range<iterator>;
+    using value_type            = T;
+    using size_type             = std::size_t;
+    using difference_type       = int64_t;
+    using reference             = T&;
+    using const_reference       = const T&;
+    using pointer               = T*;
+    using const_pointer         = const T*;
+    using iterator              = mod_iterator<T>;
+    using const_iterator        = mod_iterator<const T>;
+    using range_type            = Range<iterator>;
     using const_range_type      = Range<const_iterator>;
-    using contig_type     = Range<pointer>;
+    using contig_type           = Range<pointer>;
     constexpr RingBuffer() = default;
     explicit RingBuffer(size_type cap)
     : m_capacity(roundup(cap))
@@ -53,17 +50,19 @@ public:
    ~RingBuffer() = default;
     constexpr size_type capacity() const { return m_capacity; }
     constexpr size_type mask()     const { return m_mask;}
+
     difference_type read_index()   const { return m_ridx.load(std::memory_order_acquire);}
     difference_type write_index()  const { return m_widx.load(std::memory_order_acquire);}
     difference_type last_index()   const { return m_widx.load(std::memory_order_acquire) - 1;}
+
     size_type       read_offset()  const { return read_index() & mask();}
     size_type       write_offset() const { return write_index() & mask();}
     size_type       last_offset()  const { return last_index() & mask();}
-    pointer data()   const { return m_data.get();}
+
+    pointer   data() const { return m_data.get();}
     size_type size() const { return write_index() - read_index();}
-    size_type fill() const { return write_index() - read_index();}
     size_type space()const { return (read_index() + capacity()) - write_index();}
-    size_type getReadSpace() const { return fill(); }
+    size_type getReadSpace() const { return size(); }
     size_type getWriteSpace() const { return space(); }
     bool      full() const { return (read_index() + capacity()) == write_index();}
     bool      empty()const { return read_index() == write_index();}
@@ -74,14 +73,14 @@ public:
     }
     const_range_type read_range(size_type _size) const
     {
-        _size = std::min<size_type>(_size,fill());
+        _size = std::min<size_type>(_size, size());
         return make_range(cbegin(), cbegin() + _size);
     }
 
     range_type read_range(size_type _size, difference_type _diff) const
     {
-        _diff = std::min<size_type>(std::max<difference_type>(0,_diff),fill());
-        _size = std::min<size_type>(_size,fill() - _diff);
+        _diff = std::min<size_type>(std::max<difference_type>(0,_diff), size());
+        _size = std::min<size_type>(_size, size() - _diff);
         return make_range(begin() + _diff, begin() + _diff+ _size);
     }
     std::array<contig_type,2> read_contig() const
@@ -196,7 +195,7 @@ public:
     }
     size_type read_advance(size_type count)
     {
-        count = std::min(count,fill());
+        count = std::min(count, size());
         m_ridx.fetch_add(count,std::memory_order_release);
         return count;
     }
@@ -204,11 +203,14 @@ public:
     size_type peek_n(Iter start, size_type count, difference_type offset = 0) const
     {
         auto stop = start;
+        auto wrote = size_type{};
         for(auto r : read_contig(count,offset)) {
-            if(r)
+            if(r) {
                 stop = std::copy(r.cbegin(),r.cend(),stop);
+                wrote += r.size();
+            }
         }
-        return std::distance(start,stop);
+        return wrote;
     }
     template<class Iter>
     Iter peek(Iter start, Iter stop, difference_type offset = 0) const
@@ -225,13 +227,15 @@ public:
     size_type read_n(Iter start, size_type count)
     {
         auto stop = start;
+        auto wrote = size_type{};
         for(auto r : read_contig(count)) {
             if(r) {
                 stop = std::copy(r.cbegin(),r.cend(),stop);
                 m_ridx.fetch_add(r.size());
+                wrote += r.size();
             }
         }
-        return std::distance(start,stop);
+        return wrote;
     }
     template<class Iter>
     Iter read(Iter start, Iter stop)
@@ -332,13 +336,23 @@ public:
     const_reference operator[](difference_type idx) const { return cbegin()[idx]; }
     const_reference at (difference_type idx) const
     {
-        if(idx < 0 || size_type(idx) >= fill())
+        if(idx < 0 || size_type(idx) >= size())
             throw std::out_of_range();
         return cbegin()[idx];
     }
     reference wr_at(difference_type idx)
     {
         return end()[idx];
+    }
+    bool try_push_back(const_reference item)
+    {
+        if(!full()) { *end() = item; m_widx.fetch_add(1); return true;}
+        else return false;
+    }
+    bool try_push_back(T&& item)
+    {
+        if(!full()) { *end() = std::forward<T>(item); m_widx.fetch_add(1); return true;}
+        else return false;
     }
     void push_back(const_reference item)
     {
@@ -369,7 +383,7 @@ public:
     }
     size_type skip(size_type count)
     {
-        count = std::min(count, fill());
+        count = std::min(count, size());
         m_ridx.fetch_add(count,std::memory_order_release);
         return count;
     }
@@ -385,7 +399,7 @@ public:
     }
     size_type zero(size_type count)
     {
-        count = std::min(count, fill());
+        count = std::min(count, size());
         auto zerod = size_type{};
         for(auto r : write_contig(count)) {
             if(r) {
@@ -434,8 +448,7 @@ public:
     T peekOne() const
     {
         auto t = T{};
-        if(!empty())
-            t = front();
+        if(!empty()) t = front();
         return t;
     }
 };

@@ -1,6 +1,6 @@
 _Pragma("once")
 
-#include "Range.hpp"
+#include "rubberband/base/Range.hpp"
 #include "rubberband/system/sysutils.hpp"
 
 namespace RBMixxxVamp {
