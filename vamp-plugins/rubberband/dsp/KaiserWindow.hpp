@@ -1,15 +1,8 @@
 #pragma once
-#include <cmath>
-#include <cstdlib>
-#include <map>
-#include "rubberband/system/Math.hpp"
 #include "rubberband/system/sysutils.hpp"
-#include "rubberband/system/Simd.hpp"
-#include "rubberband/system/VectorOps.hpp"
-#include "rubberband/system/Allocators.hpp"
 
 namespace {
-constexpr const float A[] =
+constexpr const float A0[] =
 {
 -1.30002500998624804212E-8f,
  6.04699502254191894932E-8f,
@@ -30,7 +23,7 @@ constexpr const float A[] =
 -3.04682672343198398683E-1f,
  6.76795274409476084995E-1f
 };
-constexpr const float B[] =
+constexpr const float B0[] =
 {
  3.39623202570838634515E-9f,
  2.26666899049817806459E-8f,
@@ -40,23 +33,6 @@ constexpr const float B[] =
  3.36911647825569408990E-3f,
  8.04490411014108831608E-1f
 };
-float constexpr chbevlf( float x, const float *array, int n )
-{
-    auto p = array;
-    auto b0 = *p++;
-    auto b1 = 0.0f;
-    auto i = n - 1;
-    auto b2 = 0.f;
-
-    do {
-        b2 = b1;
-        b1 = b0;
-        b0 = x * b1  -  b2  + *p++;
-    } while( --i );
-
-    return( 0.5f*(b0-b2) );
-}
-
 constexpr const float A1[] =
 {
  9.38153738649577178388E-9f,
@@ -87,46 +63,58 @@ constexpr const float B1[] =
 -9.76109749136146840777E-3f,
  7.78576235018280120474E-1f
 };
+template<class T = float, size_t N>
+constexpr float chbevlT( T x, const T (&array)[N])
+{
+    auto p = &array[0];
+    auto b0 = *p++;
+    auto b1 = T{}, b2 = T{};
+    auto i = N - 1;
 
+    do {
+        b2 = b1;
+        b1 = b0;
+        b0 = x * b1  -  b2  + *p++;
+    } while( --i );
+
+    return( T{0.5}*(b0-b2));
+}
 constexpr float i0f( float x )
 {
     x = std::abs(x);
     if( x <= 8.0f ) {
         auto y = 0.5f*x - 2.0f;
-        return( std::exp(x) * chbevlf( y, A, std::extent<decltype(A)>::value ) );
+        return( std::exp(x) * chbevlT( y, A0));
 	}
-    return(  std::exp(x) * chbevlf( 32.0f/x - 2.0f, B, std::extent<decltype(B)>::value ) / std::sqrt(x) );
+    return(  std::exp(x) * chbevlT( 32.0f/x - 2.0f, B0) / std::sqrt(x) );
 }
+
 constexpr float i1f(float xx)
 {
-
     auto x = xx;
     auto z = std::abs(xx);
     if( z <= 8.0f ) {
-        auto y = 0.5f*z - 2.0f;
-        z = chbevlf( y, A1, 17 ) * z * std::exp(z);
+        z = chbevlT((0.5f*z-2.0f), A1) * z * std::exp(z);
     } else {
-        z = std::exp(z) * chbevlf( 32.0f/z - 2.0f, B1, 7 ) / std::sqrt(z);
+        z = std::exp(z) * chbevlT( 32.0f/z - 2.0f, B1) / std::sqrt(z);
     }
     if( x < 0.0f )
         z = -z;
     return( z );
 }
-
 }
 
 namespace RBMixxxVamp {
 template<class It>
 It make_kaiser_window(It _beg, It _end, float alpha)
 {
-    auto oneOverDenom = 1.0f / i0f(alpha);
-    auto N = std::distance(_beg,_end) - 1;
+    auto pi_alpha = alpha * bs::Pi<float>();
+    auto oneOverDenom = 1.0f / i0f(pi_alpha);
+    auto N = std::distance(_beg,_end);
     auto twoOverN = 2.0f / N;
-    auto n = 0;
-    for(; _beg != _end; ++n) {
+    for(auto n = 0; _beg != _end; ++n) {
         auto K = n * twoOverN - 1;
-        auto arg = (bs::sqrt( 1.0f - bs::sqr(K))) * alpha;
-        *_beg++ = i0f(arg) * oneOverDenom;
+        *_beg++ = i0f((bs::sqrt( 1.0f - bs::sqr(K))) * pi_alpha) * oneOverDenom;
 	}
     return _beg;
 }

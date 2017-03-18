@@ -19,7 +19,7 @@
 #include "maths/MathUtilities.h"
 #include "maths/MathAliases.h"
 #include "dsp/phasevocoder/PhaseVocoder.h"
-#include "rubberband/dsp/RMFFT.hpp"
+#include "rubberband/dsp/ReFFT.hpp"
 #include "rubberband/base/MiniRing.hpp"
 #include "base/Window.h"
 
@@ -101,8 +101,8 @@ private:
 //    std::unique_ptr<float[]> m_unwrapped{}; // Unwrapped phase of analysis frame
     std::unique_ptr<float[]> m_magPeaks{};
 
-    RBMixxxVamp::RMFFT                m_fft{};
-    RBMixxxVamp::MiniRing<RBMixxxVamp::RMSpectrum> m_spec{8};
+    RBMixxxVamp::ReFFT                m_fft{};
+    RBMixxxVamp::MiniRing<RBMixxxVamp::ReSpectrum> m_spec{8};
 //    Window<float> m_window{HanningWindow,int(m_dataLength)};
 //    PhaseVocoder m_phaseVoc{int(m_dataLength),int(m_stepSize)};	// Phase Vocoder
 };

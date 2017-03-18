@@ -1,14 +1,8 @@
 _Pragma("once")
-
-#include <cstdint>
-#include <algorithm>
-#include <iterator>
-#include <utility>
-
 #include "Range.hpp"
-#include "rubberband/system/Math.hpp"
+#include "rubberband/system/sysutils.hpp"
 
-namespace RBMixxxVamp {
+namespace RBMixxxVamp{
 template<class T, class R = T&, class P = T*>
 struct slow_mod_iterator {
     using iterator_category = std::random_access_iterator_tag;

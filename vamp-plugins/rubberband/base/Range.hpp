@@ -1,7 +1,6 @@
 _Pragma("once")
 
 #include "rubberband/system/sysutils.hpp"
-
 namespace RBMixxxVamp {
 template<class Iter>
 struct Range {

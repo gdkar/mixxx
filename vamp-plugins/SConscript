@@ -35,7 +35,7 @@ mixxxminimal_sources = [
 	"plugins/MixxxBpmDetection.cpp",
 	"libmain.cpp",
 
-        "rubberband/dsp/RMFFT.cpp",
+        "rubberband/dsp/ReFFT.cpp",
 ]
 
 #Tell SCons to build the plugin

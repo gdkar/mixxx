@@ -54,7 +54,7 @@ constexpr decltype(auto) sqr(auto && t) { return t * t;}
 template<class T>
 constexpr T gaussian(T x, T sigma, T mu)
 {
-    return std::exp(-T(0.5) * sqr((x - mu)/sigma));
+    return std::exp(-T(0.5) * sqr((x - mu)/sigma)) / std::sqrt(2*T(M_PI)*sqr(sigma));
 }
 template<class T>
 constexpr T rayleigh(T x, T sigma, T mu)
@@ -226,7 +226,6 @@ TempoTrackV2::viterbi_decode(
     auto delta = d_mat_t(T, d_vec_t(Q,0.f));
     auto psi   = i_mat_t(T, i_vec_t(Q,0));
 
-
     // initialize first column of delta
     std::transform(
         std::begin(wv)
@@ -239,10 +238,6 @@ TempoTrackV2::viterbi_decode(
 
     for (auto t=1ul; t<T; t++) {
         for (auto j=0ul; j<Q; j++) {
-/*            auto prob = std::inner_product(
-                std::begin(delta[t-1])
-               ,std::end(delta[t-1])
-               ,std::begin(tmat[j]));*/
             auto maxi = j;
             auto maxv = delta[t-1][j] * tmat[j][j];
             for(auto i = 0ul; i < Q; ++i) {
@@ -264,6 +259,7 @@ TempoTrackV2::viterbi_decode(
         std::begin(delta.back())
       , std::end(delta.back())
         ) - std::begin(delta.back());
+
     // backtrace through index of maximum values in psi
     for (auto t=T-1; t-- ;)
         bestpath[t] = psi[t+1][bestpath[t+1]];
@@ -295,44 +291,40 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
         return;
 
     auto cumscore = d_vec_t(df.size());
-    auto backlink   = i_vec_t(df.size(), -1);
+    auto backlink = i_vec_t(df.size(), -1);
 
     // main loop
     for (auto i=0ul; i<df.size(); i++) {
-        auto prange_min = -2*int(beat_period[i]);
-        auto prange_max = -int(std::round(0.5*beat_period[i]));
+        auto fperiod = beat_period[i];
+        auto iperiod = int(fperiod);
+        auto xx = int(i) - iperiod;
+        if(xx >= 0) {
+            auto prange_min = std::max(0,xx - iperiod);
+            auto prange_max = xx + iperiod/2;
+            // transition range
+            auto gen_weight = [tightness,mu=std::log(fperiod),i](auto x)
+            {
+                return std::exp(-0.5f * sqr(tightness * (std::log(float(i-x)) - mu)));
+            };
+            auto vv = gen_weight(xx) * cumscore[xx];
 
-        // transition range
-        auto txwt = d_vec_t(prange_max - prange_min + 1);
-        auto scorecands = d_vec_t(txwt.size());
-
-        auto mu = float(beat_period[i]);
-        for (auto j=0ul;j<txwt.size();j++) {
-            auto cscore_ind = int(i) + prange_min + int(j);
-            txwt[j] = std::exp( -0.5f*sqr(tightness * std::log((2.0f*mu-j)/mu)));
-            if (cscore_ind >= 0) {
-            // IF IN THE ALLOWED RANGE, THEN LOOK AT CUMSCORE[I+PRANGE_MIN+J
-            // ELSE LEAVE AT DEFAULT VALUE FROM INITIALISATION:  D_VEC_T SCORECANDS (TXWT.SIZE());
-                scorecands[j] = txwt[j] * cumscore[cscore_ind];
+            for (auto jj = prange_min;jj<prange_max;++jj) {
+                auto cscore = gen_weight(jj) * cumscore[jj];
+                if(cscore > vv) {
+                    vv = cscore;
+                    xx = jj;
+                }
             }
+            cumscore[i] = alpha * vv + (1-alpha)*df[i];
+            backlink[i] = xx;
+        }else{
+            cumscore[i] = (1-alpha)*df[i];
+            backlink[i] = xx;
         }
-        // find max value and index of maximum value
-        auto it = std::max_element(std::begin(scorecands),std::end(scorecands));
-        auto vv = *it;
-        auto xx = it - std::begin(scorecands);
-
-        cumscore[i] = alpha * vv + (1-alpha)*df[i];
-        backlink[i] = i + prange_min + xx;
-
-//        std::cerr << "backlink[" << i << "] <= " << backlink[i] << std::endl;
     }
     // STARTING POINT, I.E. LAST BEAT.. PICK A STRONG POINT IN cumscore VECTOR
-    auto it = std::end(cumscore) - beat_period.back();
-    auto startpoint = (std::max_element(it ,std::end(cumscore)) - std::begin(cumscore));
-
-    // can happen if no results obtained earlier (e.g. input too short)
-    if (startpoint >= backlink.size())
-        startpoint = backlink.size()-1;
+    auto it = std::end(cumscore) - std::min<int>(beat_period.back(), cumscore.size());
+    auto startpoint = std::max_element(it ,std::end(cumscore)) - std::begin(cumscore);
 
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
@@ -341,11 +333,7 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
 //    std::cerr << "startpoint = " << startpoint << std::endl;
     while (backlink[ibeats.back()] > 0) {
 //        std::cerr << "backlink[" << ibeats.back() << "] = " << backlink[ibeats.back()] << std::endl;
-        auto b = ibeats.back();
-        if (backlink[b] == b)
-            break; // shouldn't happen... haha
-        ibeats.push_back(backlink[b]);
+        ibeats.push_back(backlink[ibeats.back()]);
     }
     std::copy(ibeats.rbegin(),ibeats.rend(),std::back_inserter(beats));
-    // REVERSE SEQUENCE OF IBEATS AND STORE AS BEATS
 }

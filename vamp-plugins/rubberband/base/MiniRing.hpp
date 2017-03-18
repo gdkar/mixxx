@@ -1,24 +1,8 @@
 _Pragma("once")
 
-#include <memory>
-#include <climits>
-#include <cfloat>
-#include <exception>
-#include <stdexcept>
-#include <cstdint>
-#include <cstdlib>
-#include <iterator>
-#include <cmath>
-#include <cstring>
-#include <atomic>
-#include <utility>
-#include <algorithm>
-#include <limits>
-#include <numeric>
 
-#include "rubberband/system/Math.hpp"
-#include "Range.hpp"
-#include "SlowModIterator.hpp"
+#include "rubberband/system/sysutils.hpp"
+#include "rubberband/base/SlowModIterator.hpp"
 namespace RBMixxxVamp {
 template<class T>
 class MiniRing {
@@ -72,8 +56,8 @@ public:
     pointer data()   { return m_data.data();}
     size_type size() const { return write_index() - read_index();}
     size_type space()const { return (read_index() + capacity()) - write_index();}
-    bool      full() const { return space() == 0ul;}
-    bool      empty()const { return size() == 0ul;}
+    bool      full() const { return (read_index() + capacity()) == write_index();}
+    bool      empty()const { return read_index() == write_index();}
 
     void clear()
     {
@@ -121,7 +105,7 @@ public:
     const_reference at (difference_type idx) const
     {
         if(idx <= -size() || idx >= size())
-            throw std::out_of_range("item out of range.");
+            throw std::out_of_range();
         return m_data[((idx < 0 ? write_index() : read_index()) + idx) % capacity()];
     }
     void push_back_expanding()
@@ -132,26 +116,22 @@ public:
     }
     void push_back_expanding(const_reference item)
     {
-        if(full())
-            resize(std::max(capacity(), 8ul)* 3 / 2);
-        *end() = item;
-        m_widx++;
+        push_back_expanding();
+        back() = item;
     }
     void push_back_expanding(value_type&& item)
     {
-        if(full())
-            resize(std::max(capacity(), 8ul)* 3 / 2);
-        *end() = std::forward<value_type>(item);
-        m_widx++;
+        push_back_expanding();
+        back() = std::forward<value_type>(item);
     }
     template<class... Args>
     void emplace_back_expanding(Args &&... args)
     {
         push_back_expanding();
-        auto &x = *end();
+        m_widx++;
+        auto &x = back();
         x.~T();
         ::new (&x) T (std::forward<Args>(args)...);
-        m_widx++;
     }
     void push_back()
     {
@@ -163,25 +143,25 @@ public:
     {
         if(full())
             pop_front();
-        *end() = item;
         m_widx++;
+        back() = item;
     }
     void push_back(T && item)
     {
         if(full())
             pop_front();
-        *end() = std::forward<T>(item);
         m_widx++;
+        back() = std::forward<T>(item);
     }
     template<class... Args>
     void emplace_back(Args &&...args)
     {
         if(full())
             pop_front();
-        auto &x = *end();
+        m_widx ++;
+        auto &x = back();
         x.~T();
         ::new (&x) T (std::forward<Args>(args)...);
-        m_widx ++;
     }
     void pop_front()
     {
