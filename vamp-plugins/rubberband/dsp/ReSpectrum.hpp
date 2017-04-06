@@ -25,23 +25,23 @@ public:
 
     allocator_type m_alloc{};
 
-    vector_type X {  size_type(spacing()) * 2, m_alloc};
-    vector_type M  {size_type(spacing()), m_alloc};
-    vector_type Phi{size_type(spacing()), m_alloc};
-    vector_type mag{size_type(spacing()), m_alloc};
+    vector_type X               { size_type(spacing()) * 2, m_alloc};
+    vector_type M               { size_type(spacing()),     m_alloc};
+    vector_type Phi             { size_type(spacing()),     m_alloc};
+    vector_type mag             { size_type(spacing()),     m_alloc};
 
-    vector_type dM_dt  { size_type(spacing()), m_alloc };
-    vector_type dPhi_dt{ size_type(spacing()), m_alloc };
+    vector_type dM_dt           { size_type(spacing()),     m_alloc };
+    vector_type dPhi_dt         { size_type(spacing()),     m_alloc };
 
-    vector_type dM_dw  { size_type(spacing()), m_alloc};
-    vector_type dPhi_dw{ size_type(spacing()), m_alloc };
+    vector_type dM_dw           { size_type(spacing()),     m_alloc };
+    vector_type dPhi_dw         { size_type(spacing()),     m_alloc };
+    vector_type d2Phi_dtdw      { size_type(spacing()),     m_alloc };
 
-    vector_type       lgd       { size_type(spacing()), m_alloc };
-    vector_type       lgd_weight{ size_type(spacing()), m_alloc };
-    vector_type       lgd_avg   { size_type(spacing()), m_alloc };
-    vector_type       ltime     { size_type(spacing()), m_alloc };
+    vector_type       lgd       { size_type(spacing()),     m_alloc };
+    vector_type       lgd_weight{ size_type(spacing()),     m_alloc };
+    vector_type       lgd_acc   { size_type(spacing()),     m_alloc };
+    vector_type       ltime     { size_type(spacing()),     m_alloc };
 
-    vector_type d2Phi_dtdw{size_type(spacing()), bs::allocator<float>{} };
     template<class A = allocator_type>
     ReSpectrum(int _size = 0, const A &al = allocator_type{}) : m_size(_size), m_alloc{al} {}
     ReSpectrum(ReSpectrum && ) noexcept = default;
@@ -50,44 +50,44 @@ public:
     ReSpectrum&operator=(const ReSpectrum &) = default;
 
     pointer X_real() { return &X[0];}
-    pointer X_imag() { return &X[spacing()];}
     const_pointer X_real() const { return &X[0];}
+
+    pointer X_imag() { return &X[spacing()];}
     const_pointer X_imag() const { return &X[spacing()];}
 
     pointer mag_data() { return &mag[0];}
-    pointer M_data() { return &M[0];}
-    pointer Phi_data() { return &Phi[0];}
-
     const_pointer mag_data() const { return &mag[0];}
+
+    pointer M_data() { return &M[0];}
     const_pointer M_data() const { return &M[0];}
+
+    pointer Phi_data() { return &Phi[0];}
     const_pointer Phi_data() const { return &Phi[0];}
 
     pointer dM_dt_data() { return &dM_dt[0];}
-    pointer dPhi_dt_data() { return &dPhi_dt[0];}
     const_pointer dM_dt_data() const { return &dM_dt[0];}
-    const_pointer dPhi_dt_data() const { return &dPhi_dt[0];}
 
     pointer dM_dw_data() { return &dM_dw[0];}
-    pointer dPhi_dw_data() { return &dPhi_dw[0];}
     const_pointer dM_dw_data() const { return &dM_dw[0];}
+
+    pointer dPhi_dt_data() { return &dPhi_dt[0];}
+    const_pointer dPhi_dt_data() const { return &dPhi_dt[0];}
+
+    pointer dPhi_dw_data() { return &dPhi_dw[0];}
     const_pointer dPhi_dw_data() const { return &dPhi_dw[0];}
+
+    pointer d2Phi_dtdw_data() { return &d2Phi_dtdw[0];}
+    const_pointer d2Phi_dtdw_data() const { return &d2Phi_dtdw[0];}
 
     pointer local_group_delay() { return &lgd[0];}
     pointer local_group_delay_weight() { return &lgd_weight[0];}
-    pointer local_group_delay_avg() { return &lgd_avg[0];}
+    pointer local_group_delay_acc      () { return &lgd_acc[0];}
     pointer local_time() { return &ltime[0];}
 
     const_pointer local_group_delay() const { return &lgd[0];}
     const_pointer local_group_delay_weight() const { return &lgd_weight[0];}
-    const_pointer local_group_delay_avg() const { return &lgd_avg[0];}
+    const_pointer local_group_delay_acc() const { return &lgd_acc[0];}
     const_pointer local_time() const { return &ltime[0];}
-
-
-    float * d2Phi_dtdw_data() { return &d2Phi_dtdw[0];}
-    const float * d2Phi_dtdw_data() const { return &d2Phi_dtdw[0];}
-
-    float & d2Phi_dtdw_at(size_type i) { return d2Phi_dtdw[i];}
-    float   d2Phi_dtdw_at(size_type i) const { return d2Phi_dtdw[i];}
 
     int size() const
     {
@@ -125,11 +125,15 @@ public:
             , dPhi_dw
             , dM_dt
             , dPhi_dt
+            , d2Phi_dtdw
             , lgd
-            , lgd_avg
+            , lgd_acc
             , lgd_weight
-            , ltime
-            , d2Phi_dtdw);
+            , ltime);
+//            ,&d2Phi_dtdw, &impulse_position, &impulse_quality}
+//            })
+//            p->resize(m_spacing);
+//        rm_when.resize(m_spacing);
     }
     void reset(int _size, int64_t _when)
     {

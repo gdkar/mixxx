@@ -330,7 +330,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     slotUpdateSchemes();
 
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if 1 || (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     AutoHiDpi autoHiDpi;
     m_autoScaleFactor = autoHiDpi.getScaleFactor();
     double scaleFactor = m_autoScaleFactor;
@@ -358,11 +358,13 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
             this, SLOT(slotSetScaleFactorAuto(bool)));
 
     //: Entry of the HiDPI scale combo box. %1 is the scale factor in percent
-    comboBoxScaleFactor->addItem(QString(tr("%1 % (Experimental)")).arg(50), 0.5);
-    comboBoxScaleFactor->addItem(QString(tr("%1 %")).arg(100), 1);
-    comboBoxScaleFactor->addItem(QString(tr("%1 % (Experimental)")).arg(200), 2);
-    comboBoxScaleFactor->addItem(QString(tr("%1 % (Experimental)")).arg(300), 3);
-    comboBoxScaleFactor->addItem(QString(tr("%1 % (Experimental)")).arg(400), 4);
+    for(auto val : { 0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0}){
+        auto str = tr("%1 %").arg(int(100*val));
+        if(val != 1.0)
+            str += " (Experimental)";
+        comboBoxScaleFactor->addItem(str, val);
+
+    }
     int i;
     for (i = 0; i < comboBoxScaleFactor->count(); ++i) {
         if (scaleFactor == comboBoxScaleFactor->itemData(i)) {
@@ -372,12 +374,10 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     }
     if (i == comboBoxScaleFactor->count()) {
         // no default scale, add custom scale
-        comboBoxScaleFactor->addItem(
-                QString(tr("%1 % (Experimental)")).arg(scaleFactor * 100), scaleFactor);
+        comboBoxScaleFactor->addItem(tr("%1 % (Experimental)").arg(scaleFactor * 100), scaleFactor);
         comboBoxScaleFactor->setCurrentIndex(i);
     }
-    connect(comboBoxScaleFactor, SIGNAL(activated(int)),
-            this, SLOT(slotSetScaleFactor(int)));
+    connect(comboBoxScaleFactor, SIGNAL(activated(int)),this, SLOT(slotSetScaleFactor(int)));
 #else
     checkBoxScaleFactorAuto->hide();
     comboBoxScaleFactor->hide();
@@ -485,8 +485,7 @@ DlgPrefControls::~DlgPrefControls() {
 
 void DlgPrefControls::slotUpdateSchemes() {
     // Since this involves opening a file we won't do this as part of regular slotUpdate
-    QList<QString> schlist = LegacySkinParser::getSchemeList(
-                m_pSkinLoader->getSkinPath());
+    auto schlist = LegacySkinParser::getSchemeList(m_pSkinLoader->getSkinPath());
 
     ComboBoxSchemeconf->clear();
 
@@ -496,7 +495,7 @@ void DlgPrefControls::slotUpdateSchemes() {
         ComboBoxSchemeconf->setCurrentIndex(0);
     } else {
         ComboBoxSchemeconf->setEnabled(true);
-        QString selectedScheme = m_pConfig->getValueString(ConfigKey("[Config]", "Scheme"));
+        auto selectedScheme = m_pConfig->getValueString(ConfigKey("[Config]", "Scheme"));
         for (int i = 0; i < schlist.size(); i++) {
             ComboBoxSchemeconf->addItem(schlist[i]);
 
@@ -604,7 +603,7 @@ void DlgPrefControls::slotResetToDefaults() {
 }
 
 void DlgPrefControls::slotSetLocale(int pos) {
-    QString newLocale = ComboBoxLocale->itemData(pos).toString();
+    auto newLocale = ComboBoxLocale->itemData(pos).toString();
     m_pConfig->set(ConfigKey("[Config]", "Locale"), ConfigValue(newLocale));
     notifyRebootNecessary();
 }
@@ -783,22 +782,19 @@ void DlgPrefControls::slotSetTrackTimeDisplay(double v) {
 }
 
 void DlgPrefControls::slotSetRateTempLeft(double v) {
-    QString str;
-    str = str.setNum(v, 'f');
+    auto str = QString{}.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RateTempLeft"),ConfigValue(str));
     RateControl::setTemp(v);
 }
 
 void DlgPrefControls::slotSetRateTempRight(double v) {
-    QString str;
-    str = str.setNum(v, 'f');
+    auto str = QString{}.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RateTempRight"),ConfigValue(str));
     RateControl::setTempSmall(v);
 }
 
 void DlgPrefControls::slotSetRatePermLeft(double v) {
-    QString str;
-    str = str.setNum(v, 'f');
+    auto str = QString{}.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RatePermLeft"),ConfigValue(str));
     RateControl::setPerm(v);
 }

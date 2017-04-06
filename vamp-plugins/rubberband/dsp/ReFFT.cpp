@@ -1,43 +1,40 @@
 #include <thread>
 #include <mutex>
-#include "ReFFT.hpp"
-#include "KaiserWindow.hpp"
-using namespace RBMixxxVamp ;
+#include "rubberband/dsp/ReFFT.hpp"
+using namespace RBMixxxVamp;
 namespace detail {
 struct _wisdom_reg {
+    template<class F,class D>
+    static void wisdom(F && ffunc, D && dfunc, const char mode[]) {
+        if(auto home = getenv("HOME")){
+            char fn[256];
+            ::snprintf(fn, sizeof(fn), "%s/%s.f", home, ".rubberband.wisdom");
+            if(auto f = ::fopen(fn, mode)){
+                std::forward<F>(ffunc)(f);
+                fclose(f);
+            }
+            ::snprintf(fn, sizeof(fn), "%s/%s.d", home, ".rubberband.wisdom");
+            if(auto f = ::fopen(fn, mode)){
+                std::forward<D>(dfunc)(f);
+                fclose(f);
+            }
+        }
+    }
+    static std::once_flag _wisdom_once;
     _wisdom_reg(){
         fftwf_init_threads();
         fftwf_make_planner_thread_safe();
         fftw_init_threads();
         fftw_make_planner_thread_safe();
-
-        wisdom(false);
+        std::call_once(_wisdom_once,[](){
+            wisdom(fftwf_import_wisdom_from_file,fftw_import_wisdom_from_file,"rb");
+        });
     }
    ~_wisdom_reg() {
-        wisdom(true);
-    }
-    void wisdom(bool save) {
-        if(auto home = getenv("HOME")){
-            char fn[256];
-            snprintf(fn, sizeof(fn), "%s/%s.%c", home, ".rubberband.wisdom", 'f');
-            if(auto f = ::fopen(fn, save ? "wb" : "rb")){
-                if (save)
-                    fftwf_export_wisdom_to_file(f);
-                else
-                    fftwf_import_wisdom_from_file(f);
-                fclose(f);
-            }
-            snprintf(fn, sizeof(fn), "%s/%s.%c", home, ".rubberband.wisdom", 'd');
-            if(auto f = ::fopen(fn, save ? "wb" : "rb")){
-                if (save)
-                    fftw_export_wisdom_to_file(f);
-                else
-                    fftw_import_wisdom_from_file(f);
-                fclose(f);
-            }
-        }
+        wisdom(fftwf_export_wisdom_to_file,fftw_export_wisdom_to_file,"wb");
     }
 };
+/*static*/ std::once_flag _wisdom_reg::_wisdom_once{};
 _wisdom_reg the_registrar{};
 }
 void ReFFT::initPlans()
@@ -52,7 +49,7 @@ void ReFFT::initPlans()
             m_plan_c2r = 0;
         }
         m_coef = m_size ? (m_size / 2 + 1) : 0; /// <- number of non-redundant forier coefficients
-        m_spacing =  (m_coef + 15) & ~15; /// <- padded number of coefficients to play nicely wiht simd when packing split-complex format into small contigous arrays.
+        m_spacing = align_up(m_coef, item_alignment);
         cexpr_for_each([sz=size_type(m_size)](auto & item){item.resize(sz);}
             , m_h
             , m_Dh
@@ -143,20 +140,24 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
     auto _cmul = [](auto r0, auto i0, auto r1, auto i1) {
         return make_pair(r0 * r1 - i0 * i1, r0 * i1 + r1 * i0);
         };
+    auto _pcmul = [&](auto x0, auto x1) {
+        return _cmul(std::get<0>(x0),std::get<1>(x0),
+                     std::get<0>(x1),std::get<1>(x1));
+    };
     auto _cinv = [e=m_epsilon](auto r, auto i) {
         auto n = bs::rec(bs::sqr(r) + bs::sqr(i) + e);//bs::Eps<float>());
         return make_pair(r * n , -i * n);
     };
     dst.reset(m_size, _when);
-    copy(_real, _real + m_coef, dst.X_real());
-    copy(_imag, _imag + m_coef, dst.X_imag());
 
     for(auto i = 0; i < m_coef; i += w ) {
         auto _X_r = reg(_real + i), _X_i = reg(_imag + i);
+        bs::store(_X_r, dst.X_real() + i);
+        bs::store(_X_i, dst.X_imag() + i);
         {
-            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
-//            auto _X_mag = bs::hypot(_X_i,_X_r);
-            bs::store(bs::sqrt(_X_mag), dst.mag_data() + i);
+//            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
+            auto _X_mag = bs::hypot(_X_i,_X_r);
+            bs::store(_X_mag, dst.mag_data() + i);
             bs::store(bs::log(_X_mag), dst.M_data() + i);
             bs::store(bs::atan2(_X_i,_X_r), dst.Phi_data() + i);
         }
@@ -173,18 +174,18 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
         bs::store(-get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
 
-        auto _TDh_over_X = reg(_real_TDh + i) * _X_r - reg(_imag_TDh + i) * _X_i;
-        auto _Th_Dh_over_XX = std::get<0>(_Th_over_X) * std::get<0>(_Dh_over_X)
-                            - std::get<1>(_Th_over_X) * std::get<1>(_Dh_over_X);
-        bs::store(_TDh_over_X - _Th_Dh_over_XX,&dst.d2Phi_dtdw[0] + i);
+        auto _TDh_over_X    = std::get<0>(_cmul( reg(_real_TDh + i),reg(_imag_TDh + i) ,_X_r, _X_i ));
+        auto _Th_Dh_over_X2 = std::get<0>(_pcmul(_Th_over_X,_Dh_over_X));
 
-    }
+        bs::store(_TDh_over_X - _Th_Dh_over_X2,&dst.d2Phi_dtdw[0] + i);    }
     for(auto i = 0; i < m_coef; ++i) {
         auto _X_r = *(_real + i), _X_i = *(_imag + i);
+        bs::store(_X_r, dst.X_real() + i);
+        bs::store(_X_i, dst.X_imag() + i);
         {
-//            auto _X_mag = bs::hypot(_X_i,_X_r);
-            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
-            bs::store(bs::sqrt(_X_mag), dst.mag_data() + i);
+            auto _X_mag = bs::hypot(_X_i,_X_r);
+//            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
+            bs::store(_X_mag, dst.mag_data() + i);
             bs::store(bs::log(_X_mag), dst.M_data() + i);
             bs::store(bs::atan2(_X_i,_X_r), dst.Phi_data() + i);
         }
@@ -200,11 +201,10 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
         bs::store(-get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
 
-        auto _TDh_over_X = *(_real_TDh + i) * _X_r - *(_imag_TDh + i) * _X_i;
-        auto _Th_Dh_over_XX = std::get<0>(_Th_over_X) * std::get<0>(_Dh_over_X)
-                            - std::get<1>(_Th_over_X) * std::get<1>(_Dh_over_X);
-        bs::store(_TDh_over_X - _Th_Dh_over_XX,&dst.d2Phi_dtdw[0] + i);
+        auto _TDh_over_X    = std::get<0>(_cmul( *(_real_TDh + i),*(_imag_TDh + i) ,_X_r, _X_i ));
+        auto _Th_Dh_over_X2 = std::get<0>(_pcmul(_Th_over_X,_Dh_over_X));
 
+        bs::store(_TDh_over_X - _Th_Dh_over_X2,&dst.d2Phi_dtdw[0] + i);
     }
 }
 int ReFFT::spacing() const
@@ -222,7 +222,7 @@ int ReFFT::coefficients() const
 void ReFFT::updateGroupDelay(ReSpectrum &spec)
 {
     auto _lgd     = spec.local_group_delay();
-    auto _lgda    = spec.local_group_delay_avg();
+    auto _lgda    = spec.local_group_delay_acc();
     auto _lgdw    = spec.local_group_delay_weight();
     auto _ltime   = spec.local_time();
 
@@ -230,15 +230,19 @@ void ReFFT::updateGroupDelay(ReSpectrum &spec)
 
     auto _dPhi_dw = spec.dPhi_dw_data();
 
-    auto fr = 0.95f;//bs::pow(10.0f, -40.0f/20.0f);
+    auto fr = 0.9f;//bs::pow(10.0f, -40.0f/20.0f);
     auto ep = bs::sqrt(m_epsilon * fr * bs::rec(1-fr));
 
-    std::transform(_mag,_mag + m_coef, _lgdw,[ep](auto m) {
-        return (m > ep) ? 1.0f : 0.0f;
+    bs::transform(_mag,_mag + m_coef, _lgdw, [ep](auto m) {
+        auto _res = bs::is_less(m,decltype(m)(ep));
+        return bs::if_zero_else_one(_res);
     });
-    bs::transform(_lgdw,_lgdw + m_coef, _dPhi_dw, _lgd,bs::multiplies);
+/*    std::transform(_mag,_mag + m_coef, _lgdw,[ep](auto m) {
+        return (m > ep) ? 1.0f : 0.0f;
+    });*/
+    bs::transform(_lgdw,_lgdw + m_coef, _dPhi_dw, _lgda,bs::multiplies);
 
-    std::partial_sum(_lgd, _lgd+m_coef, _lgd);
+    std::partial_sum(_lgda,_lgda+m_coef,_lgda);
     std::partial_sum(_lgdw,_lgdw+m_coef,_lgdw);
 
     auto i = 0;
@@ -249,26 +253,26 @@ void ReFFT::updateGroupDelay(ReSpectrum &spec)
         auto lo = lo_bound(i);
 
         auto _w = _lgdw[hi] - _lgdw[lo] + m_epsilon;
-        auto _d = _lgd [hi] - _lgd [lo];
-        _lgda[i] = -_d * bs::rec(_w);
+        auto _d = _lgda[hi] - _lgda[lo];
+        _lgd[i] = -_d * bs::rec(_w);
     }
     for(; hi_bound(i) < m_coef; ++i) {
         auto hi = hi_bound(i);
         auto lo = lo_bound(i);
         auto _w = _lgdw[hi] - _lgdw[lo] + m_epsilon;
-        auto _d = _lgd [hi] - _lgd [lo];
-        _lgda[i] = -_d * bs::rec(_w);
+        auto _d = _lgda[hi] - _lgda[lo];
+        _lgd[i] = -_d * bs::rec(_w);
     }
     {
         auto hi = m_coef - 1;
         auto hiw = _lgdw[hi];
-        auto hid = _lgd [hi];
+        auto hid = _lgda[hi];
         for(; i < m_coef; ++i) {
             auto lo = lo_bound(i);
             auto _w = hiw - _lgdw[lo] + m_epsilon;
-            auto _d = hid - _lgd [lo];
-            _lgda[i] = -_d * bs::rec(_w);
+            auto _d = hid - _lgda[lo];
+            _lgd[i] = -_d * bs::rec(_w);
         }
     }
-    bs::transform(_lgda,_lgda+m_coef, _ltime, [w=float(spec.when())](auto x){return x + w;});
+    bs::transform(_lgd,_lgd+m_coef, _ltime, [w=float(spec.when())](auto x){return x + w;});
 }
