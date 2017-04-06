@@ -1,10 +1,15 @@
 #pragma once
-#include "rubberband/system/sysutils.hpp"
-#include "TimeWeightedWindow.hpp"
-#include "TimeDerivativeWindow.hpp"
-#include "TimeAlias.hpp"
-#include "ReSpectrum.hpp"
 
+#include "rubberband/system/sysutils.hpp"
+#include "rubberband/dsp/ReSpectrum.hpp"
+#include "TimeDerivativeWindow.hpp"
+#include "TimeWeightedWindow.hpp"
+#include "KaiserWindow.hpp"
+#include "TimeAlias.hpp"
+#include "rubberband/base/MiniRing.hpp"
+#include "rubberband/base/RingBuffer.hpp"
+
+#include <fftw3.h>
 namespace RBMixxxVamp {
 
 struct ReFFT {
@@ -15,24 +20,28 @@ struct ReFFT {
     using allocator_type = bs::allocator<value_type>;
     using pointer = typename std::allocator_traits<allocator_type>::pointer;
     using const_pointer = typename std::allocator_traits<allocator_type>::const_pointer;
+    static constexpr int value_alignment = simd_alignment<value_type>;
+    static constexpr int item_alignment  = value_alignment / sizeof(value_type);
+
     int m_size{}; /// <- transform size
-    int m_coef{m_size ? (m_size / 2 + 1) : 0}; /// <- number of non-redundant forier coefficients
-    int m_spacing{ (m_coef + 15) & ~15}; /// <- padded number of coefficients to play nicely wiht simd when packing split-complex format into small contigous arrays.
-    int m_smooth_width{32};
-    float m_epsilon = 1e-6f;
+    int m_coef{m_size ? (m_size / 2 + 1) : 0};
+    int m_spacing{align_up(m_coef, item_alignment)};
+
+    float m_epsilon = std::numeric_limits<float>::epsilon();
+
     allocator_type m_alloc{};
-    vector_type m_h  {size_type(size()), m_alloc};  /// <- transform window
-    vector_type m_Dh {size_type(size()), m_alloc};  /// <- time derivative of window
-    vector_type m_Th {size_type(size()), m_alloc};  /// <- time multiplied window
-    vector_type m_TDh{size_type(size()), m_alloc};  /// <- time multiplied time derivative window;
+    vector_type m_h     {size_type(size()), m_alloc};  /// <- transform window
+    vector_type m_Dh    {size_type(size()), m_alloc};  /// <- time derivative of window
+    vector_type m_Th    {size_type(size()), m_alloc};  /// <- time multiplied window
+    vector_type m_TDh   {size_type(size()), m_alloc};  /// <- time multiplied time derivative window;
 
-    vector_type m_flat{size_type(size()), m_alloc}; /// <- input windowing scratch space.
-    vector_type m_split{size_type(spacing()) * 2, m_alloc}; /// <- frequency domain scratch space.
+    vector_type m_flat  {size_type(size()), m_alloc}; /// <- input windowing scratch space.
+    vector_type m_split {size_type(spacing()) * 2, m_alloc}; /// <- frequency domain scratch space.
 
-    vector_type m_X    {size_type(spacing()) * 2, m_alloc}; /// <- transform of windowed signal
-    vector_type m_X_Dh {size_type(spacing()) * 2, m_alloc}; /// <- transform of time derivative windowed signal
-    vector_type m_X_Th {size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied window
-    vector_type m_X_TDh{size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied time derivative window.
+    vector_type m_X     {size_type(spacing()) * 2, m_alloc}; /// <- transform of windowed signal
+    vector_type m_X_Dh  {size_type(spacing()) * 2, m_alloc}; /// <- transform of time derivative windowed signal
+    vector_type m_X_Th  {size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied window
+    vector_type m_X_TDh {size_type(spacing()) * 2, m_alloc}; /// <- transform of time multiplied time derivative window.
 
     fftwf_plan          m_plan_r2c{0};  /// <- real to complex plan;
     fftwf_plan          m_plan_c2r{0};  /// <0 complex to real plan.
@@ -108,8 +117,6 @@ struct ReFFT {
         {
             auto do_window = [&](auto &w, auto &v) {
                 cutShift(&m_flat[0], src,send, w);
-//                bs::transform(src, src + m_size, &w[0], &m_flat[0],bs::multiplies);
-//                std::rotate(m_flat.begin(),m_flat.begin() + (size()/2),m_flat.end());
                 fftwf_execute_split_dft_r2c(m_plan_r2c, &m_flat[0], &v[0], &v[m_spacing]);
             };
             do_window(m_h , m_X    );
@@ -127,8 +134,6 @@ struct ReFFT {
         {
             auto do_window = [&](auto &w, auto &v) {
                 cutShift(&m_flat[0], src, w);
-//                bs::transform(src, src + m_size, &w[0], &m_flat[0],bs::multiplies);
-//                std::rotate(m_flat.begin(),m_flat.begin() + (size()/2),m_flat.end());
                 fftwf_execute_split_dft_r2c(m_plan_r2c, &m_flat[0], &v[0], &v[m_spacing]);
             };
             do_window(m_h , m_X    );
@@ -149,7 +154,7 @@ struct ReFFT {
            ,_M + m_coef
            , &m_X[0]
            , [norm](auto x){
-                return norm * bs::exp(x * 0.5f);
+                return norm * bs::exp(x);
             });
         std::copy(
             _Phi
@@ -157,7 +162,7 @@ struct ReFFT {
            , &m_X[0] + spacing()
             );
         v_polar_to_cartesian(
-            &m_split[0]
+              &m_split[0]
             , &m_split[0] + spacing()
             , &m_X[0]
             , &m_X[0] + spacing()
