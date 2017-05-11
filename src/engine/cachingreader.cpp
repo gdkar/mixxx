@@ -24,7 +24,8 @@ namespace {
 // constant. 2048 is a pretty good number of samples because 25ms
 // latency corresponds to 1102.5 mono samples and we need double
 // that for stereo samples.
-const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
+const SINT kDefaultHintFrames = 1024;
+const SINT kDefaultHintSamples = kDefaultHintFrames * CachingReaderChunk::kChannels;
 
 } // anonymous namespace
 

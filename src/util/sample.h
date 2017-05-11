@@ -94,26 +94,6 @@ namespace SampleUtil {
         return CSAMPLE_GAIN_clamp(in);
     }
 
-    constexpr SINT roundPlayPosToFrameStart(double playPos, int numChannels) {
-        auto playPosFrames = static_cast<SINT>(std::round(playPos / numChannels));
-        return playPosFrames * numChannels;
-    }
-
-    constexpr SINT truncPlayPosToFrameStart(double playPos, int numChannels) {
-        auto playPosFrames = static_cast<SINT>(playPos / numChannels);
-        return playPosFrames * numChannels;
-    }
-
-    constexpr SINT floorPlayPosToFrameStart(double playPos, int numChannels) {
-        auto playPosFrames = static_cast<SINT>(std::floor(playPos / numChannels));
-        return playPosFrames * numChannels;
-    }
-
-    constexpr  SINT ceilPlayPosToFrameStart(double playPos, int numChannels) {
-        auto playPosFrames = static_cast<SINT>(std::ceil(playPos / numChannels));
-        return playPosFrames * numChannels;
-    }
-
     constexpr SINT roundPlayPosToFrame(double playPos) {
         return static_cast<SINT>(std::round(playPos / kPlayPositionChannels));
     }

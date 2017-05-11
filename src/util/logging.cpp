@@ -17,6 +17,8 @@
 
 #include "controllers/controllerdebug.h"
 #include "util/assert.h"
+#include "util/cmdlineargs.h"
+#include "util/ffmpeg-utils.hpp"
 
 namespace mixxx {
 
@@ -172,7 +174,17 @@ void MessageHandler(QtMsgType type,
 
     writeToLog(ba, shouldPrint, shouldFlush);
 }
-
+void FFmpegMessageHandler(void * avcl, int level, const char *fmt, va_list vi)
+{
+    if(level == AV_LOG_PANIC)
+        qFatal(fmt, vi);
+    else if(level == AV_LOG_FATAL)
+        qCritical(fmt,vi);
+//    else if(level == AV_LOG_INFO)
+//        qInfo(fmt,vi);
+//    else if(level == AV_LOG_DEBUG || level == AV_LOG_VERBOSE)
+//        qDebug(fmt,vi);
+}
 }  // namespace
 
 // static
@@ -221,11 +233,15 @@ void Logging::initialize(const QDir& settingsDir, LogLevel logLevel,
 #else
     qInstallMessageHandler(MessageHandler);
 #endif
+    av_register_all();
+    av_log_set_callback(&FFmpegMessageHandler);
+    av_log_set_level(AV_LOG_FATAL);
 }
 
 // static
 void Logging::shutdown() {
     // Reset the Qt message handler to default.
+    av_log_set_callback(av_log_default_callback);
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     qInstallMsgHandler(nullptr);
 #else
