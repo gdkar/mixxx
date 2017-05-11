@@ -186,9 +186,8 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     MathUtilities::adaptiveThreshold(rcf);
     {
         auto rcfsum =0.f;
-        for(auto & rcfv : rcf) {
-            rcfv += EPS; rcfsum += rcfv;
-        }
+        for(auto & rcfv : rcf)
+            rcfsum += (rcfv += EPS);
         auto rcfi = 1/(rcfsum + EPS);
         for(auto &rcfv : rcf)
             rcfv *= rcfi;
@@ -242,10 +241,8 @@ TempoTrackV2::viterbi_decode(
             auto maxv = delta[t-1][j] * tmat[j][j];
             for(auto i = 0ul; i < Q; ++i) {
                 auto thisv = delta[t-1][i] * tmat[j][i];
-                if(thisv > maxv) {
-                    maxv = thisv;
-                    maxi = i;
-                }
+                if(thisv > maxv)
+                    maxv = thisv,maxi = i;
             }
             delta[t][j] = maxv * rcfmat[t][j];
             psi  [t][j] = maxi;
@@ -307,12 +304,10 @@ TempoTrackV2::calculateBeats(const vector<float > &df,
                 return std::exp(-0.5f * sqr(tightness * (std::log(float(i-x)) - mu)));
             };
             auto vv = gen_weight(xx) * cumscore[xx];
-
             for (auto jj = prange_min;jj<prange_max;++jj) {
                 auto cscore = gen_weight(jj) * cumscore[jj];
                 if(cscore > vv) {
-                    vv = cscore;
-                    xx = jj;
+                    vv = cscore, xx = jj;
                 }
             }
             cumscore[i] = alpha * vv + (1-alpha)*df[i];

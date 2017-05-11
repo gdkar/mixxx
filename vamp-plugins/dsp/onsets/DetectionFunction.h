@@ -18,10 +18,8 @@
 
 #include "maths/MathUtilities.h"
 #include "maths/MathAliases.h"
-#include "dsp/phasevocoder/PhaseVocoder.h"
 #include "rubberband/dsp/ReFFT.hpp"
 #include "rubberband/base/MiniRing.hpp"
-#include "base/Window.h"
 
 enum struct DFType : int {
     NONE = (0),
@@ -103,8 +101,6 @@ private:
 
     RBMixxxVamp::ReFFT                m_fft{};
     RBMixxxVamp::MiniRing<RBMixxxVamp::ReSpectrum> m_spec{8};
-//    Window<float> m_window{HanningWindow,int(m_dataLength)};
-//    PhaseVocoder m_phaseVoc{int(m_dataLength),int(m_stepSize)};	// Phase Vocoder
 };
 
 #endif

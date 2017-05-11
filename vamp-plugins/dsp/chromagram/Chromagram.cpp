@@ -65,7 +65,7 @@ int Chromagram::initialise( ChromaConfig Config )
     m_CQRe  = new double[ m_uK ];
     m_CQIm  = new double[ m_uK ];
 
-    m_window = 0;
+    m_window = RBMixxxVamp::Window<double>(RBMixxxVamp::HammingWindow,m_frameSize);
     m_windowbuf = 0;
 
     return 1;
@@ -79,7 +79,6 @@ Chromagram::~Chromagram()
 int Chromagram::deInitialise()
 {
     delete[] m_windowbuf;
-    delete m_window;
 
     delete [] m_chromadata;
 
@@ -125,19 +124,11 @@ double* Chromagram::process( const double *data )
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-
-    if (!m_window) {
-        m_window = new Window<double>(HammingWindow, m_frameSize);
+    if (!m_windowbuf) {
         m_windowbuf = new double[m_frameSize];
     }
-
-    for (int i = 0; i < m_frameSize; ++i) {
-        m_windowbuf[i] = data[i];
-    }
-    m_window->cut(m_windowbuf);
-
+    m_window.cut(&data[0],&m_windowbuf[0]);
     m_FFT->forward(m_windowbuf, m_FFTRe, m_FFTIm);
-
     return process(m_FFTRe, m_FFTIm);
 }
 
@@ -148,13 +139,10 @@ double* Chromagram::process( const double *real, const double *imag )
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-
+    std::fill_n(&m_chromadata[0], m_BPO, 0);
     // initialise chromadata to 0
-    for (unsigned i = 0; i < m_BPO; i++)
-        m_chromadata[i] = 0;
     // Calculate ConstantQ frame
     m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
-
     // add each octave of cq data into Chromagram
     auto octaves = size_t(ssize_t(double( m_uK/m_BPO))-1);
     for (auto octave = 0ul; octave <= octaves; octave++) {
@@ -164,10 +152,6 @@ double* Chromagram::process( const double *real, const double *imag )
 	    m_chromadata[i] += kabs( m_CQRe[ firstBin + i ], m_CQIm[ firstBin + i ]);
 	}
     }
-
     MathUtilities::normalise(m_chromadata, m_BPO, m_normalise);
-
     return m_chromadata;
 }
-
-
