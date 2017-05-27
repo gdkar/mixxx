@@ -23,7 +23,7 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
     std::set<QString> controlItemSet;
     bool hasDefaultMark = false;
 
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     QDomNode defaultChild;
     while (!child.isNull()) {
         if (child.nodeName() == "DefaultMark") {
@@ -34,7 +34,7 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
             WaveformMarkPointer pMark(new WaveformMark(group, child, context, signalColors));
             if (pMark->isValid()) {
                 // guarantee uniqueness even if there is a misdesigned skin
-                QString item = pMark->getItem();
+                auto item = pMark->getItem();
                 if (!controlItemSet.insert(item).second) {
                     qWarning() << "WaveformRenderMark::setup - redefinition of" << item;
                 } else  {
@@ -54,7 +54,7 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
         for (int i = 0; i < NUM_HOT_CUES; ++i) {
             if (m_hotCueMarks.value(i).isNull()) {
                 //qDebug() << "WaveformRenderMark::setup - Automatic mark" << hotCueControlItem;
-                WaveformMarkPointer pMark(new WaveformMark(group, defaultChild, context, signalColors, i));
+                auto pMark = WaveformMarkPointer (new WaveformMark(group, defaultChild, context, signalColors, i));
                 m_marks.push_back(pMark);
                 m_hotCueMarks.insert(pMark->getHotCue(), pMark);
             }

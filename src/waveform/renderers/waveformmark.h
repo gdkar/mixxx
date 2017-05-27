@@ -17,7 +17,7 @@ class WOverview;
 
 class WaveformMark {
   public:
-    static const int kNoHotCue = -1;
+    static constexpr int kNoHotCue = -1;
     WaveformMark(
             const QString& group,
             const QDomNode& node,

@@ -98,9 +98,14 @@ class EngineControl : public QObject {
     UserSettingsPointer m_pConfig;
 
   private:
-    struct SampleOfTrack {
-        double current;
-        double total;
+    struct alignas(16) SampleOfTrack {
+        union {
+            __int128    x128;
+            struct {
+                double current;
+                double total;
+            };
+        };
     };
 
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;

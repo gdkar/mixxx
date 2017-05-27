@@ -5,7 +5,7 @@
 #include "waveform/renderers/waveformmarkproperties.h"
 
 Qt::Alignment decodeAlignmentFlags(QString alignString, Qt::Alignment defaultFlags) {
-    QStringList stringFlags = alignString.toLower()
+    auto stringFlags = alignString.toLower()
             .split("|", QString::SkipEmptyParts);
 
     Qt::Alignment hflags = 0L;
@@ -60,11 +60,16 @@ WaveformMarkProperties::WaveformMarkProperties(const QDomNode& node,
         m_textColor = signalColors.getBgColor();
         qDebug() << "Didn't get mark <TextColor>, using parent's <BgColor>:" << m_textColor;
     }
-
-    QString markAlign = context.selectString(node, "Align");
-    m_align = decodeAlignmentFlags(markAlign, Qt::AlignBottom | Qt::AlignHCenter);
-
-    m_text = context.selectString(node, "Text").arg(hotCue + 1);
+    {
+        auto markAlign = context.selectString(node, "Align");
+        m_align = decodeAlignmentFlags(markAlign, Qt::AlignBottom | Qt::AlignHCenter);
+    }
+    {
+        auto markText = context.selectString(node, "Text");
+        if(hotCue >= 1)
+            markText = markText.arg(hotCue+1);
+        m_text = markText;
+    }
     m_pixmapPath = context.selectString(node, "Pixmap");
     if (!m_pixmapPath.isEmpty()) {
         m_pixmapPath = context.getSkinPath(m_pixmapPath);

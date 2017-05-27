@@ -28,22 +28,24 @@ GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
                                        bool rgbRenderer)
         : QGLWidget(parent, SharedGLContext::getWidget()),
           WaveformWidgetAbstract(group) {
-    addRenderer<WaveformRenderBackground>();
-    addRenderer<WaveformRendererEndOfTrack>();
-    addRenderer<WaveformRendererPreroll>();
-    addRenderer<WaveformRenderMarkRange>();
-    if (rgbRenderer) {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererRGBSignal>();
-    } else {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererFilteredSignal>();
-    }
-    addRenderer<WaveformRenderBeat>();
-    addRenderer<WaveformRenderMark>();
-
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
     setAutoBufferSwap(false);
+
+    addRenderer(std::make_unique<WaveformRenderBackground>(this));
+    addRenderer(std::make_unique<WaveformRendererEndOfTrack>(this));
+    addRenderer(std::make_unique<WaveformRendererPreroll>(this));
+    addRenderer(std::make_unique<WaveformRenderMarkRange>(this));
+    if (rgbRenderer) {
+        auto sig = addRenderer(std::make_unique<GLSLWaveformRendererRGBSignal>(this));
+        signalRenderer_ = (GLSLWaveformRendererSignal*)sig;
+    } else {
+        auto sig = addRenderer(std::make_unique<GLSLWaveformRendererFilteredSignal>(this));
+        signalRenderer_ = (GLSLWaveformRendererSignal*)sig;
+    }
+    addRenderer(std::make_unique<WaveformRenderBeat>(this));
+    addRenderer(std::make_unique<WaveformRenderMark>(this));
 
     qDebug() << "Created QGLWidget. Context"
              << "Valid:" << context()->isValid()

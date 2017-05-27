@@ -27,7 +27,7 @@ bool controllerCompare(Controller *a, Controller *b);
 class ControllerManager : public QObject {
     Q_OBJECT
   public:
-    ControllerManager(UserSettingsPointer pConfig);
+    ControllerManager(UserSettingsPointer pConfig, QObject *parent = 0);
     virtual ~ControllerManager();
 
     QList<Controller*> getControllers() const;

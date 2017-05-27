@@ -59,7 +59,7 @@ bool controllerCompare(Controller *a,Controller *b) {
     return a->getName() < b->getName();
 }
 
-ControllerManager::ControllerManager(UserSettingsPointer pConfig)
+ControllerManager::ControllerManager(UserSettingsPointer pConfig, QObject * p)
         : QObject(),
           m_pConfig(pConfig),
           // WARNING: Do not parent m_pControllerLearningEventFilter to
@@ -82,7 +82,7 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     connect(&m_pollTimer, SIGNAL(timeout()),this, SLOT(pollDevices()));
 
     m_pThread = new QThread{};
-    m_pThread->setObjectName("Controller");
+    m_pThread->setObjectName("ControllerManagerThread");
 
     // Moves all children (including the poll timer) to m_pThread
     moveToThread(m_pThread);
@@ -91,14 +91,14 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     // audio directly, like when scratching
     m_pThread->start(QThread::HighPriority);
 
-    connect(this, SIGNAL(requestInitialize()),
-            this, SLOT(slotInitialize()));
-    connect(this, SIGNAL(requestSetUpDevices()),
-            this, SLOT(slotSetUpDevices()));
-    connect(this, SIGNAL(requestShutdown()),
-            this, SLOT(slotShutdown()));
-    connect(this, SIGNAL(requestSave(bool)),
-            this, SLOT(slotSavePresets(bool)));
+    connect(this, &ControllerManager::requestInitialize,
+            this, &ControllerManager::slotInitialize);
+    connect(this, &ControllerManager::requestSetUpDevices,
+            this, &ControllerManager::slotSetUpDevices);
+    connect(this, &ControllerManager::requestShutdown,
+            this, &ControllerManager::slotShutdown);
+    connect(this, &ControllerManager::requestSave,
+            this, &ControllerManager::slotSavePresets);
 
     // Signal that we should run slotInitialize once our event loop has started
     // up.
@@ -123,8 +123,7 @@ void ControllerManager::slotInitialize()
 
     // Initialize preset info parsers. This object is only for use in the main
     // thread. Do not touch it from within ControllerManager.
-    QStringList presetSearchPaths;
-    presetSearchPaths << userPresetsPath(m_pConfig)
+    auto presetSearchPaths = QStringList{}<< userPresetsPath(m_pConfig)
                       << resourcePresetsPath(m_pConfig);
     m_pMainThreadPresetEnumerator = QSharedPointer<PresetInfoEnumerator>(
         new PresetInfoEnumerator(presetSearchPaths));
@@ -170,7 +169,7 @@ void ControllerManager::updateControllerList()
     auto enumerators = m_enumerators;
     locker.unlock();
 
-    QList<Controller*> newDeviceList;
+    auto newDeviceList = QList<Controller*>{};
     for(auto pEnumerator: enumerators) {
         newDeviceList.append(pEnumerator->queryDevices());
     }
@@ -198,7 +197,7 @@ QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, boo
 
     // Create a list of controllers filtered to match the given input/output
     // options.
-    QList<Controller*> filteredDeviceList;
+    auto filteredDeviceList = QList<Controller*>{};
 
     for(auto  device: as_const(controllers)) {
         if ((bOutputDevices == device->isOutputDevice()) ||
@@ -215,7 +214,7 @@ void ControllerManager::slotSetUpDevices()
 
     updateControllerList();
     auto deviceList = getControllerList(false, true);
-    QSet<QString> filenames;
+    auto filenames = QSet<QString>{};
 
     for(auto pController: deviceList) {
         auto name = pController->getName();
@@ -249,8 +248,7 @@ void ControllerManager::slotSetUpDevices()
 
         qDebug() << "Opening controller:" << name;
 
-        int value = pController->open();
-        if (value != 0) {
+        if( pController->open()){
             qWarning() << "There was a problem opening" << name;
             continue;
         }
@@ -386,15 +384,14 @@ bool ControllerManager::loadPreset(Controller* pController,
 void ControllerManager::slotSavePresets(bool onlyActive)
 {
     auto deviceList = getControllerList(false, true);
-    QSet<QString> filenames;
+    auto filenames = QSet<QString>{};
 
     // TODO(rryan): This should be split up somehow but the filename selection
     // is dependent on all of the controllers to prevent over-writing each
     // other. We need a better solution.
     for(auto pController: as_const(deviceList)) {
-        if (onlyActive && !pController->isOpen()) {
+        if (onlyActive && !pController->isOpen())
             continue;
-        }
         auto name = pController->getName();
         auto filename = firstAvailableFilename(
             filenames, presetFilenameFromName(name));
@@ -518,7 +515,6 @@ bool ControllerManager::importScript(const QString& scriptPath,
                  << "local preset path:" << destinationPath;
         return false;
     }
-
     *newScriptFileName = scriptFileName;
     return true;
 }

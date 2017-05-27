@@ -122,7 +122,7 @@ class ControlValueAtomicBase<T, true> {
   public:
     T getValue() const
     {
-        return m_value;
+        return m_value.load();
     }
     void setValue(const T& value)
     {

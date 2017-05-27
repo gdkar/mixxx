@@ -19,13 +19,7 @@ GLVSyncTestWidget::GLVSyncTestWidget(const char* group, QWidget* parent)
     : QGLWidget(parent, SharedGLContext::getWidget()),
       WaveformWidgetAbstract(group) {
 
-//    addRenderer<WaveformRenderBackground>(); // 172 µs
-//    addRenderer<WaveformRendererEndOfTrack>(); // 677 µs 1145 µs (active)
-//    addRenderer<WaveformRendererPreroll>(); // 652 µs 2034 µs (active)
-//    addRenderer<WaveformRenderMarkRange>(); // 793 µs
-    addRenderer<GLVSyncTestRenderer>(); // 841 µs // 2271 µs
-//    addRenderer<WaveformRenderMark>(); // 711 µs
-//    addRenderer<WaveformRenderBeat>(); // 1183 µs
+    addRenderer(std::make_unique<GLVSyncTestRenderer>(this));
 
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
