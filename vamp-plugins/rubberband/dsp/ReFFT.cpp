@@ -141,25 +141,25 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
         return make_pair(r0 * r1 - i0 * i1, r0 * i1 + r1 * i0);
         };
     auto _pcmul = [&](auto x0, auto x1) {
-        return _cmul(std::get<0>(x0),std::get<1>(x0),
-                     std::get<0>(x1),std::get<1>(x1));
+        return _cmul(get<0>(x0),get<1>(x0),
+                     get<0>(x1),get<1>(x1));
     };
     auto _cinv = [e=m_epsilon](auto r, auto i) {
-        auto n = bs::rec(bs::sqr(r) + bs::sqr(i) + e);//bs::Eps<float>());
+        auto n = bs::rec(bs::sqr(r) + bs::sqr(i) + e);
         return make_pair(r * n , -i * n);
     };
     dst.reset(m_size, _when);
-
-    for(auto i = 0; i < m_coef; i += w ) {
+    auto i = 0;
+    for(i = 0; i < m_coef; i += w ) {
         auto _X_r = reg(_real + i), _X_i = reg(_imag + i);
         bs::store(_X_r, dst.X_real() + i);
         bs::store(_X_i, dst.X_imag() + i);
         {
-//            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
             auto _X_mag = bs::hypot(_X_i,_X_r);
+            auto _X_Phi = bs::atan2(_X_i,_X_r);
             bs::store(_X_mag, dst.mag_data() + i);
             bs::store(bs::log(_X_mag), dst.M_data() + i);
-            bs::store(bs::atan2(_X_i,_X_r), dst.Phi_data() + i);
+            bs::store(bs::if_zero_else(bs::is_nan(_X_Phi),_X_Phi), dst.Phi_data() + i);
         }
 
         tie(_X_r, _X_i) = _cinv(_X_r,_X_i);
@@ -174,20 +174,20 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
         bs::store(-get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
 
-        auto _TDh_over_X    = std::get<0>(_cmul( reg(_real_TDh + i),reg(_imag_TDh + i) ,_X_r, _X_i ));
-        auto _Th_Dh_over_X2 = std::get<0>(_pcmul(_Th_over_X,_Dh_over_X));
+        auto _TDh_over_X    = get<0>(_cmul( reg(_real_TDh + i),reg(_imag_TDh + i) ,_X_r, _X_i ));
+        auto _Th_Dh_over_X2 = get<0>(_pcmul(_Th_over_X,_Dh_over_X));
 
         bs::store(_TDh_over_X - _Th_Dh_over_X2,&dst.d2Phi_dtdw[0] + i);    }
-    for(auto i = 0; i < m_coef; ++i) {
+    for(i = 0; i < m_coef; ++i) {
         auto _X_r = *(_real + i), _X_i = *(_imag + i);
         bs::store(_X_r, dst.X_real() + i);
         bs::store(_X_i, dst.X_imag() + i);
         {
             auto _X_mag = bs::hypot(_X_i,_X_r);
-//            auto _X_mag = bs::sqr(_X_i) + bs::sqr(_X_r);
+            auto _X_Phi = bs::atan2(_X_i,_X_r);
             bs::store(_X_mag, dst.mag_data() + i);
             bs::store(bs::log(_X_mag), dst.M_data() + i);
-            bs::store(bs::atan2(_X_i,_X_r), dst.Phi_data() + i);
+            bs::store(bs::if_zero_else(bs::is_nan(_X_Phi),_X_Phi), dst.Phi_data() + i);
         }
         tie(_X_r, _X_i) = _cinv(_X_r,_X_i);
 
@@ -201,8 +201,8 @@ void ReFFT::_finish_process( ReSpectrum & dst, int64_t _when )
         bs::store(-get<1>(_Th_over_X), &dst.dM_dw  [0] + i);
         bs::store( get<0>(_Th_over_X), &dst.dPhi_dw[0] + i);
 
-        auto _TDh_over_X    = std::get<0>(_cmul( *(_real_TDh + i),*(_imag_TDh + i) ,_X_r, _X_i ));
-        auto _Th_Dh_over_X2 = std::get<0>(_pcmul(_Th_over_X,_Dh_over_X));
+        auto _TDh_over_X    = get<0>(_cmul( *(_real_TDh + i),*(_imag_TDh + i) ,_X_r, _X_i ));
+        auto _Th_Dh_over_X2 = get<0>(_pcmul(_Th_over_X,_Dh_over_X));
 
         bs::store(_TDh_over_X - _Th_Dh_over_X2,&dst.d2Phi_dtdw[0] + i);
     }
@@ -237,9 +237,6 @@ void ReFFT::updateGroupDelay(ReSpectrum &spec)
         auto _res = bs::is_less(m,decltype(m)(ep));
         return bs::if_zero_else_one(_res);
     });
-/*    std::transform(_mag,_mag + m_coef, _lgdw,[ep](auto m) {
-        return (m > ep) ? 1.0f : 0.0f;
-    });*/
     bs::transform(_lgdw,_lgdw + m_coef, _dPhi_dw, _lgda,bs::multiplies);
 
     std::partial_sum(_lgda,_lgda+m_coef,_lgda);
