@@ -22,7 +22,7 @@
 #include "maths/MathUtilities.h"
 #include <valarray>
 
-static constexpr float EPS = 1e-6f;
+constexpr float EPS = 1e-6f;
 //#define   EPS float(1e-6) // just some arbitrary small number
 
 TempoTrackV2::TempoTrackV2(float rate, size_t increment, size_t frame_size) :
