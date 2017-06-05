@@ -196,7 +196,7 @@ void Window<T>::encache()
         }
         for (auto i = N/4; i <= N/2; ++i) {
             auto wn = i - N/2;
-            auto m = 1.0 - 6 * bs::pow(wn / (T(N)/2), 2) * (1.0 - abs(wn) / (T(N)/2));
+            auto m = 1.0 - 6 * bs::pow(wn / (T(N)/2), 2) * (1.0 - bs::abs(wn) / (T(N)/2));
             m_cache[i]   = m;
             m_cache[N-i] = m;
         }

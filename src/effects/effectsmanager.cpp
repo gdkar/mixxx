@@ -284,6 +284,7 @@ void EffectsManager::setup() {
     pEffect = instantiateEffect("org.mixxx.effects.autopan");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
+
 }
 
 bool EffectsManager::writeRequest(EffectsRequest* request) {

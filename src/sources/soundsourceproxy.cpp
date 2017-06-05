@@ -201,7 +201,7 @@ void SoundSourceProxy::loadPlugins()
     if (kLogger.infoEnabled()) {
         for (auto &&supportedFileExtension: supportedFileExtensions) {
             kLogger.info() << "SoundSource providers for file extension" << supportedFileExtension;
-            fo (auto && registration : s_soundSourceProviders.getRegistrationsForFileExtension(
+            for(auto && registration : s_soundSourceProviders.getRegistrationsForFileExtension(
                             supportedFileExtension)){
                 if (registration.getPluginLibrary()) {
                     kLogger.info() << " " << static_cast<int>(registration.getProviderPriority())
