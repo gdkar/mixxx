@@ -15,4 +15,4 @@ ControllerEnumerator::ControllerEnumerator(QObject *p)
 {
 }
 
-ControllerEnumerator::~ControllerEnumerator() { }
+ControllerEnumerator::~ControllerEnumerator() = default;
