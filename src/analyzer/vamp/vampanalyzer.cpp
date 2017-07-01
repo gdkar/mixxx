@@ -26,8 +26,8 @@ VampAnalyzer::~VampAnalyzer()
 {
 }
 
-bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
-                        const int samplerate, const int TotalSamples, bool bFastAnalysis,
+bool VampAnalyzer::Init(QString pluginlibrary, QString pluginid,
+                        int samplerate, int TotalSamples, bool bFastAnalysis,
                         QString options)
 {
     m_iRemainingSamples = TotalSamples;
@@ -66,15 +66,15 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
     auto pluginLoader = mixxx::VampPluginLoader{};
     m_key = pluginLoader.composePluginKey(pluginlibrary.toStdString(),
                                      plugin.toStdString());
-    m_plugin = pluginLoader.loadPlugin(m_key, m_rate,
-                                  Vamp::HostExt::PluginLoader::ADAPT_ALL_SAFE);
+    m_plugin.reset(pluginLoader.loadPlugin(m_key, m_rate,
+                                  Vamp::HostExt::PluginLoader::ADAPT_ALL_SAFE));
 
     if (!m_plugin) {
         qDebug() << "VampAnalyzer: Cannot load Vamp Plug-in.";
         qDebug() << "Please copy libmixxxminimal.so from build dir to one of the following:";
 
         for (auto && sub : Vamp::PluginHostAdapter::getPluginPath()) {
-            qDebug() << QString::fromStdString(path[i]);
+            qDebug() << QString::fromStdString(sub);
         }
         return false;
     }
@@ -128,7 +128,7 @@ bool VampAnalyzer::Init(const QString pluginlibrary, const QString pluginid,
     return true;
 }
 
-bool VampAnalyzer::Process(const CSAMPLE *pIn, const int iLen)
+bool VampAnalyzer::Process(const CSAMPLE *pIn, int iLen)
 {
     if (!m_plugin) {
         qDebug() << "VampAnalyzer: Plugin not loaded";
@@ -228,7 +228,7 @@ bool VampAnalyzer::End()
     return true;
 }
 
-bool VampAnalyzer::SetParameter(const QString parameter, double value)
+bool VampAnalyzer::SetParameter(QString parameter, double value)
 {
     if(m_plugin) {
         m_plugin->setParameter(parameter.toStdString(), float(value));
@@ -284,13 +284,8 @@ bool VampAnalyzer::SetParameters(QString parameters)
 {
     return SetParameters(parameters.split(" "));
 }
-<<<<<<< HEAD
-
-void VampAnalyzer::SelectOutput(const int outputnumber) {
-=======
 void VampAnalyzer::SelectOutput(int outputnumber)
 {
->>>>>>> pass parameters to vamp plugins
     auto outputs = m_plugin->getOutputDescriptors();
     if (outputnumber >= 0 && outputnumber < int(outputs.size()))
         m_iOutput = outputnumber;

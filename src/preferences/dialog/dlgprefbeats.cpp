@@ -238,7 +238,7 @@ void DlgPrefBeats::populate()
 
     for (auto iplugin=0ul; iplugin < plugins.size(); iplugin++) {
         // TODO(XXX): WTF, 48000
-        auto plugin = std::unique_ptr<Vamp::Plugin>(loader->loadPlugin(plugins[iplugin], 48000));
+        auto plugin = std::unique_ptr<Vamp::Plugin>(vampPluginLoader.loadPlugin(plugins[iplugin], 48000));
         //TODO: find a way to add beat trackers only
         if (plugin) {
             auto outputs = plugin->getOutputDescriptors();

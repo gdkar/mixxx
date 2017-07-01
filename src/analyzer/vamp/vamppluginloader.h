@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 #include <utility>
-
+#include <QMutex>
 namespace mixxx {
 
 class VampPluginLoader final {

@@ -35,11 +35,11 @@ class VampAnalyzer {
     VampAnalyzer();
     virtual ~VampAnalyzer();
 
-    bool Init(const QString pluginlibrary, const QString pluginid,
-              const int samplerate, const int TotalSamples, bool bFastAnalysis, QString options = QString{});
-    bool Process(const CSAMPLE *pIn, const int iLen);
+    bool Init(QString pluginlibrary, QString pluginid,
+              int samplerate, int TotalSamples, bool bFastAnalysis, QString options = QString{});
+    bool Process(const CSAMPLE *pIn, int iLen);
     bool End();
-    bool SetParameter(const QString parameter, const double value);
+    bool SetParameter(QString parameter, double value);
     bool SetParameters(QStringList parametrs);
     bool SetParameters(QString parametrs);
 
@@ -49,7 +49,7 @@ class VampAnalyzer {
     QVector<double> GetFirstValuesVector();
     QVector<double> GetLastValuesVector();
 
-    void SelectOutput(const int outputnumber);
+    void SelectOutput(int outputnumber);
 
   private:
     PluginKey m_key;
