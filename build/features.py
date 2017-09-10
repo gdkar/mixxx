@@ -1219,7 +1219,8 @@ class Optimize(Feature):
             build.env.Append(CCFLAGS='-O3')
             build.env.Append(CCFLAGS='-ffast-math')
             build.env.Append(CCFLAGS='-funroll-loops')
-
+            build.env.Append(CCFLAGS='-march=native')
+            build.env.Append(LINKFLAGS='-latomic')
             # set -fomit-frame-pointer when we don't profile and are not using
             # Clang sanitizers.
             # Note: It is only included in -O on machines where it does not

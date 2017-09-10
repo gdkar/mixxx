@@ -386,7 +386,7 @@ namespace MathUtilities
     template<class T>
     constexpr std::enable_if_t<
         std::is_integral<T>::value
-      , bool
+      , T
         > nextPowerOfTwo(T x)
     {
         return T{1} << ilog2(x-T{1});
@@ -394,7 +394,7 @@ namespace MathUtilities
     template<class T>
     constexpr std::enable_if_t<
         std::is_integral<T>::value
-      , bool
+      , T
         > previousPowerOfTwo(T x)
     {
         return T{1} << (ilog2(x)-1);
@@ -411,12 +411,14 @@ namespace MathUtilities
     template<class T>
     constexpr std::enable_if_t<
         std::is_integral<T>::value
-      , bool
+      , T
         > nearestPowerOfTwo(T x)
     {
-        auto _next = nextPowerOfTwo(x);
-        auto _prev = previousPowerOfTwo(x);
-        return std::abs(_next - x) <= std::abs(x - _prev) ? _next : _prev;
+        using S = typename std::make_signed<T>::type;
+        auto s = S(x);
+        auto _next = nextPowerOfTwo(s);
+        auto _prev = previousPowerOfTwo(s);
+        return std::abs(_next - s) <= std::abs(s - _prev) ? T(_next) : T(_prev);
     }
 
     /**

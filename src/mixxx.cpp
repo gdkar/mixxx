@@ -76,9 +76,9 @@
 #endif
 
 // static
-const int MixxxMainWindow::kMicrophoneCount = 4;
+const int MixxxMainWindow::kMicrophoneCount = 2;
 // static
-const int MixxxMainWindow::kAuxiliaryCount = 4;
+const int MixxxMainWindow::kAuxiliaryCount = 2;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         : m_pWidgetParent(nullptr),
@@ -178,7 +178,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     auto  pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
     // Sets up the default EffectChains and EffectRacks (long)
-    m_pEffectsManager->setupDefaults();
+    m_pEffectsManager->setup();
     launchProgress(8);
     // Initialize player device
     // while this is created here, setupDevices needs to be called sometime
