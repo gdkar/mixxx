@@ -21,7 +21,7 @@ LibraryFeature::~LibraryFeature() {
 }
 
 QStringList LibraryFeature::getPlaylistFiles(QFileDialog::FileMode mode) const {
-    auto lastPlaylistDirectory = m_pConfig->getValue(
+    QString lastPlaylistDirectory = m_pConfig->getValue(
             ConfigKey("[Library]", "LastImportExportPlaylistDirectory"),
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
@@ -34,7 +34,6 @@ QStringList LibraryFeature::getPlaylistFiles(QFileDialog::FileMode mode) const {
     dialog.setModal(true);
 
     // If the user refuses return
-    if (! dialog.exec())
-        return QStringList();
+    if (! dialog.exec()) return QStringList();
     return dialog.selectedFiles();
 }

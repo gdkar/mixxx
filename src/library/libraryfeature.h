@@ -29,10 +29,10 @@ class KeyboardEventFilter;
 class LibraryFeature : public QObject {
   Q_OBJECT
   public:
-    LibraryFeature(QObject* parent = nullptr);
+    LibraryFeature(QObject* parent = NULL);
 
     LibraryFeature(UserSettingsPointer pConfig,
-                   QObject* parent = nullptr);
+                   QObject* parent = NULL);
     virtual ~LibraryFeature();
 
     virtual QVariant title() = 0;
@@ -117,7 +117,7 @@ class LibraryFeature : public QObject {
     void enableCoverArtDisplay(bool);
     void trackSelected(TrackPointer pTrack);
 
-  private:
+  private: 
     QStringList getPlaylistFiles(QFileDialog::FileMode mode) const;
 
 };

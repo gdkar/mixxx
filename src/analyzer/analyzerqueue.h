@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QQueue>
 #include <QWaitCondition>
+#include <QSemaphore>
 
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "util/db/dbconnectionpool.h"
 #include "util/samplebuffer.h"
 #include "util/memory.h"
-#include "util/semaphore.hpp"
 
 class Analyzer;
 class AnalysisDao;
@@ -56,7 +56,7 @@ class AnalyzerQueue : public QThread {
         TrackPointer current_track;
         int track_progress; // in 0.1 %
         int queue_size;
-        mixxx::MSemaphore sema;
+        QSemaphore sema;
     };
 
     mixxx::DbConnectionPoolPtr m_pDbConnectionPool;
@@ -73,14 +73,15 @@ class AnalyzerQueue : public QThread {
     bool doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudioSource);
     void emitUpdateProgress(TrackPointer tio, int progress);
     void emptyCheck();
+    void updateSize();
 
     bool m_exit;
-    std::atomic<bool> m_aiCheckPriorities;
+    QAtomicInt m_aiCheckPriorities;
 
     SampleBuffer m_sampleBuffer;
 
     // The processing queue and associated mutex
-    QQueue<TrackPointer> m_tioq;
+    QQueue<TrackPointer> m_queuedTracks;
     QMutex m_qm;
     QWaitCondition m_qwait;
     struct progress_info m_progressInfo;

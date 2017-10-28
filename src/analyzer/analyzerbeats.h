@@ -9,7 +9,7 @@
 #define ANALYZER_ANALYZERBEATS_H
 
 #include <QHash>
-#include <memory>
+
 #include "analyzer/analyzer.h"
 #include "analyzer/vamp/vampanalyzer.h"
 #include "preferences/usersettings.h"
@@ -17,7 +17,7 @@
 class AnalyzerBeats: public Analyzer {
   public:
     AnalyzerBeats(UserSettingsPointer pConfig);
-   ~AnalyzerBeats() override;
+    virtual ~AnalyzerBeats();
 
     bool initialize(TrackPointer tio, int sampleRate, int totalSamples) override;
     bool isDisabledOrLoadStoredSuccess(TrackPointer tio) const override;
@@ -31,9 +31,8 @@ class AnalyzerBeats: public Analyzer {
     QVector<double> correctedBeats(QVector<double> rawbeats);
 
     UserSettingsPointer m_pConfig;
-    std::unique_ptr<VampAnalyzer> m_pVamp;
+    VampAnalyzer* m_pVamp;
     QString m_pluginId;
-    QString m_pluginOpts;
     bool m_bPreferencesReanalyzeOldBpm;
     bool m_bPreferencesFixedTempo;
     bool m_bPreferencesOffsetCorrection;

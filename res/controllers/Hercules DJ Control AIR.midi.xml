@@ -61,16 +61,6 @@
                 </options>
             </control>
             <control>
-                <status>0x90</status>
-                <midino>0x1</midino>
-                <group>[Channel1]</group>
-                <key>flanger</key>
-                <description>Flanger Deck A</description>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
                 <status>0xb0</status>
                 <midino>0x33</midino>
                 <group>[Channel2]</group>
@@ -316,16 +306,6 @@
                 <group>[Channel1]</group>
                 <key>rate_perm_up</key>
                 <description>Rate Perm Up Deck A</description>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <status>0xb0</status>
-                <midino>0x3f</midino>
-                <group>[Flanger]</group>
-                <key>lfoDepth</key>
-                <description>Flanger Depth</description>
                 <options>
                     <normal/>
                 </options>
