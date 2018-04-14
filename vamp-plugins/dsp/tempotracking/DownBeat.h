@@ -29,7 +29,7 @@ class FFTReal;
  * This class takes an input audio signal and a sequence of beat
  * locations (calculated e.g. by TempoTrackV2) and estimates which of
  * the beat locations are downbeats (first beat of the bar).
- *
+ * 
  * The input audio signal is expected to have been downsampled to a
  * very low sampling rate (e.g. 2700Hz).  A utility function for
  * downsampling and buffering incoming block-by-block audio is
@@ -57,7 +57,7 @@ public:
 
     /**
      * Estimate which beats are down-beats.
-     *
+     * 
      * audio contains the input audio stream after downsampling, and
      * audioLength contains the number of samples in this downsampled
      * stream.
@@ -71,7 +71,7 @@ public:
      */
     void findDownBeats(const float *audio, // downsampled
                        size_t audioLength, // after downsampling
-                       const vector<float> &beats,
+                       const vector<double> &beats,
                        vector<int> &downbeats);
 
     /**
@@ -83,19 +83,19 @@ public:
      * difference between region prior to the beat's nominal position
      * and the region following it.
      */
-    void getBeatSD(vector<float> &beatsd) const;
-
+    void getBeatSD(vector<double> &beatsd) const;
+    
     /**
      * For your downsampling convenience: call this function
      * repeatedly with input audio blocks containing dfIncrement
      * samples at the original sample rate, to decimate them to the
      * downsampled rate and buffer them within the DownBeat class.
-     *
+     *     
      * Call getBufferedAudio() to retrieve the results after all
      * blocks have been processed.
      */
     void pushAudioBlock(const float *audio);
-
+    
     /**
      * Retrieve the accumulated audio produced by pushAudioBlock calls.
      */
@@ -109,11 +109,11 @@ public:
 private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;
-    typedef vector<float> d_vec_t;
-    typedef vector<vector<float> > d_mat_t;
+    typedef vector<double> d_vec_t;
+    typedef vector<vector<double> > d_mat_t;
 
     void makeDecimators();
-    float measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
+    double measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
 
     int m_bpb;
     float m_rate;
@@ -126,10 +126,10 @@ private:
     size_t m_bufsiz;
     size_t m_buffill;
     size_t m_beatframesize;
-    float *m_beatframe;
+    double *m_beatframe;
     FFTReal *m_fft;
-    float *m_fftRealOut;
-    float *m_fftImagOut;
+    double *m_fftRealOut;
+    double *m_fftImagOut;
     d_vec_t m_beatsd;
 };
 

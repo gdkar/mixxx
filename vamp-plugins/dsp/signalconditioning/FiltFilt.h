@@ -23,55 +23,25 @@
  * through a filter specified by the given FilterConfig structure (see
  * Filter) and then processing it again in reverse.
  */
-template<class T>
-class FiltFilt
+class FiltFilt  
 {
 public:
-    FiltFilt( FilterConfig Config )
-    : m_ord(Config.ord)
-    , m_filter(Config)
-    , m_filtScratchPre(3 * m_ord)
-    , m_filtScratchPost(3 * m_ord)
-    , m_filterConfig{Config}
-    { }
-    FiltFilt() = default;
-    FiltFilt(FiltFilt &&) noexcept = default;
-    FiltFilt&operator=(FiltFilt&&) noexcept = default;
-    virtual ~FiltFilt() = default;
+    FiltFilt( FilterConfig Config );
+    virtual ~FiltFilt();
 
-    void reset()
-    {
-        m_filter.reset();
-    }
-    template<class I, class O>
-    void process( I src, O dst, size_t length )
-    {
-        auto send = src + length;
-        auto dend = dst + length;
-        auto rdend = std::make_reverse_iterator(dend);
-        std::transform(src,src + m_filtScratchPre.size(),m_filtScratchPre.rend(),
-            [offset=(*src * 2)](auto x){return offset - x;});
-        std::transform(send - m_filtScratchPost.size(),send,
-            m_filtScratchPost.rend(),
-            [offset=(*(send-1)*2)](auto x){return offset - x;});
-        m_filter.reset();
-        m_filter.process(m_filtScratchPre.begin(), m_filtScratchPre.begin(), m_filtScratchPre.size());
-        m_filter.process(src,dst,length);
-        m_filter.process(m_filtScratchPost.begin(),m_filtScratchPost.begin(),m_filtScratchPost.size());
-        m_filter.reset();
-        m_filter.process(m_filtScratchPost.rbegin(),m_filtScratchPost.rbegin(),m_filtScratchPost.size());
-        m_filter.process(rdend,rdend,length);
-        m_filter.process(m_filtScratchPre.rbegin(),m_filtScratchPre.rbegin(),m_filtScratchPre.size());
-    }
+    void reset();
+    void process( double* src, double* dst, unsigned int length );
 
 private:
+    void initialise( FilterConfig Config );
+    void deInitialise();
 
-    size_t m_ord;
+    unsigned int m_ord;
 
-    Filter<T>       m_filter;
+    Filter* m_filter;
 
-    std::vector<T>  m_filtScratchPre;
-    std::vector<T>  m_filtScratchPost;
+    double* m_filtScratchIn;
+    double* m_filtScratchOut;
 
     FilterConfig m_filterConfig;
 };

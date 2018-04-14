@@ -12,291 +12,272 @@
     License, or (at your option) any later version.  See the file
     COPYING included with this distribution for more information.
 */
-#include "maths/MathUtilities.h"
+
 #include "DetectionFunction.h"
 #include <cstring>
 
-using namespace RBMixxxVamp;
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 DetectionFunction::DetectionFunction( DFConfig Config ) :
-    m_DFType(Config.DFType)
-   ,m_dataLength(Config.frameLength)
-   ,m_halfLength(m_dataLength/2+1)
-   ,m_stepSize(Config.stepSize)
-   ,m_dbRise(Config.dbRise)
-   ,m_whiten(Config.adaptiveWhitening)
-   ,m_whitenRelaxCoeff(Config.whiteningRelaxCoeff)
-   ,m_whitenFloor(Config.whiteningFloor)
-   ,m_fft(ReFFT::Kaiser(m_dataLength,4.0f))
-
+    m_window(0)
 {
-    if (m_whitenRelaxCoeff <= 0)
-        m_whitenRelaxCoeff = 0.9997;
-    if (m_whitenFloor <= 0)
-        m_whitenFloor = 0.01;
+    m_magHistory = NULL;
+    m_phaseHistory = NULL;
+    m_phaseHistoryOld = NULL;
+    m_magPeaks = NULL;
 
-    m_magPeaks = std::make_unique<float[]>( m_halfLength );
+    initialise( Config );
 }
-DetectionFunction::~DetectionFunction() = default;
 
-float DetectionFunction::processTimeDomain(const float*samples)
+DetectionFunction::~DetectionFunction()
 {
-    m_spec.push_back();
-    auto &spec = m_spec.back();
-    m_fft.process(samples, spec, m_position + m_dataLength/2);
-    m_position += m_stepSize;
+    deInitialise();
+}
 
-    if (m_whiten)
-        whiten();
+
+void DetectionFunction::initialise( DFConfig Config )
+{
+    m_dataLength = Config.frameLength;
+    m_halfLength = m_dataLength/2 + 1;
+
+    m_DFType = Config.DFType;
+    m_stepSize = Config.stepSize;
+    m_dbRise = Config.dbRise;
+
+    m_whiten = Config.adaptiveWhitening;
+    m_whitenRelaxCoeff = Config.whiteningRelaxCoeff;
+    m_whitenFloor = Config.whiteningFloor;
+    if (m_whitenRelaxCoeff < 0) m_whitenRelaxCoeff = 0.9997;
+    if (m_whitenFloor < 0) m_whitenFloor = 0.01;
+
+    m_magHistory = new double[ m_halfLength ];
+    memset(m_magHistory,0, m_halfLength*sizeof(double));
+		
+    m_phaseHistory = new double[ m_halfLength ];
+    memset(m_phaseHistory,0, m_halfLength*sizeof(double));
+
+    m_phaseHistoryOld = new double[ m_halfLength ];
+    memset(m_phaseHistoryOld,0, m_halfLength*sizeof(double));
+
+    m_magPeaks = new double[ m_halfLength ];
+    memset(m_magPeaks,0, m_halfLength*sizeof(double));
+
+    m_phaseVoc = new PhaseVocoder(m_dataLength, m_stepSize);
+
+    m_magnitude = new double[ m_halfLength ];
+    m_thetaAngle = new double[ m_halfLength ];
+    m_unwrapped = new double[ m_halfLength ];
+
+    m_window = new Window<double>(HanningWindow, m_dataLength);
+    m_windowed = new double[ m_dataLength ];
+}
+
+void DetectionFunction::deInitialise()
+{
+    delete [] m_magHistory ;
+    delete [] m_phaseHistory ;
+    delete [] m_phaseHistoryOld ;
+    delete [] m_magPeaks ;
+
+    delete m_phaseVoc;
+
+    delete [] m_magnitude;
+    delete [] m_thetaAngle;
+    delete [] m_windowed;
+    delete [] m_unwrapped;
+
+    delete m_window;
+}
+
+double DetectionFunction::processTimeDomain(const double *samples)
+{
+    m_window->cut(samples, m_windowed);
+
+    m_phaseVoc->processTimeDomain(m_windowed, 
+                                  m_magnitude, m_thetaAngle, m_unwrapped);
+
+    if (m_whiten) whiten();
+
+    return runDF();
+}
+
+double DetectionFunction::processFrequencyDomain(const double *reals,
+                                                 const double *imags)
+{
+    m_phaseVoc->processFrequencyDomain(reals, imags,
+                                       m_magnitude, m_thetaAngle, m_unwrapped);
+
+    if (m_whiten) whiten();
 
     return runDF();
 }
 
 void DetectionFunction::whiten()
 {
-    if(m_spec.empty())
-        return;
-    auto &spec = m_spec.back();
-    auto mbeg = spec.mag_data(), mend = mbeg + m_halfLength;
-    auto pbeg = m_magPeaks.get();//,pend = pbeg + m_halfLength;
-    bs::transform(mbeg,mend, pbeg,pbeg,
-        [&](auto m, auto peak) {
-            auto npeak = bs::if_else(m < peak,m + (peak-m)*m_whitenRelaxCoeff, m);
-            return bs::max(npeak, m_whitenFloor);
-        });
-    bs::transform(mbeg,mend, pbeg,mbeg,bs::divides);
-    bs::transform(mbeg,mend, spec.M_data(),bs::log);
+    for (unsigned int i = 0; i < m_halfLength; ++i) {
+        double m = m_magnitude[i];
+        if (m < m_magPeaks[i]) {
+            m = m + (m_magPeaks[i] - m) * m_whitenRelaxCoeff;
+        }
+        if (m < m_whitenFloor) m = m_whitenFloor;
+        m_magPeaks[i] = m;
+        m_magnitude[i] /= m;
+    }
 }
-float DetectionFunction::runDF()
+
+double DetectionFunction::runDF()
 {
-    auto retVal = 0.f;
-    switch( DFType(m_DFType) )
+    double retVal = 0;
+
+    switch( m_DFType )
     {
-    case (DFType::NONE):
-        break;
-    case (DFType::HFC):
-	retVal = HFC();
+    case DF_HFC:
+	retVal = HFC( m_halfLength, m_magnitude);
 	break;
-    case (DFType::SPECDIFF):
-	retVal = specDiff();
+	
+    case DF_SPECDIFF:
+	retVal = specDiff( m_halfLength, m_magnitude);
 	break;
-    case (DFType::SPECDERIV):
-	retVal = specDeriv();
+	
+    case DF_PHASEDEV:
+        // Using the instantaneous phases here actually provides the
+        // same results (for these calculations) as if we had used
+        // unwrapped phases, but without the possible accumulation of
+        // phase error over time
+	retVal = phaseDev( m_halfLength, m_thetaAngle);
 	break;
-    case (DFType::PHASEDEV):
-	retVal = phaseDev();
+	
+    case DF_COMPLEXSD:
+	retVal = complexSD( m_halfLength, m_magnitude, m_thetaAngle);
 	break;
-    case (DFType::D2PHI):
-	retVal = d2Phi();
-	break;
-    case (DFType::GROUPDELAY):
-	retVal = groupDelay();
-	break;
-    case (DFType::COMPLEXSD):
-	retVal = complexSD();
-	break;
-    case (DFType::BROADBAND):
-        retVal = broadband();
-        break;
-    default:
-        std::cout << "unknown DetectionFunction value " << int(m_DFType) << std::endl;
+
+    case DF_BROADBAND:
+        retVal = broadband( m_halfLength, m_magnitude);
         break;
     }
-
+	
     return retVal;
 }
 
-float DetectionFunction::HFC()
+double DetectionFunction::HFC(unsigned int length, double *src)
 {
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len   = m_spec.back().coefficients();
-    auto scale_factor = 2.0f / (bs::sqr(float(len)));
-    auto &spec = m_spec.back();
-    auto src   = spec.mag_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    for ( ; i + w <= len; i += w)
-        acc += reg(src + i) * bs::enumerate<reg>(i + 1);
+    unsigned int i;
+    double val = 0;
 
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i )
-        result += src[i] * i;
-
-    return result * scale_factor;
+    for( i = 0; i < length; i++)
+    {
+	val += src[ i ] * ( i + 1);
+    }
+    return val;
 }
 
-float DetectionFunction::specDiff()
+double DetectionFunction::specDiff(unsigned int length, double *src)
 {
-    if(m_spec.size() < 2)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto &spec = m_spec.back();
-    auto &pspec = m_spec[-2];
-    auto len   = spec.coefficients();
-    auto src   = spec.mag_data();
-    auto psrc  = pspec.mag_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    auto hwr = [](auto x){return x + bs::abs(x);};
-    for ( ; i + w <= len; i += w)
-        acc += hwr(bs::sqr_abs(reg(src + i)) - bs::sqr_abs(reg(psrc + i)));
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i )
-        result += hwr(bs::sqr_abs(*(src + i)) - bs::sqr_abs(*(psrc + i)));
-    return result;
-}
-float DetectionFunction::phaseDev()
-{
-    if(m_spec.size() < 3)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len    = m_spec[-1].coefficients();
-    auto src    = m_spec[-1].Phi_data();
-    auto psrc   = m_spec[-2].Phi_data();
-    auto ppsrc  = m_spec[-3].Phi_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    for ( ; i + w <= len; i += w) {
-        auto tmpPhase = reg(src + i) - reg(2)*reg(psrc + i) + reg(ppsrc + i);
-        acc += bs::abs(princarg(tmpPhase));
-    }
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i ) {
-        auto tmpPhase = *(src + i) - 2*(*(psrc + i)) + *(ppsrc + i);
-        result  += bs::abs(princarg(tmpPhase));
-    }
-    return result;
-}
-float DetectionFunction::groupDelay()
-{
-    if(m_spec.size() < 1)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len    = m_spec[-1].coefficients();
-    auto src    = m_spec[-1].dPhi_dw_data();
-    auto mag    = m_spec[-1].mag_data();
+    unsigned int i;
+    double val = 0.0;
+    double temp = 0.0;
+    double diff = 0.0;
 
-    auto i = 0;
-    auto acc = reg(0.f);
-    auto wacc = reg(0.f);
-    for ( ; i + w <= len; i += w) {
-        auto _m = bs::sqrt(reg(mag + i));
-        acc += reg(src + i) * _m;
-        wacc += _m;
-//        bs::abs(reg(src + i) - reg(psrc + i));
+    for( i = 0; i < length; i++)
+    {
+	temp = fabs( (src[ i ] * src[ i ]) - (m_magHistory[ i ] * m_magHistory[ i ]) );
+		
+	diff= sqrt(temp);
+
+        // (See note in phaseDev below.)
+
+        val += diff;
+
+	m_magHistory[ i ] = src[ i ];
     }
-    auto result = bs::sum(acc);
-    auto wresult = bs::sum(wacc);
-    for ( ; i <= len; ++i ) {
-        auto _m = bs::sqrt(*(mag + i));
-        result += *(src + i) * _m;
-        wresult += _m;
-    }
-    if(wresult) {
-        return ( len * 2 - (result / wresult));
-    }else{
-        return 0.0f;
-    }
+
+    return val;
 }
 
-float DetectionFunction::specDeriv()
+
+double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 {
-    if(m_spec.size() < 1)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len    = m_spec[-1].coefficients();
-    auto dmag   = m_spec[-1].dM_dt_data();
-    auto mag    = m_spec[-1].mag_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    auto hwr = [](auto x){return x + bs::abs(x);};
-    for ( ; i + w <= len; i += w)
-        acc += bs::abs(reg(dmag + i) * reg(mag + i));
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i )
-        result += bs::abs(*(dmag + i) * *(mag + i));
-    return result;
-}
-float DetectionFunction::d2Phi()
-{
-    if(m_spec.size() < 2)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len    = m_spec[-1].coefficients();
-    auto src    = m_spec[-1].dPhi_dt_data();
-    auto psrc   = m_spec[-2].dPhi_dt_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    for ( ; i + w <= len; i += w)
-        acc += bs::abs(reg(src + i) - reg(psrc + i));
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i )
-        result += bs::abs(*(src + i) - *(psrc + i));
-    return result;
+    unsigned int i;
+    double tmpPhase = 0;
+    double tmpVal = 0;
+    double val = 0;
+
+    double dev = 0;
+
+    for( i = 0; i < length; i++)
+    {
+	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
+	dev = MathUtilities::princarg( tmpPhase );
+
+        // A previous version of this code only counted the value here
+        // if the magnitude exceeded 0.1.  My impression is that
+        // doesn't greatly improve the results for "loud" music (so
+        // long as the peak picker is reasonably sophisticated), but
+        // does significantly damage its ability to work with quieter
+        // music, so I'm removing it and counting the result always.
+        // Same goes for the spectral difference measure above.
+		
+        tmpVal  = fabs(dev);
+        val += tmpVal ;
+
+	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+	m_phaseHistory[ i ] = srcPhase[ i ];
+    }
+	
+    return val;
 }
 
-float DetectionFunction::complexSD()
+
+double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, double *srcPhase)
 {
-    if(m_spec.size() < 3)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len     = m_spec[-1].coefficients();
-    auto src     = m_spec[-1].dPhi_dt_data();
-    auto psrc    = m_spec[-2].dPhi_dt_data();
-    auto hsrc    = m_spec[-1].mag_data();
-    auto phsrc   = m_spec[-2].mag_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    for( ; i + w < len; i+= w) {
-        auto tmpPhase = reg(src + i) - reg(psrc + i);
-        auto _i_r = bs::sincos(tmpPhase);
-        auto hmag = reg(hsrc + i);
-        acc += bs::hypot(reg(phsrc + i) - std::get<1>(_i_r) * hmag, std::get<0>(_i_r) * hmag);
+    unsigned int i;
+    double val = 0;
+    double tmpPhase = 0;
+    double tmpReal = 0;
+    double tmpImag = 0;
+   
+    double dev = 0;
+    ComplexData meas = ComplexData( 0, 0 );
+    ComplexData j = ComplexData( 0, 1 );
+
+    for( i = 0; i < length; i++)
+    {
+	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
+	dev= MathUtilities::princarg( tmpPhase );
+		
+	meas = m_magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
+
+	tmpReal = real( meas );
+	tmpImag = imag( meas );
+
+	val += sqrt( (tmpReal * tmpReal) + (tmpImag * tmpImag) );
+		
+	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+	m_phaseHistory[ i ] = srcPhase[ i ];
+	m_magHistory[ i ] = srcMagnitude[ i ];
     }
-    auto result = bs::sum(acc);
-    for( ; i < len; ++i) {
-        auto tmpPhase = *(src + i) - *(psrc + i);
-        auto _i_r = bs::sincos(tmpPhase);
-        auto hmag = *(hsrc + i);
-        result += bs::hypot(*(phsrc + i) - std::get<1>(_i_r) * hmag, std::get<0>(_i_r) * hmag);
-    }
-    return result;
+
+    return val;
 }
-float DetectionFunction::broadband()
+
+double DetectionFunction::broadband(unsigned int length, double *src)
 {
-    if(m_spec.size() < 2)
-        return 0.0f;
-    using reg = simd_reg<float>;
-    constexpr auto w = int(simd_width<float>);
-    auto len     = m_spec[-1].coefficients();
-    auto src    = m_spec[-1].M_data();
-    auto psrc   = m_spec[-2].M_data();
-    auto i = 0;
-    auto acc = reg(0.f);
-    auto dbRise = reg(m_dbRise);
-    for ( ; i + w <= len; i += w) {
-        auto diff = bs::Ten<float>() * (reg(src + i) - reg(psrc + i))/bs::Log_10<float>();
-        acc+= bs::if_one_else_zero(diff > dbRise);
+    double val = 0;
+    for (unsigned int i = 0; i < length; ++i) {
+        double sqrmag = src[i] * src[i];
+        if (m_magHistory[i] > 0.0) {
+            double diff = 10.0 * log10(sqrmag / m_magHistory[i]);
+            if (diff > m_dbRise) val = val + 1;
+        }
+        m_magHistory[i] = sqrmag;
     }
-    auto result = bs::sum(acc);
-    for ( ; i <= len; ++i ) {
-        auto diff = bs::Ten<float>() * (*(src + i) - *(psrc + i))/bs::Log_10<float>();
-        result += (diff > m_dbRise) ? 1.0f : 0.0f;
-    }
-    return result;
-}
-float * DetectionFunction::getSpectrumMagnitude()
+    return val;
+}        
+
+double* DetectionFunction::getSpectrumMagnitude()
 {
-    auto &spec = m_spec.back();
-    return spec.mag_data();
+    return m_magnitude;
 }
+

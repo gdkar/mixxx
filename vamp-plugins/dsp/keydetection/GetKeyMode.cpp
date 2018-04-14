@@ -23,9 +23,9 @@
 #include <cstdlib>
 
 // Chords profile
-static double MajProfile[36] =
+static double MajProfile[36] = 
 { 0.0384, 0.0629, 0.0258, 0.0121, 0.0146, 0.0106, 0.0364, 0.0610, 0.0267,
-  0.0126, 0.0121, 0.0086, 0.0364, 0.0623, 0.0279, 0.0275, 0.0414, 0.0186,
+  0.0126, 0.0121, 0.0086, 0.0364, 0.0623, 0.0279, 0.0275, 0.0414, 0.0186, 
   0.0173, 0.0248, 0.0145, 0.0364, 0.0631, 0.0262, 0.0129, 0.0150, 0.0098,
   0.0312, 0.0521, 0.0235, 0.0129, 0.0142, 0.0095, 0.0289, 0.0478, 0.0239};
 
@@ -35,7 +35,7 @@ static double MinProfile[36] =
   0.0137, 0.0176, 0.0104, 0.0352, 0.0670, 0.0302, 0.0222, 0.0349, 0.0164,
   0.0174, 0.0297, 0.0166, 0.0222, 0.0401, 0.0202, 0.0175, 0.0270, 0.0146};
 //
-
+    
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -57,7 +57,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_keyStrengths(0)
 {
     m_DecimationFactor = 8;
-
+        
     // Chromagram configuration parameters
     m_ChromaConfig.normalise = MathUtilities::NormaliseUnitMax;
     m_ChromaConfig.FS = lrint(sampleRate/(double)m_DecimationFactor);
@@ -87,7 +87,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     // Chromagram average and estimated key median filter lengths
     m_ChromaBuffersize = (int)ceil( m_hpcpAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
     m_MedianWinsize = (int)ceil( m_medianAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
-
+    
     // Reset counters
     m_bufferindex = 0;
     m_ChromaBufferFilling = 0;
@@ -95,22 +95,22 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
 
     // Spawn objectc/arrays
     m_DecimatedBuffer = new double[m_ChromaFrameSize];
-
+    
     m_ChromaBuffer = new double[m_BPO * m_ChromaBuffersize];
     memset( m_ChromaBuffer, 0, sizeof(double) * m_BPO * m_ChromaBuffersize);
-
+    
     m_MeanHPCP = new double[m_BPO];
-
+    
     m_MajCorr = new double[m_BPO];
     m_MinCorr = new double[m_BPO];
     m_Keys  = new double[2*m_BPO];
-
+    
     m_MedianFilterBuffer = new int[ m_MedianWinsize ];
     memset( m_MedianFilterBuffer, 0, sizeof(int)*m_MedianWinsize);
-
+    
     m_SortedBuffer = new int[ m_MedianWinsize ];
-    memset( m_SortedBuffer, 0, sizeof(int)*m_MedianWinsize);
-
+    memset( m_SortedBuffer, 0, sizeof(int)*m_MedianWinsize);	
+    
     m_Decimator = new Decimator
         ( m_ChromaFrameSize*m_DecimationFactor, m_DecimationFactor );
 
@@ -122,7 +122,7 @@ GetKeyMode::~GetKeyMode()
 
     delete m_Chroma;
     delete m_Decimator;
-
+    
     delete [] m_DecimatedBuffer;
     delete [] m_ChromaBuffer;
     delete [] m_MeanHPCP;
@@ -138,15 +138,15 @@ GetKeyMode::~GetKeyMode()
 double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
 {
     double retVal= 0.0;
-
+    
     double num = 0;
     double den = 0;
     double mX = MathUtilities::mean( pData1, length );
     double mY = MathUtilities::mean( pData2, length );
-
+    
     double sum1 = 0;
     double sum2 = 0;
-
+    
     for( unsigned int i = 0; i <length; i++ )
     {
         num += ( pData1[i] - mX ) * ( pData2[i] - mY );
@@ -154,9 +154,9 @@ double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
         sum1 += ( (pData1[i]-mX) * (pData1[i]-mX) );
         sum2 += ( (pData2[i]-mY) * (pData2[i]-mY) );
     }
-
+	
     den = sqrt(sum1 * sum2);
-
+	
     if( den>0 )
         retVal = num/den;
     else
@@ -175,9 +175,9 @@ int GetKeyMode::process(double *PCMData)
     //////////////////////////////////////////////
     m_Decimator->process( PCMData, m_DecimatedBuffer);
 
-    m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );
+    m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );		
 
-
+	
     // Move bins such that the centre of the base note is in the
     // middle of its three bins :
     // Added 21.11.07 by Chris Sutton based on debugging with Katy
@@ -200,14 +200,14 @@ int GetKeyMode::process(double *PCMData)
     }
 
     //keep track of input buffers;
-    if( m_bufferindex++ >= m_ChromaBuffersize - 1)
+    if( m_bufferindex++ >= m_ChromaBuffersize - 1) 
         m_bufferindex = 0;
 
     // track filling of chroma matrix
     if( m_ChromaBufferFilling++ >= m_ChromaBuffersize)
         m_ChromaBufferFilling = m_ChromaBuffersize;
 
-    //calculate mean
+    //calculate mean 		
     for( k = 0; k < m_BPO; k++ )
     {
         double mnVal = 0.0;
@@ -228,7 +228,7 @@ int GetKeyMode::process(double *PCMData)
         MathUtilities::circShift( MajProfile, m_BPO, 1 );
         MathUtilities::circShift( MinProfile, m_BPO, 1 );
     }
-
+	
     for( k = 0; k < m_BPO; k++ )
     {
         m_Keys[k] = m_MajCorr[k];
@@ -267,7 +267,7 @@ int GetKeyMode::process(double *PCMData)
 */
     double dummy;
     // '1 +' because we number keys 1-24, not 0-23.
-    key = 1 + (int)std::ceil((std::max_element(m_Keys, m_Keys + 2 * m_BPO) - m_Keys)/3.);
+    key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
 //    std::cout << "key pre-sorting: " << key << std::endl;
 
@@ -277,7 +277,7 @@ int GetKeyMode::process(double *PCMData)
     // track Median buffer initial filling
     if( m_MedianBufferFilling++ >= m_MedianWinsize)
         m_MedianBufferFilling = m_MedianWinsize;
-
+		
     //shift median buffer
     for( k = 1; k < m_MedianWinsize; k++ )
     {
@@ -322,6 +322,6 @@ int GetKeyMode::process(double *PCMData)
 
 
 bool GetKeyMode::isModeMinor( int key )
-{
+{ 
     return (key > 12);
 }

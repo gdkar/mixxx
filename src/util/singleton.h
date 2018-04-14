@@ -14,8 +14,9 @@ class Singleton {
     }
 
     static T* instance() {
-        if (m_instance == NULL) {
+        if (!m_instance) {
             qWarning() << "Singleton class has not been created yet, returning NULL";
+            m_instance = new T();
         }
         return m_instance;
     }
@@ -23,12 +24,13 @@ class Singleton {
     static void destroy() {
         if (m_instance) {
             delete m_instance;
+            m_instance = nullptr;
         }
     }
 
   protected:
-    Singleton() {}
-    virtual ~Singleton() {}
+    Singleton() = default;
+    virtual ~Singleton() = default;
 
   private:
     // hide copy constructor and assign operator
@@ -38,6 +40,6 @@ class Singleton {
     static T* m_instance;
 };
 
-template<class T> T* Singleton<T>::m_instance = NULL;
+template<class T> T* Singleton<T>::m_instance = nullptr;
 
 #endif // SINGLETON_H

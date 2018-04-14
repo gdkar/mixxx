@@ -17,7 +17,7 @@
 #define CHROMAGRAM_H
 
 #include "dsp/transforms/FFT.h"
-#include "rubberband/dsp/Window.h"
+#include "base/Window.h"
 #include "ConstantQ.h"
 
 struct ChromaConfig{
@@ -29,20 +29,20 @@ struct ChromaConfig{
     MathUtilities::NormaliseType normalise;
 };
 
-class Chromagram
+class Chromagram 
 {
 
-public:
+public:	
     Chromagram( ChromaConfig Config );
     ~Chromagram();
-
+	
     double* process( const double *data ); // time domain
     double* process( const double *real, const double *imag ); // frequency domain
     void unityNormalise( double* src );
 
     // Complex arithmetic
     double kabs( double real, double imag );
-
+	
     // Results
     unsigned int getK() { return m_uK;}
     unsigned int getFrameSize() { return m_frameSize; }
@@ -52,9 +52,9 @@ private:
     int initialise( ChromaConfig Config );
     int deInitialise();
 
-    RBMixxxVamp::Window<double> m_window;
+    Window<double> *m_window;
     double *m_windowbuf;
-
+	
     double* m_chromadata;
     double m_FMin;
     double m_FMax;

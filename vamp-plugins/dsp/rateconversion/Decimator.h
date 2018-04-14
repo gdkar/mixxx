@@ -21,7 +21,7 @@
  * whatever getHighestSupportedFactor() returns. This is much faster
  * than Resampler but has a worse signal-noise ratio.
  */
-class Decimator
+class Decimator  
 {
 public:
     /**
@@ -75,8 +75,8 @@ private:
 
     double a[ 9 ];
     double b[ 9 ];
-
+	
     double* decBuffer;
 };
 
-#endif //
+#endif // 

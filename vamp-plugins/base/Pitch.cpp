@@ -14,16 +14,15 @@
 
 #include "Pitch.h"
 
-#include <cmath>
-#include <numeric>
+#include <math.h>
 
 float
 Pitch::getFrequencyForPitch(int midiPitch,
 			    float centsOffset,
 			    float concertA)
 {
-    auto p = float(midiPitch) + (centsOffset *1e-2f);
-    return concertA * std::pow(2.0f, (p - 69.0f) / 12.0f);
+    float p = float(midiPitch) + (centsOffset / 100);
+    return concertA * powf(2.0, (p - 69.0) / 12.0);
 }
 
 int
@@ -31,18 +30,17 @@ Pitch::getPitchForFrequency(float frequency,
 			    float *centsOffsetReturn,
 			    float concertA)
 {
-    auto p = 12.0f * (std::log(frequency / (concertA / 2.0f)) / std::log(2.0f)) + 57.0f;
+    float p = 12.0 * (log(frequency / (concertA / 2.0)) / log(2.0)) + 57.0;
 
-    auto midiPitch = int(p + 0.00001);
-    auto centsOffset = (p - midiPitch) * 100.0f;
+    int midiPitch = int(p + 0.00001);
+    float centsOffset = (p - midiPitch) * 100.0;
 
-    if (centsOffset >= 50.0f) {
+    if (centsOffset >= 50.0) {
 	midiPitch = midiPitch + 1;
-	centsOffset = -(100.0f - centsOffset);
+	centsOffset = -(100.0 - centsOffset);
     }
-
-    if (centsOffsetReturn)
-        *centsOffsetReturn = centsOffset;
+    
+    if (centsOffsetReturn) *centsOffsetReturn = centsOffset;
     return midiPitch;
 }
 

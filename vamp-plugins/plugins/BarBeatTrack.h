@@ -16,7 +16,7 @@
 #define _BAR_BEAT_TRACK_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
-#include <memory>
+
 class BarBeatTrackerData;
 
 class BarBeatTracker : public Vamp::Plugin
@@ -28,7 +28,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const;
+    InputDomain getInputDomain() const { return TimeDomain; }
 
     std::string getIdentifier() const;
     std::string getName() const;
@@ -52,7 +52,7 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    std::unique_ptr<BarBeatTrackerData> m_d;
+    BarBeatTrackerData *m_d;
     static float m_stepSecs;
     int m_bpb;
     FeatureSet barBeatTrack();

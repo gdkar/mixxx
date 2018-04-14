@@ -13,11 +13,10 @@
     COPYING included with this distribution for more information.
 */
 
-#include <algorithm>
 #include "PhaseVocoder.h"
 #include "dsp/transforms/FFT.h"
 #include "maths/MathUtilities.h"
-#include <cmath>
+#include <math.h>
 
 #include <cassert>
 
@@ -29,35 +28,64 @@ PhaseVocoder::PhaseVocoder(int n, int hop) :
     m_n(n),
     m_hop(hop)
 {
+    m_fft = new FFTReal(m_n);
+    m_time = new double[m_n];
+    m_real = new double[m_n];
+    m_imag = new double[m_n];
+    m_phase = new double[m_n/2 + 1];
+    m_unwrapped = new double[m_n/2 + 1];
+
+    for (int i = 0; i < m_n/2 + 1; ++i) {
+        m_phase[i] = 0.0;
+        m_unwrapped[i] = 0.0;
+    }
+
     reset();
 }
 
-PhaseVocoder::~PhaseVocoder() = default;
-
-void PhaseVocoder::FFTShift(float *src)
+PhaseVocoder::~PhaseVocoder()
 {
-    std::rotate(src,src + m_n/2, src + m_n);
+    delete[] m_unwrapped;
+    delete[] m_phase;
+    delete[] m_real;
+    delete[] m_imag;
+    delete[] m_time;
+    delete m_fft;
 }
 
-void PhaseVocoder::processTimeDomain(const float *src,
-                                     float *mag, float *theta,
-                                     float *unwrapped)
+void PhaseVocoder::FFTShift(double *src)
 {
-    std::copy_n(src,m_n,std::begin(m_time));
-    FFTShift(&m_time[0]);
-    m_fft.forward(&m_time[0], m_real.data(), m_imag.data());
+    const int hs = m_n/2;
+    for (int i = 0; i < hs; ++i) {
+        double tmp = src[i];
+        src[i] = src[i + hs];
+        src[i + hs] = tmp;
+    }
+}
+
+void PhaseVocoder::processTimeDomain(const double *src,
+                                     double *mag, double *theta,
+                                     double *unwrapped)
+{
+    for (int i = 0; i < m_n; ++i) {
+        m_time[i] = src[i];
+    }
+    FFTShift(m_time);
+    m_fft->forward(m_time, m_real, m_imag);
     getMagnitudes(mag);
     getPhases(theta);
     unwrapPhases(theta, unwrapped);
 }
 
-void PhaseVocoder::processFrequencyDomain(const float *reals,
-                                          const float *imags,
-                                          float *mag, float *theta,
-                                          float *unwrapped)
+void PhaseVocoder::processFrequencyDomain(const double *reals, 
+                                          const double *imags,
+                                          double *mag, double *theta,
+                                          double *unwrapped)
 {
-    std::copy_n(reals,m_n/2+1,std::begin(m_real));
-    std::copy_n(imags,m_n/2+1,std::begin(m_imag));
+    for (int i = 0; i < m_n/2 + 1; ++i) {
+        m_real[i] = reals[i];
+        m_imag[i] = imags[i];
+    }
     getMagnitudes(mag);
     getPhases(theta);
     unwrapPhases(theta, unwrapped);
@@ -65,44 +93,43 @@ void PhaseVocoder::processFrequencyDomain(const float *reals,
 
 void PhaseVocoder::reset()
 {
-    if(m_n) {
-        auto omegaFactor = float(2 * M_PI * m_hop) / m_n;
-        for (int i = 0; i < m_n/2 + 1; ++i) {
-            // m_phase stores the "previous" phase, so set to one step
-            // behind so that a signal with initial phase at zero matches
-            // the expected values. This is completely unnecessary for any
-            // analytical purpose, it's just tidier.
-            auto omega = omegaFactor * i;
-            m_phase[i] = -omega;
-            m_unwrapped[i] = -omega;
-        }
+    for (int i = 0; i < m_n/2 + 1; ++i) {
+        // m_phase stores the "previous" phase, so set to one step
+        // behind so that a signal with initial phase at zero matches
+        // the expected values. This is completely unnecessary for any
+        // analytical purpose, it's just tidier.
+        double omega = (2 * M_PI * m_hop * i) / m_n;
+        m_phase[i] = -omega;
+        m_unwrapped[i] = -omega;
     }
 }
 
-void PhaseVocoder::getMagnitudes(float *_mag)
-{
-    std::transform(std::begin(m_imag),std::begin(m_imag) + m_n/2+1,std::begin(m_real),
-        _mag,[](auto &&x,auto &&y){return std::hypot(x,y);});
+void PhaseVocoder::getMagnitudes(double *mag)
+{	
+    for (int i = 0; i < m_n/2 + 1; i++) {
+	mag[i] = sqrt(m_real[i] * m_real[i] + m_imag[i] * m_imag[i]);
+    }
 }
 
-void PhaseVocoder::getPhases(float *t)
+void PhaseVocoder::getPhases(double *theta)
 {
-    std::transform(std::begin(m_imag),std::begin(m_imag)+m_n/2+1,std::begin(m_real),
-        t,[](auto &&x, auto &&y){return std::atan2(x,y);});
+    for (int i = 0; i < m_n/2 + 1; i++) {
+	theta[i] = atan2(m_imag[i], m_real[i]);
+    }	
 }
 
-void PhaseVocoder::unwrapPhases(float *theta, float *unwrapped)
+void PhaseVocoder::unwrapPhases(double *theta, double *unwrapped)
 {
-    auto omegaFactor = float(2 * M_PI * m_hop) / m_n;
     for (int i = 0; i < m_n/2 + 1; ++i) {
 
-        auto omega    = i * omegaFactor;
-        auto expected = m_phase[i] + omega;
-        auto error    = MathUtilities::princarg(theta[i] - expected);
+        double omega = (2 * M_PI * m_hop * i) / m_n;
+        double expected = m_phase[i] + omega;
+        double error = MathUtilities::princarg(theta[i] - expected);
 
-        unwrapped[i]   = m_unwrapped[i] + omega + error;
+        unwrapped[i] = m_unwrapped[i] + omega + error;
 
-        m_phase[i]     = theta[i];
+        m_phase[i] = theta[i];
         m_unwrapped[i] = unwrapped[i];
     }
 }
+

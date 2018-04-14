@@ -16,19 +16,12 @@
 #ifndef PHASEVOCODER_H
 #define PHASEVOCODER_H
 
-#include "dsp/transforms/FFT.h"
-#include <vector>
-#include <numeric>
-#include <cmath>
-#include <algorithm>
-#include <utility>
-class PhaseVocoder
+class FFTReal;
+
+class PhaseVocoder  
 {
 public:
     PhaseVocoder(int size, int hop);
-    PhaseVocoder() = default;
-    PhaseVocoder(PhaseVocoder && ) noexcept = default;
-    PhaseVocoder&operator=(PhaseVocoder && ) noexcept = default;
     virtual ~PhaseVocoder();
 
     /**
@@ -43,8 +36,8 @@ public:
      * enough space for size/2 + 1 values. The redundant conjugate
      * half of the output is not returned.
      */
-    void processTimeDomain(const float *src,
-                           float *mag, float *phase, float *unwrapped);
+    void processTimeDomain(const double *src,
+                           double *mag, double *phase, double *unwrapped);
 
     /**
      * Given one frame of frequency-domain samples, return the
@@ -57,8 +50,8 @@ public:
      * mag, phase, and unwrapped must each be non-NULL and point to
      * enough space for size/2+1 values.
      */
-    void processFrequencyDomain(const float *reals, const float *imags,
-                                float *mag, float *phase, float *unwrapped);
+    void processFrequencyDomain(const double *reals, const double *imags,
+                                double *mag, double *phase, double *unwrapped);
 
     /**
      * Reset the stored phases to zero. Note that this may be
@@ -67,22 +60,21 @@ public:
      * phase values as they grow.
      */
     void reset();
-    using vector_type =std::vector<float>;
+
 protected:
-    void FFTShift(float *src);
-    void getMagnitudes(float *mag);
-    void getPhases(float *theta);
-    void unwrapPhases(float *theta, float *unwrapped);
+    void FFTShift(double *src);
+    void getMagnitudes(double *mag);
+    void getPhases(double *theta);
+    void unwrapPhases(double *theta, double *unwrapped);
 
-    int      m_n{};
-    int      m_hop{};
-    FFTReal  m_fft{m_n};
-
-    vector_type m_time = vector_type(m_n);
-    vector_type m_imag = vector_type(m_n);
-    vector_type m_real = vector_type(m_n);
-    vector_type m_phase = vector_type(m_n/2+1);
-    vector_type m_unwrapped = vector_type(m_n/2+1);
+    int m_n;
+    int m_hop;
+    FFTReal *m_fft;
+    double *m_time;
+    double *m_imag;
+    double *m_real;
+    double *m_phase;
+    double *m_unwrapped;
 };
 
 #endif

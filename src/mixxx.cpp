@@ -125,7 +125,8 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
 
     // Only record stats in developer mode.
     if (m_cmdLineArgs.getDeveloper()) {
-        StatsManager::create();
+        auto tmp = StatsManager::instance();
+        Q_UNUSED(tmp);
     }
 
     m_pSettingsManager = new SettingsManager(this, args.getSettingsPath());

@@ -18,89 +18,79 @@
 
 #include "maths/MathUtilities.h"
 #include "maths/MathAliases.h"
-#include "rubberband/dsp/ReFFT.hpp"
-#include "rubberband/base/MiniRing.hpp"
+#include "dsp/phasevocoder/PhaseVocoder.h"
+#include "base/Window.h"
 
-enum struct DFType : int {
-    NONE = (0),
-    HFC = (1),
-    SPECDIFF = (2),
-    PHASEDEV = (3),
-    COMPLEXSD = (4),
-    BROADBAND = (5),
-    D2PHI     = (6),
-    GROUPDELAY= (7),
-    SPECDERIV = (8),
-};
+#define DF_HFC (1)
+#define DF_SPECDIFF (2)
+#define DF_PHASEDEV (3)
+#define DF_COMPLEXSD (4)
+#define DF_BROADBAND (5)
+
 struct DFConfig{
-    size_t stepSize; // DF step in samples
-    size_t frameLength; // DF analysis window - usually 2*step. Must be even!
+    unsigned int stepSize; // DF step in samples
+    unsigned int frameLength; // DF analysis window - usually 2*step. Must be even!
     int DFType; // type of detection function ( see defines )
-    float dbRise; // only used for broadband df (and required for it)
+    double dbRise; // only used for broadband df (and required for it)
     bool adaptiveWhitening; // perform adaptive whitening
-    float whiteningRelaxCoeff; // if < 0, a sensible default will be used
-    float whiteningFloor; // if < 0, a sensible default will be used
+    double whiteningRelaxCoeff; // if < 0, a sensible default will be used
+    double whiteningFloor; // if < 0, a sensible default will be used
 };
 
-class DetectionFunction
+class DetectionFunction  
 {
 public:
-    float * getSpectrumMagnitude();
-    DetectionFunction() = default;
+    double* getSpectrumMagnitude();
     DetectionFunction( DFConfig Config );
-    DetectionFunction(DetectionFunction && ) noexcept = default;
-    DetectionFunction&operator=(DetectionFunction && ) noexcept = default;
     virtual ~DetectionFunction();
 
     /**
      * Process a single time-domain frame of audio, provided as
      * frameLength samples.
      */
-    float processTimeDomain(const float* samples);
+    double processTimeDomain(const double* samples);
 
     /**
      * Process a single frequency-domain frame, provided as
      * frameLength/2+1 real and imaginary component values.
      */
-//    float processFrequencyDomain(const float* reals, const float* imags);
+    double processFrequencyDomain(const double* reals, const double* imags);
 
 private:
     void whiten();
-    float runDF();
+    double runDF();
 
-    float HFC( );
-    float specDiff( );
-    float phaseDev();
-    float groupDelay();
-    float specDeriv();
-    float d2Phi();
-    float complexSD();
-    float broadband();
-
+    double HFC( unsigned int length, double* src);
+    double specDiff( unsigned int length, double* src);
+    double phaseDev(unsigned int length, double *srcPhase);
+    double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
+    double broadband(unsigned int length, double *srcMagnitude);
+	
 private:
+    void initialise( DFConfig Config );
+    void deInitialise();
 
-    int     m_DFType{};
-    size_t  m_dataLength{};
-    size_t  m_halfLength{m_dataLength/2+1};
-    size_t  m_stepSize{};
-    size_t  m_position{};
-    float   m_dbRise{};
-    bool    m_whiten{};
-    float   m_whitenRelaxCoeff{};
-    float   m_whitenFloor{};
+    int m_DFType;
+    unsigned int m_dataLength;
+    unsigned int m_halfLength;
+    unsigned int m_stepSize;
+    double m_dbRise;
+    bool m_whiten;
+    double m_whitenRelaxCoeff;
+    double m_whitenFloor;
 
-//    std::unique_ptr<float[]> m_magHistory{};
-//    std::unique_ptr<float[]> m_phaseHistory{};
-//    std::unique_ptr<float[]> m_phaseHistoryOld{};
+    double* m_magHistory;
+    double* m_phaseHistory;
+    double* m_phaseHistoryOld;
+    double* m_magPeaks;
 
-//    std::unique_ptr<float[]> m_windowed{}; // Array for windowed analysis frame
-//    std::unique_ptr<float[]> m_magnitude{}; // Magnitude of analysis frame ( frequency domain )
-//    std::unique_ptr<float[]> m_thetaAngle{};// Phase of analysis frame ( frequency domain )
-//    std::unique_ptr<float[]> m_unwrapped{}; // Unwrapped phase of analysis frame
-    std::unique_ptr<float[]> m_magPeaks{};
+    double* m_windowed; // Array for windowed analysis frame
+    double* m_magnitude; // Magnitude of analysis frame ( frequency domain )
+    double* m_thetaAngle;// Phase of analysis frame ( frequency domain )
+    double* m_unwrapped; // Unwrapped phase of analysis frame
 
-    RBMixxxVamp::ReFFT                m_fft{};
-    RBMixxxVamp::MiniRing<RBMixxxVamp::ReSpectrum> m_spec{8};
+    Window<double> *m_window;
+    PhaseVocoder* m_phaseVoc;	// Phase Vocoder
 };
 
-#endif
+#endif 

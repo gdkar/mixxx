@@ -205,7 +205,7 @@ void Decimator::process(const double *src, double *dst)
         }
         return;
     }
-
+        
     doAntiAlias( src, decBuffer, m_inputLength );
 
     unsigned idx = 0;

@@ -27,14 +27,14 @@ Chromagram::Chromagram( ChromaConfig Config ) :
 }
 
 int Chromagram::initialise( ChromaConfig Config )
-{
+{	
     m_FMin = Config.min;		// min freq
     m_FMax = Config.max;		// max freq
     m_BPO  = Config.BPO;		// bins per octave
     m_normalise = Config.normalise;     // if frame normalisation is required
 
     // No. of constant Q bins
-    m_uK = ( unsigned int ) ceil( m_BPO * log(m_FMax/m_FMin)/log(2.0));
+    m_uK = ( unsigned int ) ceil( m_BPO * log(m_FMax/m_FMin)/log(2.0));	
 
     // Create array for chroma result
     m_chromadata = new double[ m_BPO ];
@@ -49,7 +49,7 @@ int Chromagram::initialise( ChromaConfig Config )
     ConstantQConfig.max = m_FMax;
     ConstantQConfig.BPO = m_BPO;
     ConstantQConfig.CQThresh = Config.CQThresh;
-
+	
     // Initialise ConstantQ operator
     m_ConstantQ = new ConstantQ( ConstantQConfig );
 
@@ -57,7 +57,7 @@ int Chromagram::initialise( ChromaConfig Config )
     m_frameSize = m_ConstantQ->getfftlength();
     m_hopSize = m_ConstantQ->gethop();
 
-    // Initialise FFT object
+    // Initialise FFT object	
     m_FFT = new FFTReal(m_frameSize);
 
     m_FFTRe = new double[ m_frameSize ];
@@ -65,7 +65,7 @@ int Chromagram::initialise( ChromaConfig Config )
     m_CQRe  = new double[ m_uK ];
     m_CQIm  = new double[ m_uK ];
 
-    m_window = RBMixxxVamp::Window<double>(RBMixxxVamp::HammingWindow,m_frameSize);
+    m_window = 0;
     m_windowbuf = 0;
 
     return 1;
@@ -79,6 +79,7 @@ Chromagram::~Chromagram()
 int Chromagram::deInitialise()
 {
     delete[] m_windowbuf;
+    delete m_window;
 
     delete [] m_chromadata;
 
@@ -109,10 +110,13 @@ void Chromagram::unityNormalise(double *src)
 
     double val = 0;
 
-    auto _max_div = 1.0/ *std::max_element(src,src + m_BPO);
+    MathUtilities::getFrameMinMax( src, m_BPO, & min, &max );
 
-    for( unsigned int i = 0; i < m_BPO; i++ ) {
-        src[i] *= _max_div;
+    for( unsigned int i = 0; i < m_BPO; i++ )
+    {
+	val = src[ i ] / max;
+
+	src[ i ] = val;
     }
 }
 
@@ -120,38 +124,56 @@ void Chromagram::unityNormalise(double *src)
 double* Chromagram::process( const double *data )
 {
     if (!m_skGenerated) {
-        // Generate CQ Kernel
+        // Generate CQ Kernel 
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-    if (!m_windowbuf) {
+
+    if (!m_window) {
+        m_window = new Window<double>(HammingWindow, m_frameSize);
         m_windowbuf = new double[m_frameSize];
     }
-    m_window.cut(&data[0],&m_windowbuf[0]);
+
+    for (int i = 0; i < m_frameSize; ++i) {
+        m_windowbuf[i] = data[i];
+    }
+    m_window->cut(m_windowbuf);
+
     m_FFT->forward(m_windowbuf, m_FFTRe, m_FFTIm);
+
     return process(m_FFTRe, m_FFTIm);
 }
 
 double* Chromagram::process( const double *real, const double *imag )
 {
     if (!m_skGenerated) {
-        // Generate CQ Kernel
+        // Generate CQ Kernel 
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-    std::fill_n(&m_chromadata[0], m_BPO, 0);
+
     // initialise chromadata to 0
+    for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
+
+    double cmax = 0.0;
+    double cval = 0;
     // Calculate ConstantQ frame
     m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
+	
     // add each octave of cq data into Chromagram
-    auto octaves = size_t(ssize_t(double( m_uK/m_BPO))-1);
-    for (auto octave = 0ul; octave <= octaves; octave++) {
+    const unsigned octaves = (int)floor(double( m_uK/m_BPO))-1;
+    for (unsigned octave = 0; octave <= octaves; octave++) 
+    {
 	unsigned firstBin = octave*m_BPO;
-	for (unsigned i = 0; i < m_BPO; i++)
+	for (unsigned i = 0; i < m_BPO; i++) 
 	{
 	    m_chromadata[i] += kabs( m_CQRe[ firstBin + i ], m_CQIm[ firstBin + i ]);
 	}
     }
+
     MathUtilities::normalise(m_chromadata, m_BPO, m_normalise);
+
     return m_chromadata;
 }
+
+
