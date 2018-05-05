@@ -306,57 +306,61 @@ int RtMidiController::open()
     }else{
         qDebug() << "opening RtMidiDevice" << getName();
     }
-    if(in_index>= 0) {
-        auto _iindex = in_index;
-        auto _iname  = in_name;
-        try {
-            m_midiIn = std::make_unique<RtMidiIn>();
-            m_midiIn->setCallback(&RtMidiController::trampoline, this);
-            auto _in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
-            m_midiIn->openPort(in_index, in_name.toStdString());
-            if(in_name.isEmpty()) {
-                setDeviceName("RtMidi: " + in_name);
+    try {
+        if(in_index>= 0) {
+            auto _iindex = in_index;
+            auto _iname  = in_name;
+            try {
+                m_midiIn = std::make_unique<RtMidiIn>();
+                m_midiIn->setCallback(&RtMidiController::trampoline, this);
+                auto _in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
+                m_midiIn->openPort(in_index, in_name.toStdString());
+                if(in_name.isEmpty()) {
+                    setDeviceName("RtMidi: " + in_name);
+                }
+                in_name = _in_name;
+                setInputDevice(true);
+            }catch(const RtMidiError &error) {
+                qDebug() << error.what();
+                in_index = -1;
+                in_name.clear();
+                setInputDevice(false);
             }
-            in_name = _in_name;
-            setInputDevice(true);
-        }catch(const RtMidiError &error) {
-            qDebug() << error.what();
-            in_index = -1;
-            in_name.clear();
-            setInputDevice(false);
+            if(_iindex != in_index)
+                emit inputIndexChanged(in_index);
+            if(_iname != in_name)
+                emit inputNameChanged(in_name);
         }
-        if(_iindex != in_index)
-            emit inputIndexChanged(in_index);
-        if(_iname != in_name)
-            emit inputNameChanged(in_name);
-    }
-    if(out_index>= 0) {
-        auto _oindex = out_index;
-        auto _oname  = out_name;
-        try {
-            m_midiOut = std::make_unique<RtMidiOut>();
-            auto _out_name = QString::fromStdString(m_midiOut->getPortName(out_index));
-            m_midiOut->openPort(out_index,out_name.toStdString());
-            if(!out_name.isEmpty())
-                setDeviceName("RtMidi: " + out_name);
-            out_name = _out_name;
-            setOutputDevice(true);
-        }catch(const RtMidiError &error) {
-            qDebug() << error.what();
-            out_index = -1;
-            out_name.clear();
-            setOutputDevice(false);
-        }
-        if(_oindex != out_index)
-            emit outputIndexChanged(out_index);
-        if(_oname != out_name)
-            emit outputNameChanged(out_name);
+        if(out_index>= 0) {
+            auto _oindex = out_index;
+            auto _oname  = out_name;
+            try {
+                m_midiOut = std::make_unique<RtMidiOut>();
+                auto _out_name = QString::fromStdString(m_midiOut->getPortName(out_index));
+                m_midiOut->openPort(out_index,out_name.toStdString());
+                if(!out_name.isEmpty())
+                    setDeviceName("RtMidi: " + out_name);
+                out_name = _out_name;
+                setOutputDevice(true);
+            }catch(const RtMidiError &error) {
+                qDebug() << error.what();
+                out_index = -1;
+                out_name.clear();
+                setOutputDevice(false);
+            }
+            if(_oindex != out_index)
+                emit outputIndexChanged(out_index);
+            if(_oname != out_name)
+                emit outputNameChanged(out_name);
 
+        }
+        m_bInSysex = false;
+        m_sysex.clear();;
+        setOpen(true);
+        startEngine();
+    } catch(...) {
+        qWarning() << "Something went wrong.";
     }
-    m_bInSysex = false;
-    m_sysex.clear();;
-    setOpen(true);
-    startEngine();
     return 0;
 }
 
@@ -381,35 +385,14 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
     if(message.size() < 1)
         return;
     auto status = message[0];
-    if ((status & 0xF8) == 0xF8) {
-        // Handle real-time MIDI messages at any time
-        QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, 0), Q_ARG(unsigned char, 0), Q_ARG(mixxx::Duration, timestamp));
-//        receive(status, 0, 0, timestamp);
-        return;
-    }
-    if (!m_bInSysex) {
-        if (status == 0xF0) {
-            m_bInSysex = true;
-            status = 0;
-        } else {
-            //unsigned char channel = status & 0x0F;
-            if(message.size() < 3)
-                return;
-            auto note = message[1];
-            auto velocity = message[2];
-
-            QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration, timestamp));
-//            receive(status, note, velocity, timestamp);
+    try {
+        if ((status & 0xF8) == 0xF8) {
+            // Handle real-time MIDI messages at any time
+            QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, 0), Q_ARG(unsigned char, 0), Q_ARG(mixxx::Duration, timestamp));
+    //        receive(status, 0, 0, timestamp);
             return;
         }
-    }
-    if (m_bInSysex) {
-        // Abort (drop) the current System Exclusive message if a
-        //  non-realtime status byte was received
-        if (status > 0x7F && status < 0xF7) {
-            m_bInSysex = false;
-            m_sysex.clear();
-            qWarning() << "Buggy MIDI device: SysEx interrupted!";
+        if (!m_bInSysex) {
             if (status == 0xF0) {
                 m_bInSysex = true;
                 status = 0;
@@ -421,34 +404,72 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
                 auto velocity = message[2];
 
                 QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration, timestamp));
-                receive(status, note, velocity, timestamp);
+    //            receive(status, note, velocity, timestamp);
                 return;
             }
-
         }
-        // Collect bytes from PmMessage
-        for(auto i = 1u; i < message.size() ; ++i) {
-            auto data = message.at(i);
-            // End System Exclusive message if the EOX byte was received
-            if(data == MIDI_EOX) {
-                QMetaObject::invokeMethod(this,"receive", Q_ARG(QByteArray,QByteArray::fromRawData(reinterpret_cast<const char*>(m_sysex.data()),m_sysex.size())),Q_ARG(mixxx::Duration, timestamp));
-//                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
-//                    timestamp);
-                m_sysex.clear();
+        if (m_bInSysex) {
+            // Abort (drop) the current System Exclusive message if a
+            //  non-realtime status byte was received
+            if (status > 0x7F && status < 0xF7) {
                 m_bInSysex = false;
-                return;
-            }else{
-                m_sysex.push_back(data);
+                m_sysex.clear();
+                qWarning() << "Buggy MIDI device: SysEx interrupted!";
+                if (status == 0xF0) {
+                    m_bInSysex = true;
+                    status = 0;
+                } else {
+                    //unsigned char channel = status & 0x0F;
+                    if(message.size() < 3)
+                        return;
+                    auto note = message[1];
+                    auto velocity = message[2];
+
+                    QMetaObject::invokeMethod(this,"receive", Q_ARG(unsigned char, status),Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration, timestamp));
+                    receive(status, note, velocity, timestamp);
+                    return;
+                }
+
+            }
+            // Collect bytes from PmMessage
+            for(auto i = 1u; i < message.size() ; ++i) {
+                auto data = message.at(i);
+                // End System Exclusive message if the EOX byte was received
+                if(data == MIDI_EOX) {
+                    QMetaObject::invokeMethod(this,"receive", Q_ARG(QByteArray,QByteArray::fromRawData(reinterpret_cast<const char*>(m_sysex.data()),m_sysex.size())),Q_ARG(mixxx::Duration, timestamp));
+    //                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
+    //                    timestamp);
+                    m_sysex.clear();
+                    m_bInSysex = false;
+                    return;
+                }else{
+                    m_sysex.push_back(data);
+                }
             }
         }
+    }
+    catch(const RtMidiError & e) {
+        qWarning() << "RtMidiError in callback:" << e.what();
+    }
+    catch(...) {
+        qWarning() << "Unknown error in callback";
     }
 }
 void RtMidiController::sendShortMsg(unsigned char w0, unsigned char w1, unsigned char w2)
 {
     if(m_midiOut) {
+        try{
         auto message = std::vector<uint8_t>{ w0, w1, w2 };
 //        std::vector<uint8_t>{uint8_t(word),uint8_t(word>>8),uint8_t(word>>16)};
         m_midiOut->sendMessage(&message);
+        }
+        catch(const RtMidiError & e) {
+            qWarning() << "RtMidiError in callback:" << e.what();
+        }
+        catch(...) {
+            qWarning() << "Unknown error in callback";
+        }
+
     }
 
 }
@@ -457,7 +478,16 @@ void RtMidiController::send(QByteArray data)
     if(!m_midiOut)
         return;
     auto message = std::vector<uint8_t>(data.constBegin(),data.constEnd());
-    m_midiOut->sendMessage(&message);
+    try {
+        m_midiOut->sendMessage(&message);
+    }
+    catch(const RtMidiError & e) {
+        qWarning() << "RtMidiError in callback:" << e.what();
+    }
+    catch(...) {
+        qWarning() << "Unknown error in callback";
+    }
+
 }
 bool RtMidiController::poll(){return false;}
 bool RtMidiController::isPolling() const { return false; }

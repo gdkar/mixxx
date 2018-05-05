@@ -1,6 +1,8 @@
 #ifndef ANALYZER_ANALYZER_H
 #define ANALYZER_ANALYZER_H
 
+#include <QObject>
+#include <QtGlobal>
 #include "util/types.h"
 
 /*

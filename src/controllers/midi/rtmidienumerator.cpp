@@ -15,18 +15,32 @@
 #include "util/cmdlineargs.h"
 
 RtMidiEnumerator::RtMidiEnumerator(QObject *p)
-try : MidiEnumerator(p)
-    , m_midiIn{std::make_unique<RtMidiIn>()}
-    , m_midiOut{std::make_unique<RtMidiOut>()}
-    { }
-catch(const RtMidiError &error) {
-    qWarning() << "RtMidiError" << error.what() ;
+: MidiEnumerator(p)
+{
+    try {
+        m_midiIn = std::make_unique<RtMidiIn>();
+        m_midiOut = std::make_unique<RtMidiOut>();
+    }
+    catch(const RtMidiError &error) {
+        qWarning() << "RtMidiError" << error.what() ;
+    }
+    catch(...) {
+        qWarning() << "unknown error!";
+    }
 }
 RtMidiEnumerator::~RtMidiEnumerator()
 {
     qDebug() << "Deleting RtMidi devices...";
     for(auto & dev : m_devices) {
-        delete dev;
+        try {
+            delete dev;
+        }
+        catch(const RtMidiError &error) {
+            qWarning() << "RtMidiError" << error.what() ;
+        }
+        catch(...) {
+            qWarning() << "unknown error!";
+        }
         dev = nullptr;
     }
     m_devices.clear();
@@ -45,43 +59,52 @@ QList<Controller*> RtMidiEnumerator::queryDevices()
         delete dev;
         dev = nullptr;
     }
-    m_devices.clear();
-    auto num_inputs = int(m_midiIn->getPortCount());
-    auto num_outputs= int(m_midiOut->getPortCount());
+    try {
+        m_devices.clear();
+        auto num_inputs = int(m_midiIn->getPortCount());
+        auto num_outputs= int(m_midiOut->getPortCount());
 
-    auto inputDevIndex = -1;
-    auto outputDevIndex = -1;
+        auto inputDevIndex = -1;
+        auto outputDevIndex = -1;
 
-    std::map<int, std::string> unassignedOutputDevices;
+        std::map<int, std::string> unassignedOutputDevices;
 
-    // Build a complete list of output devices for later pairing
-    for (int i = 0; i < num_outputs; i++) {
-        auto deviceName = m_midiOut->getPortName(i);
-        qDebug() << " Found output device" << "#" << i << deviceName.c_str();
-        unassignedOutputDevices[i] = deviceName;
-    }
-    // Search for input devices and pair them with output devices if applicable
-    for (int i = 0; i < num_inputs; i++) {
-        auto deviceName = m_midiIn->getPortName(i);
-        qDebug() << " Found input device" << "#" << i << deviceName.c_str();
-        inputDevIndex = i;
-        //Reset our output device variables before we look for one incase we find none.
-        outputDevIndex = -1;
-        auto outputName = std::string{};
-        for(auto it = unassignedOutputDevices.begin(); it != unassignedOutputDevices.end(); ++it) {
-            if(shouldLinkInputToOutput(QString::fromStdString(deviceName), QString::fromStdString(it->second))) {
-                outputDevIndex = it->first;
-                outputName = it->second;
-                it = unassignedOutputDevices.erase(it);
-                qDebug() << "    Linking to output device #" << outputDevIndex << outputName.c_str();
-                break;
-            }
+        // Build a complete list of output devices for later pairing
+        for (int i = 0; i < num_outputs; i++) {
+            auto deviceName = m_midiOut->getPortName(i);
+            qDebug() << " Found output device" << "#" << i << deviceName.c_str();
+            unassignedOutputDevices[i] = deviceName;
         }
-        auto currentDevice = new RtMidiController(inputDevIndex, QString::fromStdString(deviceName), outputDevIndex, QString::fromStdString(outputName));
-        m_devices.push_back(currentDevice);
+        // Search for input devices and pair them with output devices if applicable
+        for (int i = 0; i < num_inputs; i++) {
+            auto deviceName = m_midiIn->getPortName(i);
+            qDebug() << " Found input device" << "#" << i << deviceName.c_str();
+            inputDevIndex = i;
+            //Reset our output device variables before we look for one incase we find none.
+            outputDevIndex = -1;
+            auto outputName = std::string{};
+            for(auto it = unassignedOutputDevices.begin(); it != unassignedOutputDevices.end(); ++it) {
+                if(shouldLinkInputToOutput(QString::fromStdString(deviceName), QString::fromStdString(it->second))) {
+                    outputDevIndex = it->first;
+                    outputName = it->second;
+                    it = unassignedOutputDevices.erase(it);
+                    qDebug() << "    Linking to output device #" << outputDevIndex << outputName.c_str();
+                    break;
+                }
+            }
+            auto currentDevice = new RtMidiController(inputDevIndex, QString::fromStdString(deviceName), outputDevIndex, QString::fromStdString(outputName));
+            m_devices.push_back(currentDevice);
+        }
+        for(auto it = unassignedOutputDevices.begin(); it != unassignedOutputDevices.end(); ++it) {
+            m_devices.push_back(new RtMidiController(-1, QString{},it->first, QString::fromStdString(it->second)));
+        }
     }
-    for(auto it = unassignedOutputDevices.begin(); it != unassignedOutputDevices.end(); ++it) {
-        m_devices.push_back(new RtMidiController(-1, QString{},it->first, QString::fromStdString(it->second)));
+    catch(const RtMidiError &error) {
+        qWarning() << "RtMidiError" << error.what() ;
     }
+    catch(...) {
+        qWarning() << "unknown error!";
+    }
+
     return m_devices;
 }

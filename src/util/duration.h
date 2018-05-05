@@ -2,6 +2,8 @@
 #define MIXXX_UTIL_DURATION_H
 
 #include <QMetaType>
+#include <QObject>
+#include <QMetaEnum>
 #include <QString>
 #include <QtDebug>
 #include <QtGlobal>
