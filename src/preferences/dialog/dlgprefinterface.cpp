@@ -109,7 +109,7 @@ DlgPrefInterface::DlgPrefInterface(QWidget * parent, MixxxMainWindow * mixxx,
     slotUpdateSchemes();
 
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0)) || 1
     AutoHiDpi autoHiDpi;
     m_dScaleFactorAuto = autoHiDpi.getScaleFactor();
     m_dScaleFactor = m_dScaleFactorAuto;
@@ -154,11 +154,11 @@ DlgPrefInterface::DlgPrefInterface(QWidget * parent, MixxxMainWindow * mixxx,
     // Screensaver mode
     //
     comboBoxScreensaver->clear();
-    comboBoxScreensaver->addItem(tr("Allow screensaver to run"), 
+    comboBoxScreensaver->addItem(tr("Allow screensaver to run"),
         static_cast<int>(mixxx::ScreenSaverPreference::PREVENT_OFF));
-    comboBoxScreensaver->addItem(tr("Prevent screensaver from running"), 
+    comboBoxScreensaver->addItem(tr("Prevent screensaver from running"),
         static_cast<int>(mixxx::ScreenSaverPreference::PREVENT_ON));
-    comboBoxScreensaver->addItem(tr("Prevent screensaver while playing"), 
+    comboBoxScreensaver->addItem(tr("Prevent screensaver while playing"),
         static_cast<int>(mixxx::ScreenSaverPreference::PREVENT_ON_PLAY));
 
     int inhibitsettings = static_cast<int>(mixxx->getInhibitScreensaver());

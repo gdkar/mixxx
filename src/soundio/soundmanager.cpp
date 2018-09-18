@@ -167,7 +167,7 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
             closed = true;
         }
     }
-
+#if 0
     if (closed && sleepAfterClosing) {
 #ifdef __LINUX__
         // Sleep for 5 sec to allow asynchronously sound APIs like "pulse" to free
@@ -175,7 +175,7 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
         sleep(kSleepSecondsAfterClosingDevice);
 #endif
     }
-
+#endif
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
     // then the callback may be running when we call
     // onInputDisconnected/onOutputDisconnected.

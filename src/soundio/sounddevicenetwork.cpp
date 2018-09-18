@@ -416,7 +416,7 @@ void SoundDeviceNetwork::callbackProcessClkRef() {
     Trace trace("SoundDeviceNetwork::callbackProcessClkRef %1",
                 getInternalName());
 
-
+#if 0
     if (!m_denormals) {
         m_denormals = true;
         // This disables the denormals calculations, to avoid a
@@ -448,7 +448,7 @@ void SoundDeviceNetwork::callbackProcessClkRef() {
         qWarning() << "No SSE: No denormals to zero mode available. EQs and effects may suffer high CPU load";
 #endif
     }
-
+#endif
     m_pSoundManager->readProcess();
 
     {
