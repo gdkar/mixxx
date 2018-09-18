@@ -229,6 +229,10 @@ class Qt(Dependence):
                 'QtFontDatabaseSupport',
                 'QtThemeSupport',
                 'QtWindowsUIAutomationSupport',
+                'QtConcurrent',
+                'QtWidgets',
+                'QtQuick',
+                'QtQml',
             ])
         return qt_modules
 
@@ -328,6 +332,8 @@ class Qt(Dependence):
                 'QtGui'      : ['QT_GUI_LIB'],
                 'QtNetwork'  : ['QT_NETWORK_LIB'],
                 'QtCore'     : ['QT_CORE_LIB'],
+                'QtQml'      : ['QT_QML_LIB'],
+                'QtQuick'      : ['QT_QUICK_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],
             }
             for module in qt_modules:
@@ -427,7 +433,7 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=c++11')
+            build.env.Append(CXXFLAGS='-std=gnu++17')
 
 
 class TestHeaders(Dependence):
@@ -484,7 +490,7 @@ class Ebur128Mit(Dependence):
 
 
 class SoundTouch(Dependence):
-    SOUNDTOUCH_INTERNAL_PATH = 'lib/soundtouch'
+    SOUNDTOUCH_INTERNAL_PATH = '#lib/soundtouch'
     INTERNAL_LINK = True
 
     def sources(self, build):
@@ -509,6 +515,9 @@ class SoundTouch(Dependence):
                 # System Lib found
                 build.env.ParseConfig('pkg-config soundtouch --silence-errors --cflags --libs')
                 self.INTERNAL_LINK = False
+        else:
+            self.INTERNAL_LINK=True
+
 
         if self.INTERNAL_LINK:
             env.Append(CPPPATH=['#' + self.SOUNDTOUCH_INTERNAL_PATH])

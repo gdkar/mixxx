@@ -870,7 +870,7 @@ int SoundDevicePortAudio::callbackProcessClkRef(
     if (!m_bSetThreadPriority) {
         QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
         m_bSetThreadPriority = true;
-
+#if 0
 
 #ifdef __SSE__
         // This disables the denormals calculations, to avoid a
@@ -903,6 +903,7 @@ int SoundDevicePortAudio::callbackProcessClkRef(
         } else {
             qDebug() << "Denormals to zero mode is working";
         }
+#endif
     }
 
 #ifdef __SSE__
