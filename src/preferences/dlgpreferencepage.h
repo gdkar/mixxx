@@ -2,7 +2,7 @@
 #define DLGPREFERENCEPAGE_H
 
 #include <QWidget>
-
+#include <QButtonGroup>
 // API that all preference pages should implement.
 class DlgPreferencePage : public QWidget {
     Q_OBJECT

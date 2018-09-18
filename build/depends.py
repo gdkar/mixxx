@@ -446,7 +446,7 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=gnu++14')
+            build.env.Append(CXXFLAGS='-std=gnu++17')
 
 
 class TestHeaders(Dependence):

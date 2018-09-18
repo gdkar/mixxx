@@ -231,8 +231,8 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     m_pPlayerManager->addConfiguredDecks();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
-    m_pPlayerManager->addSampler();
-    m_pPlayerManager->addSampler();
+//    m_pPlayerManager->addSampler();
+//    m_pPlayerManager->addSampler();
     m_pPlayerManager->addPreviewDeck();
 
     launchProgress(30);

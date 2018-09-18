@@ -206,13 +206,10 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
 
     // this called after the precious chunk was consumed
     if (in_reverse) {
-        current_position.frame =
-                static_cast<SINT>(ceil(m_currentPosition / kNumChannels)) -
-                frameCountToCache;
-    } else {
-        current_position.frame =
-                static_cast<SINT>(floor(m_currentPosition / kNumChannels));
+        current_position.frameCount = -current_position.frameCount;
     }
+    current_position.frame =
+            static_cast<SINT>(floor(m_currentPosition / kNumChannels));
 
     // If we are trying to cache before the start of the track,
     // Then we don't need to cache because it's all zeros!
@@ -221,7 +218,6 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
     {
     	return;
     }
-
     // top priority, we need to read this data immediately
     current_position.priority = 1;
     pHintList->append(current_position);

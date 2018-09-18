@@ -371,17 +371,19 @@ SINT CachingReader::read(SINT startSample, SINT numSamples, bool reverse, CSAMPL
     return numSamples;
 }
 
-void CachingReader::hintAndMaybeWake(const HintVector& hintList)
+void CachingReader::hintAndMaybeWake(HintVector& hintList)
 {
     ScopedTimer top_time(__PRETTY_FUNCTION__);
     // If no file is loaded, skip.
     if (m_readerStatus != TRACK_LOADED) {
         return;
     }
-
+/*    std::sort(hintList.begin(),hintList.end(),[](auto && lhs, auto && rhs) {
+        return lhs.priority < rhs.priority;
+     });*/
+    auto chunk_vector = QVarLengthArray< CachingReaderChunkForOwner*,64>{};
     // For every chunk that the hints indicated, check if it is in the cache. If
     // any are not, then wake.
-    auto shouldWake = false;
     Stat::track("hintList.size()",
         Stat::UNSPECIFIED,
         Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
@@ -395,12 +397,15 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList)
         if (hintFrameCount == Hint::kFrameCountForward) {
         	hintFrameCount = kDefaultHintFrames;
         } else if (hintFrameCount == Hint::kFrameCountBackward) {
-        	hintFrame -= kDefaultHintFrames;
-        	hintFrameCount = kDefaultHintFrames;
-            if (hintFrame < 0) {
-            	hintFrameCount += hintFrame;
-                hintFrame = 0;
-            }
+        	hintFrameCount = -kDefaultHintFrames;
+        }
+        if(hintFrameCount < 0) {
+            hintFrame += hintFrameCount;
+            hintFrameCount = -hintFrameCount;
+        }
+        if (hintFrame < 0) {
+            hintFrameCount -= hintFrame;
+            hintFrame = 0;
         }
 
         VERIFY_OR_DEBUG_ASSERT(hintFrameCount > 0) {
@@ -417,20 +422,27 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList)
         }
 
         auto firstCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(minReadableFrameIndex);
-        auto lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex - 1);
+        auto lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex);
+        auto can_enqueue = true;
         for (int chunkIndex = firstCachingReaderChunkIndex; chunkIndex <= lastCachingReaderChunkIndex; ++chunkIndex) {
             auto pChunk = lookupChunk(chunkIndex);
             if (pChunk == nullptr) {
-                shouldWake = true;
-                pChunk = allocateChunkExpireLRU(chunkIndex);
-                if (pChunk == nullptr) {
-                    qDebug() << "ERROR: Couldn't allocate spare CachingReaderChunk to make CachingReaderChunkReadRequest.";
+                if(can_enqueue) {
+                    if(chunk_vector.size() + 1 >= chunk_vector.capacity()) {
+                        can_enqueue = false;
+                        qDebug() << "ERROR: chunk_vector fullCachingReaderChunkReadRequest.";
+                        continue;
+                    }
+                    pChunk = allocateChunkExpireLRU(chunkIndex);
+                    if (pChunk == nullptr) {
+                        qDebug() << "ERROR: Couldn't allocate spare CachingReaderChunk to make CachingReaderChunkReadRequest.";
+                        can_enqueue = false;
+                        continue;
+                    }
+                    chunk_vector.append(pChunk);
+                } else {
                     continue;
                 }
-                // Do not insert the allocated chunk into the MRU/LRU list,
-                // because it will be handed over to the worker immediately
-                pChunk->giveToWorker();
-                m_chunkReadRequestFIFO.push(pChunk);
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
                 //qDebug() << "Checking chunk " << current << " shouldWake:" << shouldWake << " chunksToRead" << m_chunksToRead.size();
@@ -441,8 +453,22 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList)
             }
         }
     }
+    Stat::track("chunk_vector.size()",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        chunk_vector.size()
+        );
+    if(chunk_vector.size()) {
+        std::sort(chunk_vector.begin(),chunk_vector.end(),[](auto && lhs, auto && rhs) {
+            return lhs->getIndex() < rhs->getIndex();
+        });
+        for(auto && pChunk : chunk_vector) {
+            // Do not insert the allocated chunk into the MRU/LRU list,
+            // because it will be handed over to the worker immediately
+            pChunk->giveToWorker();
+            m_chunkReadRequestFIFO.push(pChunk);
+        }
     // If there are chunks to be read, wake up.
-    if (shouldWake) {
         m_worker.workReady();
     }
 }

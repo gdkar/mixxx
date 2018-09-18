@@ -52,7 +52,7 @@ typedef struct Hint {
 //    reallocate on every callback. resize(0) should work but a future developer
 //    may see a resize(0) and say "that's a silly way of writing clear()!" and
 //    replace it without realizing.
-typedef QVarLengthArray<Hint, 128> HintVector;
+typedef QVarLengthArray<Hint, 64> HintVector;
 
 // CachingReader provides a layer on top of a SoundSource for reading samples
 // from a file. Since we cannot do file I/O in the audio callback thread
@@ -91,7 +91,7 @@ class CachingReader : public QObject {
     // that is not in the cache. If any hints do request a chunk not in cache,
     // then wake the reader so that it can process them. Must only be called
     // from the engine callback.
-    virtual void hintAndMaybeWake(const HintVector& hintList);
+    virtual void hintAndMaybeWake(HintVector &hintList);
 
     // Request that the CachingReader load a new track. These requests are
     // processed in the work thread, so the reader must be woken up via wake()

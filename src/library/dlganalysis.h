@@ -2,6 +2,7 @@
 #define DLGANALYSIS_H
 
 #include <QItemSelection>
+#include <QtWidgets>
 
 #include "preferences/usersettings.h"
 #include "library/analysislibrarytablemodel.h"

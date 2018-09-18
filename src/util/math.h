@@ -40,10 +40,12 @@ using std::fabs;
 
 #define math_max std::max
 #define math_min std::min
-constexpr decltype(auto) math_max3(auto && a, auto && b, auto && c)
+template<class... Args>
+constexpr auto math_max3(Args&&... args)
 {
-    return std::max({a,b,c});
+    return std::max({args...});
 }
+#ifndef __cpp_lib_clamp
 template<class T, class Compare>
 constexpr const T& clamp( const T& v, const T& lo, const T& hi, Compare && comp)
 {
@@ -54,6 +56,9 @@ constexpr const T &clamp( const T& v, const T& lo, const T& hi)
 {
     return clamp( v, lo, hi, std::less<>{});
 }// Restrict value to the range [min, max]. Undefined behavior if min > max.
+#else
+using std::clamp;
+#endif
 template <typename T>
 constexpr T math_clamp(T value, T _min, T _max) {
     // DEBUG_ASSERT compiles out in release builds so it does not affect
