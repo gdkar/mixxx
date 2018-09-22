@@ -2,7 +2,6 @@
 #define MIDIMESSAGE_H
 
 #include <QList>
-#include <QPair>
 #include <QMetaType>
 
 #include "preferences/usersettings.h"

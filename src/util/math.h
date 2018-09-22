@@ -10,30 +10,44 @@
 #endif
 #endif
 
-#include <math.h>
-#include <cmath> 
-// Note: Because of our fpclassify hack, we actually need to include both, 
-// the c and the c++ version of the math header.  
-// From GCC 6.1.1 math.h depends on cmath, which fails to compile if included 
-// after our fpclassify hack 
-
-#include <algorithm>
+#include <cmath>
+#include <numeric>
+#include <limits>
 #include <type_traits>
+#include <algorithm>
+
+#include <math.h>
+// Note: Because of our fpclassify hack, we actually need to include both,
+// the c and the c++ version of the math header.
+// From GCC 6.1.1 math.h depends on cmath, which fails to compile if included
+// after our fpclassify hack
+
 
 #include "util/assert.h"
-#include "util/fpclassify.h"
 
 // If we don't do this then we get the C90 fabs from the global namespace which
 // is only defined for double.
 using std::fabs;
 
-#define math_max std::max
-#define math_min std::min
-#define math_max3(a, b, c) math_max(math_max((a), (b)), (c))
+//#define math_max std::max
+//#define math_min std::min
+//#define math_max(math_max((a), (b)), (c))
+template<typename... Args>
+constexpr std::common_type_t<Args...> math_min(Args ...args)
+{
+    using U = std::common_type_t<Args...>;
+    return std::min<U>({U(args)...});
+}
 
+template<typename... Args>
+constexpr std::common_type_t<Args...> math_max(Args ...args)
+{
+    using U = std::common_type_t<Args...>;
+    return std::max<U>({U(args)...});
+}
 // Restrict value to the range [min, max]. Undefined behavior if min > max.
 template <typename T>
-inline T math_clamp(T value, T min, T max) {
+constexpr T math_clamp(T value, T min, T max) {
     // DEBUG_ASSERT compiles out in release builds so it does not affect
     // vectorization or pipelining of clamping in tight loops.
     DEBUG_ASSERT(min <= max);
@@ -44,7 +58,7 @@ inline T math_clamp(T value, T min, T max) {
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.
 template <typename T>
-inline bool even(T value) {
+constexpr bool even(T value) {
     return value % 2 == 0;
 }
 
@@ -53,7 +67,7 @@ inline bool even(T value) {
 #pragma intrinsic(fabs)
 #endif
 
-inline int roundUpToPowerOf2(int v) {
+constexpr int roundUpToPowerOf2(int v) {
     int power = 1;
     while (power < v && power > 0) {
         power *= 2;
@@ -66,7 +80,7 @@ inline int roundUpToPowerOf2(int v) {
     return power;
 }
 
-inline double roundToFraction(double value, int denominator) {
+constexpr double roundToFraction(double value, int denominator) {
     int wholePart = value;
     double fractionPart = value - wholePart;
     double numerator = std::round(fractionPart * denominator);
@@ -74,21 +88,21 @@ inline double roundToFraction(double value, int denominator) {
 }
 
 template <typename T>
-inline const T ratio2db(const T a) {
+constexpr T ratio2db(const T a) {
     static_assert(std::is_same<float, T>::value ||
                   std::is_same<double, T>::value ||
                   std::is_same<long double, T>::value,
                   "ratio2db works only for floating point types");
-    return log10(a) * 20;
+    return std::log10(a) * 20;
 }
 
 template <typename T>
-inline const T db2ratio(const T a) {
+constexpr T db2ratio(const T a) {
     static_assert(std::is_same<float, T>::value ||
                   std::is_same<double, T>::value ||
                   std::is_same<long double, T>::value,
                   "db2ratio works only for floating point types");
-    return pow(10, a / 20);
+    return std::pow(10, a / 20);
 }
 
 #endif /* MATH_H */

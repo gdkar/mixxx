@@ -1,25 +1,22 @@
-#ifndef MIXXX_UTIL_SAMPLE_H
-#define MIXXX_UTIL_SAMPLE_H
-
+_Pragma("once")
 #include <algorithm>
 #include <cstring> // memset
 
 #include <QFlags>
 
 #include "util/types.h"
-#include "util/platform.h"
+
 
 // A group of utilities for working with samples.
-class SampleUtil {
-  public:
+namespace SampleUtil {
     // If more audio channels are added in the future, this can be used
     // as bitflags, e.g CLIPPING_CH3 = 4
     enum CLIP_FLAG {
-        NO_CLIPPING = 0,
+        CLIPPING_NONE = 0,
         CLIPPING_LEFT = 1,
         CLIPPING_RIGHT = 2,
     };
-    Q_DECLARE_FLAGS(CLIP_STATUS, CLIP_FLAG);
+    Q_DECLARE_FLAGS(CLIP_FLAGS, CLIP_FLAG);
 
     // The PlayPosition, Loops and Cue Points used in the Database and
     // Mixxx CO interface are expressed as a floating point number of stereo samples.
@@ -28,31 +25,43 @@ class SampleUtil {
 
     // Allocated a buffer of CSAMPLE's with length size. Ensures that the buffer
     // is 16-byte aligned for SSE enhancement.
-    static CSAMPLE* alloc(SINT size);
-
+    CSAMPLE* alloc(SINT size);
     // Frees a 16-byte aligned buffer allocated by SampleUtil::alloc()
-    static void free(CSAMPLE* pBuffer);
-
+    void free(CSAMPLE* pBuffer);
     // Sets every sample in pBuffer to zero
     inline
-    static void clear(CSAMPLE* pBuffer, SINT numSamples) {
+    void clear(CSAMPLE* pBuffer, SINT iNumSamples)
+    {
         // Special case: This works, because the binary representation
         // of 0.0f is 0!
-        memset(pBuffer, 0, sizeof(*pBuffer) * numSamples);
-        //fill(pBuffer, CSAMPLE_ZERO, iNumSamples);
+        std::fill(pBuffer, pBuffer + iNumSamples, 0);
     }
-
     // Sets every sample in pBuffer to value
     inline
-    static void fill(CSAMPLE* pBuffer, CSAMPLE value,
-            SINT numSamples) {
-        std::fill(pBuffer, pBuffer + numSamples, value);
+    void fill(CSAMPLE* pBuffer, CSAMPLE value, SINT iNumSamples)
+    {
+        std::fill(pBuffer, pBuffer + iNumSamples, value);
     }
-
+    constexpr SINT ceilPlayPosToFrameStart(double playPos, int numChannels)
+    {
+        return static_cast<SINT>(std::ceil(playPos/numChannels)) * numChannels;
+    }
+    constexpr SINT floorPlayPosToFrameStart(double playPos, int numChannels)
+    {
+        return static_cast<SINT>(std::floor(playPos/numChannels)) * numChannels;
+    }
+    constexpr SINT roundPlayPosToFrameStart(double playPos, int numChannels)
+    {
+        return static_cast<SINT>(std::round(playPos/numChannels)) * numChannels;
+    }
+    constexpr SINT truncPlayPosToFrameStart(double playPos, int numChannels)
+    {
+        return static_cast<SINT>(playPos/numChannels) * numChannels;
+    }
     // Copies every sample from pSrc to pDest
     inline
-    static void copy(CSAMPLE* M_RESTRICT pDest, const CSAMPLE* M_RESTRICT pSrc,
-            SINT iNumSamples) {
+    void copy(CSAMPLE*  pDest, const CSAMPLE*  pSrc, SINT iNumSamples)
+    {
         // Benchmark results on 32 bit SSE2 Atom Cpu (Linux)
         // memcpy 7263 ns
         // std::copy 9289 ns
@@ -70,191 +79,169 @@ class SampleUtil {
         // requires some checks that can be omitted when inlining the
         // following vectorized loop. Btw.: memcpy() calls from the Qt
         // library are not using SSE istructions.
-#ifdef __SSE__
-        if (sizeof(void*) == 4) { // 32 bit
-            // note: LOOP VECTORIZED.
-            for (SINT i = 0; i < iNumSamples; ++i) { // 571 ns
-                pDest[i] = pSrc[i];
-            }
-        } else
-#endif
-        {
-            memcpy(pDest, pSrc, iNumSamples * sizeof(CSAMPLE));
-        }
+        std::copy(pSrc, pSrc + iNumSamples, pDest);
     }
 
     // Limits a CSAMPLE value to the valid range [-CSAMPLE_PEAK, CSAMPLE_PEAK]
-    inline static CSAMPLE clampSample(CSAMPLE in) {
+    constexpr CSAMPLE clampSample(CSAMPLE in)
+    {
         return CSAMPLE_clamp(in);
     }
 
     // Limits a CSAMPLE_GAIN value to the valid range [CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX]
-    inline static CSAMPLE clampGain(CSAMPLE_GAIN in) {
+    constexpr CSAMPLE clampGain(CSAMPLE_GAIN in)
+    {
         return CSAMPLE_GAIN_clamp(in);
     }
 
-    inline static SINT roundPlayPosToFrameStart(double playPos, int numChannels) {
-        SINT playPosFrames = static_cast<SINT>(round(playPos / numChannels));
-        return playPosFrames * numChannels;
+    constexpr SINT roundPlayPosToFrame(double playPos) {
+        return static_cast<SINT>(std::round(playPos / kPlayPositionChannels));
     }
 
-    inline static SINT truncPlayPosToFrameStart(double playPos, int numChannels) {
-        SINT playPosFrames = static_cast<SINT>(playPos / numChannels);
-        return playPosFrames * numChannels;
-    }
-
-    inline static SINT floorPlayPosToFrameStart(double playPos, int numChannels) {
-        SINT playPosFrames = static_cast<SINT>(floor(playPos / numChannels));
-        return playPosFrames * numChannels;
-    }
-
-    inline static SINT ceilPlayPosToFrameStart(double playPos, int numChannels) {
-        SINT playPosFrames = static_cast<SINT>(ceil(playPos / numChannels));
-        return playPosFrames * numChannels;
-    }
-
-    inline static SINT roundPlayPosToFrame(double playPos) {
-        return static_cast<SINT>(round(playPos / kPlayPositionChannels));
-    }
-
-    inline static SINT truncPlayPosToFrame(double playPos) {
+    constexpr SINT truncPlayPosToFrame(double playPos) {
         return static_cast<SINT>(playPos / kPlayPositionChannels);
     }
 
-    inline static SINT floorPlayPosToFrame(double playPos) {
-        return static_cast<SINT>(floor(playPos / kPlayPositionChannels));
+    constexpr SINT floorPlayPosToFrame(double playPos) {
+        return static_cast<SINT>(std::floor(playPos / kPlayPositionChannels));
 
     }
 
-    inline static SINT ceilPlayPosToFrame(double playPos) {
-        return static_cast<SINT>(ceil(playPos / kPlayPositionChannels));
+    constexpr SINT ceilPlayPosToFrame(double playPos) {
+        return static_cast<SINT>(std::ceil(playPos / kPlayPositionChannels));
     }
 
     // Multiply every sample in pBuffer by gain
-    static void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,
-            SINT numSamples);
+    void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,
+            SINT iNumSamples);
 
     // Copy pSrc to pDest and multiply each sample by a factor of gain.
     // For optimum performance use the in-place function applyGain()
     // if pDest == pSrc!
-    static void copyWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            CSAMPLE_GAIN gain, SINT numSamples);
+    void copyWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            CSAMPLE_GAIN gain, SINT iNumSamples);
+
 
     // Apply a different gain to every other sample.
-    static void applyAlternatingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN gain1,
-            CSAMPLE_GAIN gain2, SINT numSamples);
-
-    static void applyRampingAlternatingGain(CSAMPLE* pBuffer,
-            CSAMPLE gain1, CSAMPLE gain2,
-            CSAMPLE gain1Old, CSAMPLE gain2Old, SINT numSamples);
+    void applyAlternatingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN gain1,
+            CSAMPLE_GAIN gain2, SINT iNumSamples);
 
     // Multiply every sample in pBuffer ramping from gain1 to gain2.
     // We use ramping as often as possible to prevent soundwave discontinuities
     // which can cause audible clicks and pops.
-    static void applyRampingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN old_gain,
-            CSAMPLE_GAIN new_gain, SINT numSamples);
+    void applyRampingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN old_gain,
+            CSAMPLE_GAIN new_gain, SINT iNumSamples);
 
-    // Copy pSrc to pDest and ramp gain
+     void applyRampingAlternatingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN g1,CSAMPLE_GAIN g2
+     , CSAMPLE_GAIN o1, CSAMPLE_GAIN o2,
+            SINT iNumSamples);
+   // Copy pSrc to pDest and ramp gain
     // For optimum performance use the in-place function applyRampingGain()
     // if pDest == pSrc!
-    static void copyWithRampingGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
+    void copyWithRampingGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
             CSAMPLE_GAIN old_gain, CSAMPLE_GAIN new_gain,
-            SINT numSamples);
-
-    // Add pSrc to pDest
-    static void add(CSAMPLE* pDest, const CSAMPLE* pSrc, SINT numSamples);
+            SINT iNumSamples);
 
     // Add each sample of pSrc, multiplied by the gain, to pDest
-    static void addWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            CSAMPLE_GAIN gain, SINT numSamples);
+    void addWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            CSAMPLE_GAIN gain, SINT iNumSamples);
 
     // Add each sample of pSrc, multiplied by the gain, to pDest
-    static void addWithRampingGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
+    void addWithRampingGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
             CSAMPLE_GAIN old_gain, CSAMPLE_GAIN new_gain,
-            SINT numSamples);
-
-    // Add to each sample of pDest, pSrc1 multiplied by gain1 plus pSrc2
-    // multiplied by gain2
-    static void add2WithGain(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-            CSAMPLE_GAIN gain1, const CSAMPLE* pSrc2, CSAMPLE_GAIN gain2,
-            SINT numSamples);
-
-    // Add to each sample of pDest, pSrc1 multiplied by gain1 plus pSrc2
-    // multiplied by gain2 plus pSrc3 multiplied by gain3
-    static void add3WithGain(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-            CSAMPLE_GAIN gain1, const CSAMPLE* pSrc2, CSAMPLE_GAIN gain2,
-            const CSAMPLE* pSrc3, CSAMPLE_GAIN gain3, SINT numSamples);
+            SINT iNumSamples);
+    template<class...T>
+    inline void addWithGain(CSAMPLE *pDest, SINT iNumSamples,
+        const CSAMPLE*pSrc0, CSAMPLE_GAIN gain0, T... args)
+    {
+        addWithGain(pDest, pSrc0, gain0,iNumSamples);
+        addWithGain(pDest, iNumSamples, args...);
+    }
+    template<>
+    inline void addWithGain(CSAMPLE *pDest, SINT iNumSamples,
+        const CSAMPLE *pSrc, CSAMPLE_GAIN gain)
+    {
+        addWithGain(pDest,pSrc,gain,iNumSamples);
+    }
+    template<class...T>
+    inline void copyWithGain(CSAMPLE *pDest,SINT iNumSamples
+        , const CSAMPLE *pSrc0, CSAMPLE_GAIN gain0
+        , T... args)
+    {
+        copyWithGain(pDest, pSrc0, gain0, iNumSamples);
+        addWithGain(pDest, iNumSamples, args...);
+    }
 
     // Convert and normalize a buffer of SAMPLEs in the range [-SAMPLE_MAX, SAMPLE_MAX]
     // to a buffer of CSAMPLEs in the range [-1.0, 1.0].
-    static void convertS16ToFloat32(CSAMPLE* pDest, const SAMPLE* pSrc,
-            SINT numSamples);
+    void convertS16ToFloat32(CSAMPLE* pDest, const SAMPLE* pSrc,
+            SINT iNumSamples);
 
     // Convert and normalize a buffer of CSAMPLEs in the range [-1.0, 1.0]
     // to a buffer of SAMPLEs in the range [-SAMPLE_MAX, SAMPLE_MAX].
-    static void convertFloat32ToS16(SAMPLE* pDest, const CSAMPLE* pSrc,
-            SINT numSamples);
+    void convertFloat32ToS16(SAMPLE* pDest, const CSAMPLE* pSrc,
+            SINT iNumSamples);
 
     // For each pair of samples in pBuffer (l,r) -- stores the sum of the
     // absolute values of l in pfAbsL, and the sum of the absolute values of r
     // in pfAbsR.
     // The return value tells whether there is clipping in pBuffer or not.
-    static CLIP_STATUS sumAbsPerChannel(CSAMPLE* pfAbsL, CSAMPLE* pfAbsR,
-            const CSAMPLE* pBuffer, SINT numSamples);
+    CLIP_FLAGS sumAbsPerChannel(CSAMPLE* pfAbsL, CSAMPLE* pfAbsR,
+            const CSAMPLE* pBuffer, SINT iNumSamples);
 
     // Copies every sample in pSrc to pDest, limiting the values in pDest
     // to the valid range of CSAMPLE. If pDest and pSrc are aliases, will
     // not copy will only clamp. Returns true if any samples in pSrc were
     // outside the valid range of CSAMPLE.
-    static void copyClampBuffer(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            SINT numSamples);
+    void copyClampBuffer(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            SINT iNumSamples);
 
     // Interleave the samples in pSrc1 and pSrc2 into pDest. iNumSamples must be
     // the number of samples in pSrc1 and pSrc2, and pDest must have at least
     // space for iNumSamples*2 samples. pDest must not be an alias of pSrc1 or
     // pSrc2.
-    static void interleaveBuffer(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-            const CSAMPLE* pSrc2, SINT numSamples);
+    void interleaveBuffer(CSAMPLE* pDest, const CSAMPLE* pSrc1,
+            const CSAMPLE* pSrc2, SINT iNumSamples);
 
     // Deinterleave the samples in pSrc alternately into pDest1 and
     // pDest2. iNumSamples must be the number of samples in pDest1 and pDest2,
     // and pSrc must have at least iNumSamples*2 samples. Neither pDest1 or
     // pDest2 can be aliases of pSrc.
-    static void deinterleaveBuffer(CSAMPLE* pDest1, CSAMPLE* pDest2,
-            const CSAMPLE* pSrc, SINT numSamples);
+    void deinterleaveBuffer(CSAMPLE* pDest1, CSAMPLE* pDest2,
+            const CSAMPLE* pSrc, SINT iNumSamples);
 
     // Crossfade two buffers together and put the result in pDest.  All the
     // buffers must be the same length.  pDest may be an alias of the source
     // buffers.  It is preferable to use the copyWithRamping functions, but
     // sometimes this function is necessary.
-    static void linearCrossfadeBuffers(CSAMPLE* pDest,
+    void linearCrossfadeBuffers(CSAMPLE* pDest,
             const CSAMPLE* pSrcFadeOut, const CSAMPLE* pSrcFadeIn,
-            SINT numSamples);
+            SINT iNumSamples);
 
     // Mix a buffer down to mono, putting the result in both of the channels.
     // This uses a simple (L+R)/2 method, which assumes that the audio is
     // "mono-compatible", ie there are no major out-of-phase parts of the signal.
-    static void mixStereoToMono(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            SINT numSamples);
+    void mixStereoToMono(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            SINT iNumSamples);
 
     // In-place doubles the mono samples in pBuffer to dual mono samples.
     // (numFrames) samples will be read from pBuffer
     // (numFrames * 2) samples will be written into pBuffer
-    static void doubleMonoToDualMono(CSAMPLE* pBuffer, SINT numFrames);
+    void doubleMonoToDualMono(CSAMPLE* pBuffer, SINT numFrames);
 
     // Copies and doubles the mono samples in pSrc to dual mono samples
     // into pDest.
     // (numFrames) samples will be read from pSrc
     // (numFrames * 2) samples will be written into pDest
-    static void copyMonoToDualMono(CSAMPLE* pDest, const CSAMPLE* pSrc,
+    void copyMonoToDualMono(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            SINT numFrames);
+    // Copies and doubles the mono samples in pSrc to dual mono samples
+    // into pDest.
+    // (numFrames) samples will be read from pSrc
+    // (numFrames * 2) samples will be written into pDest
+    void addMonoToStereo(CSAMPLE* pDest, const CSAMPLE* pSrc,
             SINT numFrames);
 
-    // Adds and doubles the mono samples in pSrc to dual mono samples
-    // to pDest.
-    // (numFrames) samples will be read from pSrc
-    // (numFrames * 2) samples will be added to pDest
-    static void addMonoToStereo(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            SINT numFrames);
 
     // In-place strips interleaved multi-channel samples in pBuffer with
     // numChannels >= 2 down to stereo samples. Only samples from the first
@@ -262,8 +249,8 @@ class SampleUtil {
     // channels are discarded.
     // pBuffer must contain (numFrames * numChannels) samples
     // (numFrames * 2) samples will be written into pBuffer
-    static void stripMultiToStereo(CSAMPLE* pBuffer, SINT numFrames,
-            int numChannels);
+    void stripMultiToStereo(CSAMPLE* pBuffer, SINT numFrames,
+            SINT numChannels);
 
     // Copies and strips interleaved multi-channel sample data in pSrc with
     // numChannels >= 2 down to stereo samples into pDest. Only samples from
@@ -271,22 +258,67 @@ class SampleUtil {
     // channels will be ignored.
     // pSrc must contain (numFrames * numChannels) samples
     // (numFrames * 2) samples will be written into pDest
-    static void copyMultiToStereo(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            SINT numFrames, int numChannels);
+    void copyMultiToStereo(CSAMPLE* pDest, const CSAMPLE* pSrc,
+            SINT numFrames, SINT numChannels);
 
     // reverses stereo sample in place
-    static void reverse(CSAMPLE* pBuffer, SINT numSamples);
+    void reverse(CSAMPLE* pBuffer, SINT iNumSamples);
 
     // copy pSrc to pDest and reverses stereo sample order (backward)
-    static void copyReverse(CSAMPLE* M_RESTRICT pDest,
-            const CSAMPLE* M_RESTRICT pSrc, SINT numSamples);
+    void copyReverse(CSAMPLE*  pDest,
+            const CSAMPLE*  pSrc, SINT iNumSamples);
 
 
-    // Include auto-generated methods (e.g. copyXWithGain, copyXWithRampingGain,
-    // etc.)
-#include "util/sample_autogen.h"
+    void addWithGain(
+            CSAMPLE**     pDest,
+    const CSAMPLE**     pSrc,
+            CSAMPLE_GAIN* gain,
+            SINT           num,
+            SINT           bands);
+
+    void addWithRampingGain(
+            CSAMPLE**     pDest,
+    const CSAMPLE**     pSrc,
+            CSAMPLE_GAIN* gain_pre,
+            CSAMPLE_GAIN* gain_post,
+            SINT           num,
+            SINT           bands);
+    inline void copy2WithRampingGain(
+        CSAMPLE* pDest
+      , const CSAMPLE* pSrc0, CSAMPLE_GAIN old_gain0, CSAMPLE_GAIN new_gain0
+      , const CSAMPLE *pSrc1, CSAMPLE_GAIN old_gain1, CSAMPLE_GAIN new_gain1
+      , SINT iNumSamples)
+    {
+        copyWithRampingGain(pDest, pSrc0, old_gain0, new_gain0,iNumSamples);
+        addWithRampingGain(pDest, pSrc1, old_gain1, new_gain1, iNumSamples);
+    }
+    inline void copy3WithGain(
+        CSAMPLE* pDest
+      , const CSAMPLE* pSrc0, CSAMPLE_GAIN gain0
+      , const CSAMPLE *pSrc1, CSAMPLE_GAIN gain1
+      , const CSAMPLE *pSrc2, CSAMPLE_GAIN gain2
+      , SINT iNumSamples)
+    {
+        copyWithGain(pDest,iNumSamples,pSrc0,gain0,pSrc1,gain1,pSrc2,gain2);
+    }
+    inline void copy2WithGain(
+        CSAMPLE* pDest
+      , const CSAMPLE* pSrc0, CSAMPLE_GAIN gain0
+      , const CSAMPLE *pSrc1, CSAMPLE_GAIN gain1
+      , SINT iNumSamples)
+    {
+        copyWithGain(pDest,iNumSamples,pSrc0,gain0,pSrc1,gain1);
+    }
+    inline void copy3WithRampingGain(
+        CSAMPLE* pDest
+      , const CSAMPLE* pSrc0, CSAMPLE_GAIN old_gain0, CSAMPLE_GAIN new_gain0
+      , const CSAMPLE *pSrc1, CSAMPLE_GAIN old_gain1, CSAMPLE_GAIN new_gain1
+      , const CSAMPLE *pSrc2, CSAMPLE_GAIN old_gain2, CSAMPLE_GAIN new_gain2
+      , SINT iNumSamples)
+    {
+        copyWithRampingGain(pDest, pSrc0, old_gain0, new_gain0,iNumSamples);
+        addWithRampingGain(pDest, pSrc1, old_gain1, new_gain1,iNumSamples);
+        addWithRampingGain(pDest, pSrc2, old_gain2, new_gain2, iNumSamples);
+    }
+Q_DECLARE_OPERATORS_FOR_FLAGS(CLIP_FLAGS);
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(SampleUtil::CLIP_STATUS);
-
-#endif /* MIXXX_UTIL_SAMPLE_H */

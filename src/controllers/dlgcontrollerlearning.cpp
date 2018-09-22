@@ -15,7 +15,7 @@
 #include "util/version.h"
 
 namespace {
-typedef QPair<QString, ConfigKey> NamedControl;
+typedef std::pair<QString, ConfigKey> NamedControl;
 bool namedControlComparator(const NamedControl& l1, const NamedControl& l2) {
     return l1.first < l2.first;
 }
@@ -247,7 +247,7 @@ void DlgControllerLearning::slotMessageReceived(unsigned char status,
         }
     }
 
-    m_messages.append(QPair<MidiKey, unsigned char>(key, value));
+    m_messages.append({key, value});
     // We got a message, so we can cancel the taking-too-long timeout.
     m_firstMessageTimer.stop();
 

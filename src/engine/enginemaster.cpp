@@ -2,7 +2,6 @@
 
 #include <QtDebug>
 #include <QList>
-#include <QPair>
 
 #include "preferences/usersettings.h"
 #include "control/controlaudiotaperpot.h"
@@ -552,7 +551,7 @@ void EngineMaster::process(const int iBufferSize) {
 
             // Mix talkover into master mix
             if (m_pNumMicsConfigured->get() > 0) {
-                SampleUtil::add(m_pMaster, m_pTalkover, m_iBufferSize);
+                SampleUtil::addWithGain(m_pMaster, m_pTalkover, CSAMPLE_ONE,m_iBufferSize);
             }
 
             // Apply master gain
@@ -580,7 +579,7 @@ void EngineMaster::process(const int iBufferSize) {
 
             // Mix talkover with master
             if (m_pNumMicsConfigured->get() > 0) {
-                SampleUtil::add(m_pMaster, m_pTalkover, m_iBufferSize);
+                SampleUtil::addWithGain(m_pMaster, m_pTalkover, CSAMPLE_ONE,m_iBufferSize);
             }
 
             // Copy master mix (with talkover mixed in) to booth output with booth gain
@@ -656,7 +655,7 @@ void EngineMaster::process(const int iBufferSize) {
                 // Copy the master mix to a separate buffer before delaying it
                 // to avoid delaying the master output.
                 m_pLatencyCompensationDelay->process(m_pSidechainMix, m_iBufferSize);
-                SampleUtil::add(m_pSidechainMix, m_pTalkover, m_iBufferSize);
+                SampleUtil::addWithGain(m_pSidechainMix, m_pTalkover, CSAMPLE_ONE,m_iBufferSize);
             }
         }
 

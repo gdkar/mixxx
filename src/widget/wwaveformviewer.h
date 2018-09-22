@@ -71,6 +71,8 @@ private:
     bool m_bBending;
     QPoint m_mouseAnchor;
 
+    Qt::MouseButtons m_ScratchButton {Qt::RightButton};
+    Qt::MouseButtons m_BendButton    {Qt::LeftButton };
     WaveformWidgetAbstract* m_waveformWidget;
 
     friend class WaveformWidgetFactory;

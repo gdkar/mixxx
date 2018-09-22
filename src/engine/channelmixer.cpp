@@ -31,7 +31,7 @@ void ChannelMixer::applyEffectsAndMixChannels(const EngineMaster::GainCalculator
         auto channelIndex = pChannelInfo->m_index;
         auto& gainCache = (*channelGainCache)[channelIndex];
         auto oldGain = gainCache.m_gain;
-        auto newGain = gainCache.m_gain = (gainCache.m_fadeout ? CSAPLE_GAIN_ZERO : gainCalculator.getGain(pChannelInfo));
+        auto newGain = gainCache.m_gain = (gainCache.m_fadeout ? CSAMPLE_GAIN_ZERO : gainCalculator.getGain(pChannelInfo));
         gainCache.m_fadeout = false;
         auto pBuffer = pChannelInfo->m_pBuffer;
         pEngineEffectsManager->processPostFaderAndMix(pChannelInfo->m_handle, outputHandle, pBuffer, pOutput, iBufferSize, iSampleRate, pChannelInfo->m_features, oldGain, newGain);
@@ -59,7 +59,7 @@ void ChannelMixer::applyEffectsInPlaceAndMixChannels(const EngineMaster::GainCal
         auto channelIndex = pChannelInfo->m_index;
         auto& gainCache = (*channelGainCache)[channelIndex];
         auto oldGain = gainCache.m_gain;
-        auto newGain = gainCache.m_gain = (gainCache.m_fadeout ? CSAPLE_GAIN_ZERO : gainCalculator.getGain(pChannelInfo));
+        auto newGain = gainCache.m_gain = (gainCache.m_fadeout ? CSAMPLE_GAIN_ZERO : gainCalculator.getGain(pChannelInfo));
         gainCache.m_fadeout = false;
         auto pBuffer = pChannelInfo->m_pBuffer;
         pEngineEffectsManager->processPostFaderInPlace(pChannelInfo->m_handle, outputHandle, pBuffer, iBufferSize, iSampleRate, pChannelInfo->m_features, oldGain, newGain);

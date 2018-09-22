@@ -2,14 +2,15 @@
 #define KEYS_H
 
 #include <QByteArray>
-#include <QPair>
 #include <QVector>
+#include <functional>
+#include <tuple>
 
 #include "proto/keys.pb.h"
 
 #define KEY_MAP_VERSION "KeyMap-1.0"
 
-typedef QVector<QPair<mixxx::track::io::key::ChromaticKey, double> > KeyChangeList;
+typedef QVector<std::pair<mixxx::track::io::key::ChromaticKey, double> > KeyChangeList;
 
 class KeyFactory;
 

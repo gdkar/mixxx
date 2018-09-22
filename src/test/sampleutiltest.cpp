@@ -3,7 +3,6 @@
 
 #include <QtDebug>
 #include <QList>
-#include <QPair>
 
 #include "util/sample.h"
 #include "util/timer.h"

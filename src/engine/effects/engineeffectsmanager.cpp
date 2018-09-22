@@ -229,7 +229,7 @@ void EngineEffectsManager::processInner(
         }
         // pIntermediateInput is the output of the last processed rack. It would be the
         // intermediate input of the next rack if there was one.
-        SampleUtil::add(pOut, pIntermediateInput, numSamples);
+        SampleUtil::addWithGain(pOut, pIntermediateInput, CSAMPLE_ONE,numSamples);
     }
 }
 

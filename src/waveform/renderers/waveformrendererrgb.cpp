@@ -124,9 +124,9 @@ void WaveformRendererRGB::draw(QPainter* painter,
             const WaveformData& waveformData = data[i];
             const WaveformData& waveformDataNext = data[i + 1];
 
-            maxLow  = math_max3(maxLow,  waveformData.filtered.low,  waveformDataNext.filtered.low);
-            maxMid  = math_max3(maxMid,  waveformData.filtered.mid,  waveformDataNext.filtered.mid);
-            maxHigh = math_max3(maxHigh, waveformData.filtered.high, waveformDataNext.filtered.high);
+            maxLow  = math_max(maxLow,  waveformData.filtered.low,  waveformDataNext.filtered.low);
+            maxMid  = math_max(maxMid,  waveformData.filtered.mid,  waveformDataNext.filtered.mid);
+            maxHigh = math_max(maxHigh, waveformData.filtered.high, waveformDataNext.filtered.high);
             float all = pow(waveformData.filtered.low * lowGain, 2) +
                 pow(waveformData.filtered.mid * midGain, 2) +
                 pow(waveformData.filtered.high * highGain, 2);
@@ -146,7 +146,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
         qreal blue  = maxLowF * m_rgbLowColor_b + maxMidF * m_rgbMidColor_b + maxHighF * m_rgbHighColor_b;
 
         // Compute maximum (needed for value normalization)
-        qreal max = math_max3(red, green, blue);
+        qreal max = math_max(red, green, blue);
 
         // Prevent division by zero
         if (max > 0.0f) {

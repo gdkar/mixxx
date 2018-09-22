@@ -141,7 +141,7 @@ void SetlogFeature::buildPlaylistList() {
             playlistTableModel.index(row, idColumn)).toInt();
         QString name = playlistTableModel.data(
             playlistTableModel.index(row, nameColumn)).toString();
-        m_playlistList.append(qMakePair(id, name));
+        m_playlistList.append({id, name});
     }
 }
 

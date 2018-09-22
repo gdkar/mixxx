@@ -60,7 +60,7 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
 
     int sampleRate = (int)m_pSampleRate->get();
 
-    SampleUtil::CLIP_STATUS clipped = SampleUtil::sumAbsPerChannel(&fVolSumL,
+    auto clipped = SampleUtil::sumAbsPerChannel(&fVolSumL,
             &fVolSumR, pIn, iBufferSize);
     m_fRMSvolumeSumL += fVolSumL;
     m_fRMSvolumeSumR += fVolSumR;

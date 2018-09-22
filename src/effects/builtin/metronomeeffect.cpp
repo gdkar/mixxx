@@ -103,17 +103,20 @@ void MetronomeEffect::processChannel(
     } else {
         maxFrames = bufferParameters.sampleRate() * 60 / m_pBpmParameter->value();
     }
-
-    SampleUtil::copy(pOutput, pInput, bufferParameters.samplesPerBuffer());
-
     if (gs->m_framesSinceClickStart < clickSize) {
         // still in click region, write remaining click frames.
         const unsigned int copyFrames =
                 math_min(static_cast<unsigned int>(bufferParameters.framesPerBuffer()),
                          clickSize - gs->m_framesSinceClickStart);
-        SampleUtil::addMonoToStereo(pOutput, &click[gs->m_framesSinceClickStart],
+        SampleUtil::copyMonoToDualMono(pOutput, &click[gs->m_framesSinceClickStart],
                 copyFrames);
+        SampleUtil::addWithGain(pOutput, pInput, 1.f,copyFrames*2);
+        SampleUtil::copy(pOutput + (copyFrames*2),pInput + (copyFrames*2), bufferParameters.samplesPerBuffer() - (copyFrames*2));
+    } else {
+        SampleUtil::copy(pOutput, pInput, bufferParameters.samplesPerBuffer());
     }
+
+
 
     gs->m_framesSinceClickStart += bufferParameters.framesPerBuffer();
 

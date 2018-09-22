@@ -6,7 +6,6 @@
 #include <QList>
 #include <QSet>
 #include <QScopedPointer>
-#include <QPair>
 
 #include "preferences/usersettings.h"
 #include "control/controlpotmeter.h"

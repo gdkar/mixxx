@@ -267,13 +267,13 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
         QDir newOSXDir(OSXLocation190);
         newOSXDir.mkpath(OSXLocation190);
 
-        QList<QPair<QString, QString> > dirsToMove;
-        dirsToMove.push_back(QPair<QString, QString>(OSXLocation180, OSXLocation190));
-        dirsToMove.push_back(QPair<QString, QString>(OSXLocation180 + "/midi", OSXLocation190 + "midi"));
-        dirsToMove.push_back(QPair<QString, QString>(OSXLocation180 + "/presets", OSXLocation190 + "presets"));
+        QList<std::pair<QString, QString> > dirsToMove;
+        dirsToMove.push_back({OSXLocation180, OSXLocation190});
+        dirsToMove.push_back({OSXLocation180 + "/midi", OSXLocation190 + "midi"});
+        dirsToMove.push_back({OSXLocation180 + "/presets", OSXLocation190 + "presets"});
 
-        QListIterator<QPair<QString, QString> > dirIt(dirsToMove);
-        QPair<QString, QString> curPair;
+        QListIterator<std::pair<QString, QString> > dirIt(dirsToMove);
+        std::pair<QString, QString> curPair;
         while (dirIt.hasNext())
         {
             curPair = dirIt.next();

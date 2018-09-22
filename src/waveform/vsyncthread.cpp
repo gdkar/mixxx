@@ -180,7 +180,7 @@ void VSyncThread::vsyncSlotFinished() {
     m_semaVsyncSlot.release();
 }
 
-void VSyncThread::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
+void VSyncThread::getAvailableVSyncTypes(QList<std::pair<int, QString > >* pList) {
     for (int i = (int)VSyncThread::ST_TIMER; i < (int)VSyncThread::ST_COUNT; i++) {
         //if (isAvailable(type))  // TODO
         {
@@ -206,8 +206,7 @@ void VSyncThread::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
             default:
                 break;
             }
-            QPair<int, QString > pair = QPair<int, QString >(i, name);
-            pList->append(pair);
+            pList->append(std::make_pair(i, name));
         }
     }
 }
