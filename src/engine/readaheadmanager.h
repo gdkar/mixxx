@@ -6,7 +6,6 @@
 
 #include <QLinkedList>
 #include <QList>
-#include <QPair>
 
 #include "util/types.h"
 #include "util/math.h"
@@ -45,7 +44,7 @@ class ReadAheadManager {
     void addRateControl(RateControl* pRateControl);
 
     // Get the current read-ahead position in samples.
-    // unused in Mixxx, but needed for testing 
+    // unused in Mixxx, but needed for testing
     virtual inline double getPlaypos() const {
         return m_currentPosition;
     }

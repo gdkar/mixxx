@@ -1,6 +1,5 @@
 #include <QWidget>
 #include <QString>
-#include <QPair>
 #include <QLabel>
 #include <QCheckBox>
 #include <QPushButton>

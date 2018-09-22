@@ -1,5 +1,4 @@
 #include <QtDebug>
-#include <QPair>
 
 #include "engine/keycontrol.h"
 
@@ -228,11 +227,9 @@ void KeyControl::slotFileKeyChanged(double value) {
 
 void KeyControl::updateKeyCOs(double fileKeyNumeric, double pitchOctaves) {
     //qDebug() << "updateKeyCOs 1" << pitchOctaves;
-    mixxx::track::io::key::ChromaticKey fileKey =
-            KeyUtils::keyFromNumericValue(fileKeyNumeric);
+    auto fileKey = KeyUtils::keyFromNumericValue(fileKeyNumeric);
 
-    QPair<mixxx::track::io::key::ChromaticKey, double> adjusted =
-            KeyUtils::scaleKeyOctaves(fileKey, pitchOctaves);
+    auto adjusted = KeyUtils::scaleKeyOctaves(fileKey, pitchOctaves);
     m_pEngineKey->set(KeyUtils::keyToNumericValue(adjusted.first));
     double diff_to_nearest_full_key = adjusted.second;
     m_pEngineKeyDistance->set(diff_to_nearest_full_key);

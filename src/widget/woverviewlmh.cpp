@@ -105,7 +105,7 @@ bool WOverviewLMH::drawNextPixmapPart() {
 
     for (currentCompletion = m_actualCompletion;
             currentCompletion < nextCompletion; currentCompletion += 2) {
-        m_waveformPeak = math_max3(
+        m_waveformPeak = math_max(
                 m_waveformPeak,
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
                 static_cast<float>(pWaveform->getAll(currentCompletion + 1)));

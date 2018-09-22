@@ -115,8 +115,8 @@ LV2Manifest::LV2Manifest(const LilvPlugin* plug,
             if (lilv_port_has_property(m_pLV2plugin, port, properties["enumeration_port"])) {
                 buildEnumerationOptions(port, param);
             } else {
-                param->appendStep(qMakePair(QString("Inactive"), 0.0));
-                param->appendStep(qMakePair(QString("Active"), 1.0));
+                param->appendStep({QString("Inactive"), 0.0});
+                param->appendStep({QString("Active"), 1.0});
             }
 
             // Some plugins don't specify minimum, maximum and default values
@@ -193,8 +193,8 @@ void LV2Manifest::buildEnumerationOptions(const LilvPort* port,
         const LilvNode* description = lilv_scale_point_get_label(option);
         const LilvNode* value = lilv_scale_point_get_value(option);
         QString strDescription(lilv_node_as_string(description));
-        param->appendStep(qMakePair(strDescription, 
-		(double)lilv_node_as_float(value)));
+        param->appendStep({strDescription, 
+		(double)lilv_node_as_float(value)});
     }
 
     if (options != NULL) {

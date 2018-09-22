@@ -37,8 +37,23 @@ WWaveformViewer::WWaveformViewer(const char *group, UserSettingsPointer pConfig,
             group, "wheel", this);
 
     setAttribute(Qt::WA_OpaquePaintEvent);
-}
 
+    if(m_pConfig->getValue<bool>(ConfigKey("[Controls]","SwapMouseScratchButtons"))) {
+        using std::swap;
+        swap(m_ScratchButton,m_BendButton);
+    }
+
+    if(m_pConfig->exists(ConfigKey("[Controls]","MouseScratchButton"))){
+            auto s = m_pConfig->getValueString(ConfigKey("[Controls]","MouseScratchButton"));
+            auto b = QVariant::fromValue(s).value<Qt::MouseButtons>();
+            m_ScratchButton = b;
+    }
+    if(m_pConfig->exists(ConfigKey("[Controls]","MouseBendButton"))) {
+             auto s = m_pConfig->getValueString(ConfigKey("[Controls]","MouseBendButton"));
+             auto b = QVariant::fromValue(s).value<Qt::MouseButtons>();
+             m_BendButton = b;
+    }
+}
 WWaveformViewer::~WWaveformViewer() {
     //qDebug() << "~WWaveformViewer";
 }
@@ -63,7 +78,7 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
 
     m_mouseAnchor = event->pos();
 
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == m_ScratchButton) {
         // If we are pitch-bending then disable and reset because the two
         // shouldn't be used at once.
         if (m_bBending) {
@@ -77,7 +92,7 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
         double targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
         m_pScratchPosition->set(targetPosition);
         m_pScratchPositionEnable->slotSet(1.0);
-    } else if (event->button() == Qt::RightButton) {
+    } else if (event->button() == m_BendButton) {
         // If we are scratching then disable and reset because the two shouldn't
         // be used at once.
         if (m_bScratching) {

@@ -70,7 +70,7 @@ inline uint qHash(const ChannelHandle& handle) {
     return qHash(handle.handle());
 }
 
-// Convenience class that mimics QPair<ChannelHandle, QString> except with
+// Convenience class that mimics std::pair<ChannelHandle, QString> except with
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
   public:

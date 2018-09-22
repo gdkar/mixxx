@@ -171,9 +171,9 @@ void PlaylistFeature::buildPlaylistList() {
             playlistTableModel.index(row, countColumn)).toInt();
         int duration = playlistTableModel.data(
             playlistTableModel.index(row, durationColumn)).toInt();
-        m_playlistList.append(qMakePair(id, QString("%1 (%2) %3")
+        m_playlistList.append({id, QString("%1 (%2) %3")
                                         .arg(name, QString::number(count),
-                                                mixxx::Duration::formatSeconds(duration))));
+                                                mixxx::Duration::formatSeconds(duration))});
     }
 }
 

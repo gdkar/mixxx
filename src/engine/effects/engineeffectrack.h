@@ -7,6 +7,7 @@
 #include "engine/effects/message.h"
 #include "engine/effects/groupfeaturestate.h"
 #include "util/samplebuffer.h"
+#include "util/class.h"
 
 class EngineEffectChain;
 

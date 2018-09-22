@@ -74,7 +74,7 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
     void guessCover(TrackPointer pTrack);
 
   private:
-    QSet<QPair<const QObject*, quint16> > m_runningRequests;
+    QSet<std::pair<const QObject*, quint16> > m_runningRequests;
 };
 
 #endif // COVERARTCACHE_H

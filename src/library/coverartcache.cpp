@@ -66,7 +66,7 @@ QPixmap CoverArtCache::requestCover(const CoverInfo& requestInfo,
 
     // keep a list of trackIds for which a future is currently running
     // to avoid loading the same picture again while we are loading it
-    QPair<const QObject*, quint16> requestId = qMakePair(pRequestor, requestInfo.hash);
+    auto requestId = std::make_pair(pRequestor, requestInfo.hash);
     if (m_runningRequests.contains(requestId)) {
         return QPixmap();
     }
@@ -177,7 +177,7 @@ void CoverArtCache::coverLoaded() {
         QPixmapCache::insert(cacheKey, pixmap);
     }
 
-    m_runningRequests.remove(qMakePair(res.pRequestor, res.cover.hash));
+    m_runningRequests.remove(std::make_pair(res.pRequestor, res.cover.hash));
 
     if (res.signalWhenDone) {
         emit(coverFound(res.pRequestor, res.cover, pixmap, false));

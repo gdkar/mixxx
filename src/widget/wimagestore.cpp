@@ -29,9 +29,9 @@ std::shared_ptr<QImage> WImageStore::getImage(const PixmapSource& source, double
         return nullptr;
     }
     // Search for Image in list
-    QString key = source.getId() + QString::number(scaleFactor);
+    auto key = source.getId() + QString::number(scaleFactor);
 
-    QHash<QString, std::weak_ptr<QImage> >::iterator it = m_dictionary.find(key);
+    auto it = m_dictionary.find(key);
     if (it != m_dictionary.end()) {
         //qDebug() << "WImageStore returning cached Image for:" << source.getPath();
         return it.value().lock();

@@ -9,6 +9,9 @@
 #include "proto/keys.pb.h"
 #include "track/keys.h"
 #include "util/math.h"
+#include <utility>
+#include <functional>
+#include <tuple>
 
 class KeyUtils {
   public:
@@ -54,7 +57,7 @@ class KeyUtils {
 
     static double keyToNumericValue(mixxx::track::io::key::ChromaticKey key);
 
-    static QPair<mixxx::track::io::key::ChromaticKey, double> scaleKeyOctaves(
+    static std::pair<mixxx::track::io::key::ChromaticKey, double> scaleKeyOctaves(
         mixxx::track::io::key::ChromaticKey key, double scale);
 
     static mixxx::track::io::key::ChromaticKey scaleKeySteps(

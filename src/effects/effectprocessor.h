@@ -5,7 +5,6 @@
 #include <QString>
 #include <QHash>
 #include <QDebug>
-#include <QPair>
 
 #include "util/types.h"
 #include "engine/engine.h"

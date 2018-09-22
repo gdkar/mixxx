@@ -12,10 +12,10 @@ std::ostream& operator<<(std::ostream& stream, const MidiInputMapping& mapping) 
 class LearningUtilsTest : public MixxxTest {
   protected:
     void addMessage(unsigned char status, unsigned char control, unsigned char value) {
-        m_messages.append(qMakePair(MidiKey(status, control), value));
+        m_messages.append({MidiKey(status, control), value});
     }
 
-    QList<QPair<MidiKey, unsigned char> > m_messages;
+    QList<std::pair<MidiKey, unsigned char> > m_messages;
 };
 
 TEST_F(LearningUtilsTest, NoteOnButton) {

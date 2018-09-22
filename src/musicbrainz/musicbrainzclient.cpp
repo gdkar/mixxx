@@ -14,6 +14,7 @@
 #include <QTextStream>
 #include <QXmlStreamReader>
 #include <QUrl>
+#include <QPair>
 
 #include "musicbrainz/musicbrainzclient.h"
 #include "util/version.h"

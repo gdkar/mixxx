@@ -7,7 +7,6 @@
 #include <QModelIndex>
 #include <QAction>
 #include <QList>
-#include <QPair>
 #include <QSet>
 #include <QString>
 
@@ -95,7 +94,7 @@ class BasePlaylistFeature : public LibraryFeature {
     QAction *m_pExportTrackFilesAction;
     QAction *m_pDuplicatePlaylistAction;
     QAction *m_pAnalyzePlaylistAction;
-    QList<QPair<int, QString> > m_playlistList;
+    QList<std::pair<int, QString> > m_playlistList;
     QModelIndex m_lastRightClickedIndex;
     TreeItemModel m_childModel;
     TrackPointer m_pSelectedTrack;

@@ -840,7 +840,7 @@ void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick) {
             this, SLOT(swap()));
 }
 
-void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
+void WaveformWidgetFactory::getAvailableVSyncTypes(QList<std::pair<int, QString > >* pList) {
     m_vsyncThread->getAvailableVSyncTypes(pList);
 }
 

@@ -1,7 +1,6 @@
 #include <QtDebug>
 #include <QMap>
 #include <QMutexLocker>
-#include <QPair>
 #include <QRegExp>
 
 #include "track/keyutils.h"
@@ -350,7 +349,7 @@ double KeyUtils::keyToNumericValue(ChromaticKey key) {
 }
 
 // static
-QPair<ChromaticKey, double> KeyUtils::scaleKeyOctaves(ChromaticKey key, double octave_change) {
+std::pair<ChromaticKey, double> KeyUtils::scaleKeyOctaves(ChromaticKey key, double octave_change) {
     // Convert the octave_change from percentage of octave to the nearest
     // integer of key changes. We need the rounding to be in the same direction
     // so that a -1.0 and 1.0 scale of C makes it back to C.
@@ -359,7 +358,7 @@ QPair<ChromaticKey, double> KeyUtils::scaleKeyOctaves(ChromaticKey key, double o
                           (key_changes_scaled > 0 ? 0.5 : -0.5));
 
     double diff_to_nearest_full_key = key_changes_scaled - key_changes;
-    return QPair<ChromaticKey, double>(scaleKeySteps(key, key_changes), diff_to_nearest_full_key);
+    return {scaleKeySteps(key, key_changes), diff_to_nearest_full_key};
 }
 
 // static

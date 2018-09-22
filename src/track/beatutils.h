@@ -5,7 +5,9 @@
 #define BEATUTILS_H_
 
 // to tell the msvs compiler about `isnan`
-#include "util/math.h"
+//#include "util/math.h"
+#include <cmath>
+#include <numeric>
 
 #include <QVector>
 
@@ -21,7 +23,7 @@ class BeatUtils {
             return bpm;
         }
 
-        if (isnan(bpm) || isinf(bpm)) {
+        if (__builtin_isnan(bpm) || __builtin_isinf(bpm)) {
             return 0.0;
         }
 

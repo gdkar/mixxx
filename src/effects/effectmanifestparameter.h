@@ -220,10 +220,10 @@ class EffectManifestParameter {
         m_maximum = maximum;
     }
 
-    virtual void appendStep(const QPair<QString, double>& step) {
+    virtual void appendStep(const std::pair<QString, double>& step) {
         m_steps.append(step);
     }
-    virtual const QList<QPair<QString, double> >& getSteps() const {
+    virtual const QList<std::pair<QString, double> >& getSteps() const {
         return m_steps;
     }
 
@@ -253,7 +253,7 @@ class EffectManifestParameter {
     // effect parameters
     // Each pair has the following form:
     // name - value
-    QList<QPair<QString, double> > m_steps;
+    QList<std::pair<QString, double> > m_steps;
 
     bool m_showInParametertSlot;
 };

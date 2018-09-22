@@ -63,7 +63,7 @@ QList<CuePointer> CueDAO::getCuesForTrack(TrackId trackId) const {
     QList<CuePointer> cues;
     // A hash from hotcue index to cue id and cue*, used to detect if more
     // than one cue has been assigned to a single hotcue id.
-    QMap<int, QPair<int, CuePointer> > dupe_hotcues;
+    QMap<int, std::pair<int, CuePointer> > dupe_hotcues;
 
     QSqlQuery query(m_database);
     query.prepare("SELECT * FROM " CUE_TABLE " WHERE track_id = :id");
@@ -86,7 +86,7 @@ QList<CuePointer> CueDAO::getCuesForTrack(TrackId trackId) const {
                     m_cues.remove(dupe_hotcues[hotcueId].first);
                     cues.removeOne(dupe_hotcues[hotcueId].second);
                 }
-                dupe_hotcues[hotcueId] = qMakePair(cueId, pCue);
+                dupe_hotcues[hotcueId] = std::pair{cueId, pCue};
             }
             if (pCue) {
                 cues.push_back(pCue);

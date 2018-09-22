@@ -102,7 +102,7 @@ void WEffectPushButton::parameterUpdated() {
 
     m_pButtonMenu->clear();
     EffectManifestParameterPointer pManifest = m_pEffectParameterSlot->getManifest();
-    QList<QPair<QString, double> > options;
+    QList<std::pair<QString, double> > options;
     if (pManifest) {
         options = pManifest->getSteps();
     }
