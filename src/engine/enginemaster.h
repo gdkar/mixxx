@@ -151,11 +151,11 @@ class EngineMaster : public QObject, public AudioSource {
     };
     class PflGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        double getGain(ChannelInfo* pChannelInfo) const {
             Q_UNUSED(pChannelInfo);
             return m_dGain;
         }
-        inline void setGain(double dGain) {
+        void setGain(double dGain) {
             m_dGain = dGain;
         }
       private:
@@ -163,7 +163,7 @@ class EngineMaster : public QObject, public AudioSource {
     };
     class TalkoverGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        double getGain(ChannelInfo* pChannelInfo) const {
             Q_UNUSED(pChannelInfo);
             return 1.0;
         }
@@ -177,15 +177,15 @@ class EngineMaster : public QObject, public AudioSource {
                   m_dTalkoverDuckingGain(1.0) {
         }
 
-        inline double getGain(ChannelInfo* pChannelInfo) const {
-            const double channelVolume = pChannelInfo->m_pVolumeControl->get();
-            const double orientationGain = EngineMaster::gainForOrientation(
+        double getGain(ChannelInfo* pChannelInfo) const {
+            double channelVolume = pChannelInfo->m_pVolumeControl->get();
+            double orientationGain = EngineMaster::gainForOrientation(
                     pChannelInfo->m_pChannel->getOrientation(),
                     m_dLeftGain, m_dCenterGain, m_dRightGain);
             return channelVolume * orientationGain * m_dTalkoverDuckingGain;
         }
 
-        inline void setGains(double leftGain, double centerGain, double rightGain,
+        void setGains(double leftGain, double centerGain, double rightGain,
                              double talkoverDuckingGain) {
             m_dLeftGain = leftGain;
             m_dCenterGain = centerGain;
@@ -212,45 +212,80 @@ class EngineMaster : public QObject, public AudioSource {
 
     template<typename T, unsigned int CAPACITY>
     class FastVector {
+        using storage_type = std::aligned_storage_t<
+            sizeof(T)
+          , std::alignment_of<T>::value
+          >;
       public:
-        inline FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
-        inline ~FastVector() {
-            if (QTypeInfo<T>::isComplex) {
-                for (int i = 0; i < m_size; ++i) {
-                    m_data[i].~T();
+        FastVector() : m_size(0) {}
+       ~FastVector() {
+            if constexpr (QTypeInfo<T>::isComplex) {
+                while(!empty())
+                    pop_back();
+            }
+        }
+        void append(const T& t) {
+            if(!full()) {
+                if constexpr (QTypeInfo<T>::isComplex) {
+                    ::new (static_cast<void*>(data() + m_size++)) T(t);
+                } else {
+                    data()[m_size++] = t;
+                }
+            }
+        };
+        void pop_back()
+        {
+            if(!empty()){
+                if constexpr (QTypeInfo<T>::isComplex) {
+                    data()[--m_size].~T();
+                } else {
+                    --m_size;
                 }
             }
         }
-        inline void append(const T& t) {
-            if (QTypeInfo<T>::isComplex) {
-                new (&m_data[m_size++]) T(t);
-            } else {
-                m_data[m_size++] = t;
+        void push_back(const T& t) { append(t); }
+        template<class... Args>
+        void emplace_back(Args &&... args)
+        {
+            if(!full()) {
+                if constexpr (QTypeInfo<T>::isComplex) {
+                    ::new (static_cast<void*>(data() + m_size++)) T(std::forward<Args>(args)...);
+                } else {
+                    data()[m_size++] = T(std::forward<Args>(args)...);
+                }
             }
-        };
-        inline const T& operator[](unsigned int i) const {
-            return m_data[i];
         }
-        inline T& operator[](unsigned int i) {
-            return m_data[i];
+        const T *data() const   { return reinterpret_cast<const T*>(&m_data[0]);}
+        T       *data()         { return reinterpret_cast<T*>      (&m_data[0]);}
+        const T& operator[](unsigned int i) const {
+            return data()[i];
         }
-        inline const T& at(unsigned int i) const {
-            return m_data[i];
+        T& operator[](unsigned int i) {
+            return data()[i];
         }
-        inline void replace(unsigned int i, const T& t) {
-            T copy(t);
-            m_data[i] = copy;
+        const T& at(unsigned int i) const {
+            return data()[i];
         }
-        inline int size () const {
+        void replace(unsigned int i, const T& t) {
+            data()[i] = t;
+        }
+        int size () const {
             return m_size;
         }
+        bool empty() const {
+            return m_size;
+        }
+        int capacity() const {
+            return CAPACITY;
+        }
+        bool full() const {
+            return size() == capacity();
+        }
       private:
-        int m_size;
-        T* const m_data;
+        int m_size{};
         // Using a long double buffer guarantees the alignment for any type
         // but avoids the constructor call T();
-        long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) /
-                             sizeof(long double)];
+        storage_type m_data[CAPACITY];
     };
 
   protected:

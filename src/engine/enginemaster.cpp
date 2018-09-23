@@ -280,8 +280,8 @@ void EngineMaster::processChannels(int iBufferSize) {
     m_activeChannels.append(NULL);
     int activeChannelsStartIndex = 1; // Nothing at 0 yet
     for (int i = 0; i < m_channels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_channels[i];
-        EngineChannel* pChannel = pChannelInfo->m_pChannel;
+        auto  pChannelInfo  = m_channels[i];
+        auto pChannel       = pChannelInfo->m_pChannel;
 
         // Skip inactive channels.
         if (!pChannel || !pChannel->isActive()) {
@@ -295,14 +295,14 @@ void EngineMaster::processChannels(int iBufferSize) {
             m_activeTalkoverChannels.append(pChannelInfo);
 
             // Check if we need to fade out the master channel
-            GainCache& gainCache = m_channelMasterGainCache[i];
+            auto& gainCache = m_channelMasterGainCache[i];
             if (gainCache.m_gain) {
                 gainCache.m_fadeout = true;
                 m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
              }
         } else {
             // Check if we need to fade out the channel
-            GainCache& gainCache = m_channelTalkoverGainCache[i];
+            auto & gainCache = m_channelTalkoverGainCache[i];
             if (gainCache.m_gain) {
                 gainCache.m_fadeout = true;
                 m_activeTalkoverChannels.append(pChannelInfo);
@@ -313,7 +313,7 @@ void EngineMaster::processChannels(int iBufferSize) {
                 m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
             } else {
                 // Check if we need to fade out the channel
-                GainCache& gainCache = m_channelMasterGainCache[i];
+                auto& gainCache = m_channelMasterGainCache[i];
                 if (gainCache.m_gain) {
                     gainCache.m_fadeout = true;
                     m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
@@ -327,7 +327,7 @@ void EngineMaster::processChannels(int iBufferSize) {
             m_activeHeadphoneChannels.append(pChannelInfo);
         } else {
             // Check if we need to fade out the channel
-            GainCache& gainCache = m_channelHeadphoneGainCache[i];
+            auto& gainCache = m_channelHeadphoneGainCache[i];
             if (gainCache.m_gain) {
                 m_channelHeadphoneGainCache[i].m_fadeout = true;
                 m_activeHeadphoneChannels.append(pChannelInfo);
@@ -347,8 +347,8 @@ void EngineMaster::processChannels(int iBufferSize) {
     // Now that the list is built and ordered, do the processing.
     for (int i = activeChannelsStartIndex;
              i < m_activeChannels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_activeChannels[i];
-        EngineChannel* pChannel = pChannelInfo->m_pChannel;
+        auto pChannelInfo   = m_activeChannels[i];
+        auto pChannel       = pChannelInfo->m_pChannel;
         pChannel->process(pChannelInfo->m_pBuffer, iBufferSize);
 
         // Collect metadata for effects
@@ -701,7 +701,7 @@ void EngineMaster::process(const int iBufferSize) {
 
         // Update VU meter (it does not return anything). Needs to be here so that
         // master balance and talkover is reflected in the VU meter.
-        if (m_pVumeter != nullptr) {
+        if (m_pVumeter ) {
             m_pVumeter->process(m_pMaster, m_iBufferSize);
         }
     }
@@ -754,7 +754,7 @@ void EngineMaster::processHeadphones(const double masterMixGainInHeadphones) {
     if (m_pHeadSplitEnabled->get()) {
         // note: NOT VECTORIZED because of in place copy
         for (unsigned int i = 0; i + 1 < m_iBufferSize; i += 2) {
-            m_pHead[i] = (m_pHead[i] + m_pHead[i + 1]) / 2;
+            m_pHead[i]      = (m_pHead[i] + m_pHead[i + 1]) / 2;
             m_pHead[i + 1] = (m_pMaster[i] + m_pMaster[i + 1]) / 2;
         }
     }
@@ -767,9 +767,9 @@ void EngineMaster::processHeadphones(const double masterMixGainInHeadphones) {
 }
 
 void EngineMaster::addChannel(EngineChannel* pChannel) {
-    ChannelInfo* pChannelInfo = new ChannelInfo(m_channels.size());
+    auto  pChannelInfo = new ChannelInfo(m_channels.size());
     pChannelInfo->m_pChannel = pChannel;
-    const QString& group = pChannel->getGroup();
+    auto group = pChannel->getGroup();
     pChannelInfo->m_handle = m_pChannelHandleFactory->getOrCreateHandle(group);
     pChannelInfo->m_pVolumeControl = new ControlAudioTaperPot(
             ConfigKey(group, "volume"), -20, 0, 1);
@@ -782,6 +782,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);
     m_channels.append(pChannelInfo);
     const GainCache gainCacheDefault = {0, false};
+
     m_channelHeadphoneGainCache.append(gainCacheDefault);
     m_channelTalkoverGainCache.append(gainCacheDefault);
     m_channelMasterGainCache.append(gainCacheDefault);
@@ -796,8 +797,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_activeHeadphoneChannels.reserve(m_channels.size());
     m_activeTalkoverChannels.reserve(m_channels.size());
 
-    EngineBuffer* pBuffer = pChannelInfo->m_pChannel->getEngineBuffer();
-    if (pBuffer != NULL) {
+    if(auto pBuffer = pChannelInfo->m_pChannel->getEngineBuffer()){
         pBuffer->bindWorkers(m_pWorkerScheduler);
     }
 }
