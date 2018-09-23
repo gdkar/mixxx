@@ -34,7 +34,7 @@ class ControlProxy;
 class EngineVuMeter : public EngineObject {
     Q_OBJECT
   public:
-    EngineVuMeter(QString group);
+    EngineVuMeter(QString group, QObject *p);
     virtual ~EngineVuMeter();
 
     virtual void process(CSAMPLE* pInOut, const int iBufferSize);

@@ -28,7 +28,8 @@ class LoopingControl : public EngineControl {
   public:
     static QList<double> getBeatSizes();
 
-    LoopingControl(QString group, UserSettingsPointer pConfig);
+    LoopingControl(QString group, UserSettingsPointer pConfig
+,QObject *p);
     ~LoopingControl() override;
 
     // process() updates the internal state of the LoopingControl to reflect the

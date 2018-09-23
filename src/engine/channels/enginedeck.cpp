@@ -49,8 +49,8 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
             this, &EngineDeck::slotPassingToggle,
             Qt::DirectConnection);
 
-    m_pPregain = new EnginePregain(getGroup());
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine);
+    m_pPregain = new EnginePregain(getGroup(), this);
+    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine, this);
 }
 
 EngineDeck::~EngineDeck() {

@@ -23,8 +23,8 @@ static const double CUE_MODE_MIXXX_NO_BLINK = 4.0;
 static const double CUE_MODE_CUP = 5.0;
 
 CueControl::CueControl(QString group,
-                       UserSettingsPointer pConfig) :
-        EngineControl(group, pConfig),
+                       UserSettingsPointer pConfig,QObject *p) :
+        EngineControl(group, pConfig, p),
         m_bPreviewing(false),
         // m_pPlay->toBoo() -> engine play state
         // m_pPlay->set(1.0) -> emulate play button press

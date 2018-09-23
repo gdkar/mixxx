@@ -93,7 +93,8 @@ class CueControl : public EngineControl {
     Q_OBJECT
   public:
     CueControl(QString group,
-               UserSettingsPointer pConfig);
+               UserSettingsPointer pConfig,
+               QObject *p);
     ~CueControl() override;
 
     virtual void hintReader(HintVector* pHintList) override;

@@ -50,9 +50,11 @@ const SINT kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 } // anonymous namespace
 
+
 EngineBuffer::EngineBuffer(const QString& group, UserSettingsPointer pConfig,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *p)
+        : EngineObject(p),
+          m_group(group),
           m_pConfig(pConfig),
           m_pLoopingControl(nullptr),
           m_pSyncControl(nullptr),
@@ -92,7 +94,7 @@ EngineBuffer::EngineBuffer(const QString& group, UserSettingsPointer pConfig,
     // zero out crossfade buffer
     SampleUtil::clear(m_pCrossfadeBuffer, MAX_BUFFER_LEN);
 
-    m_pReader = new CachingReader(group, pConfig);
+    m_pReader = new CachingReader(group, pConfig, this);
     connect(m_pReader, &CachingReader::trackLoading,
             this, &EngineBuffer::slotTrackLoading,
             Qt::DirectConnection);
@@ -179,10 +181,10 @@ EngineBuffer::EngineBuffer(const QString& group, UserSettingsPointer pConfig,
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
     // beats.
-    QuantizeControl* quantize_control = new QuantizeControl(group, pConfig);
+    auto quantize_control = new QuantizeControl(group, pConfig, this);
 
     // Create the Loop Controller
-    m_pLoopingControl = new LoopingControl(group, pConfig);
+    m_pLoopingControl = new LoopingControl(group, pConfig, this);
     addControl(m_pLoopingControl);
 
     addControl(quantize_control);
@@ -190,20 +192,20 @@ EngineBuffer::EngineBuffer(const QString& group, UserSettingsPointer pConfig,
 
     m_pEngineSync = pMixingEngine->getEngineSync();
 
-    m_pSyncControl = new SyncControl(group, pConfig, pChannel, m_pEngineSync);
+    m_pSyncControl = new SyncControl(group, pConfig, pChannel, m_pEngineSync,this);
     addControl(m_pSyncControl);
 
 #ifdef __VINYLCONTROL__
-    m_pVinylControlControl = new VinylControlControl(group, pConfig);
+    m_pVinylControlControl = new VinylControlControl(group, pConfig, this);
     addControl(m_pVinylControlControl);
 #endif
 
-    m_pRateControl = new RateControl(group, pConfig);
+    m_pRateControl = new RateControl(group, pConfig, this);
     // Add the Rate Controller
     addControl(m_pRateControl);
 
     // Create the BPM Controller
-    m_pBpmControl = new BpmControl(group, pConfig);
+    m_pBpmControl = new BpmControl(group, pConfig, this);
     addControl(m_pBpmControl);
 
     // TODO(rryan) remove this dependence?
@@ -214,25 +216,25 @@ EngineBuffer::EngineBuffer(const QString& group, UserSettingsPointer pConfig,
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
 
-    m_pKeyControl = new KeyControl(group, pConfig);
+    m_pKeyControl = new KeyControl(group, pConfig, this);
     addControl(m_pKeyControl);
 
     // Create the clock controller
-    m_pClockControl = new ClockControl(group, pConfig);
+    m_pClockControl = new ClockControl(group, pConfig, this);
     addControl(m_pClockControl);
 
     // Create the cue controller
-    m_pCueControl = new CueControl(group, pConfig);
+    m_pCueControl = new CueControl(group, pConfig, this);
     addControl(m_pCueControl);
 
     m_pReadAheadManager = new ReadAheadManager(m_pReader,
-                                               m_pLoopingControl);
+                                               m_pLoopingControl, this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager);
+    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager, this);
+    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager, this);
+    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
     if (m_pKeylockEngine->get() == SOUNDTOUCH) {
         m_pScaleKeylock = m_pScaleST;
     } else {
@@ -265,8 +267,8 @@ EngineBuffer::~EngineBuffer() {
     //close the writer
     df.close();
 #endif
-    delete m_pReadAheadManager;
-    delete m_pReader;
+//    delete m_pReadAheadManager;
+//    delete m_pReader;
 
     delete m_playButton;
     delete m_playStartButton;
@@ -285,16 +287,17 @@ EngineBuffer::~EngineBuffer() {
     delete m_pTrackSamples;
     delete m_pTrackSampleRate;
 
+/*
     delete m_pScaleLinear;
     delete m_pScaleST;
     delete m_pScaleRB;
-
+*/
     delete m_pKeylock;
     delete m_pEject;
 
     SampleUtil::free(m_pCrossfadeBuffer);
 
-    qDeleteAll(m_engineControls);
+//    qDeleteAll(m_engineControls);
 }
 
 double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
@@ -316,8 +319,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
 
     // m_pScaleKeylock and m_pScaleVinyl could change out from under us,
     // so cache it.
-    EngineBufferScale* keylock_scale = m_pScaleKeylock;
-    EngineBufferScale* vinyl_scale = m_pScaleVinyl;
+    auto keylock_scale = m_pScaleKeylock;
+    auto vinyl_scale = m_pScaleVinyl;
 
     if (bEnable && m_pScale != keylock_scale) {
         if (m_speed_old != 0.0) {
@@ -351,9 +354,8 @@ double EngineBuffer::getLocalBpm() {
 }
 
 void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
-    for (const auto& pControl: qAsConst(m_engineControls)) {
+    for(auto && pControl : std::as_const(m_engineControls))
         pControl->setEngineMaster(pEngineMaster);
-    }
 }
 
 void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
@@ -367,12 +369,12 @@ void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
     }
     m_queuedSeekPosition.setValue(newpos);
     // set m_queuedPosition valid
-    m_iSeekQueued = seekType;
+    m_iSeekQueued.store(seekType);
 }
 
 void EngineBuffer::requestSyncPhase() {
     // Don't overwrite m_iSeekQueued
-    m_iSeekPhaseQueued = 1;
+    m_iSeekPhaseQueued.store(true);
 }
 
 void EngineBuffer::requestEnableSync(bool enabled) {
@@ -381,7 +383,7 @@ void EngineBuffer::requestEnableSync(bool enabled) {
         m_pEngineSync->requestEnableSync(m_pSyncControl, enabled);
         return;
     }
-    SyncRequestQueued enable_request =
+    auto enable_request =
             static_cast<SyncRequestQueued>(m_iEnableSyncQueued.load());
     if (enabled) {
         m_iEnableSyncQueued = SYNC_REQUEST_ENABLE;
@@ -440,9 +442,10 @@ void EngineBuffer::setNewPlaypos(double newpos, bool adjustingPhase) {
     m_iSamplesSinceLastIndicatorUpdate = 1000000;
 
     // Must hold the engineLock while using m_engineControls
-    for (const auto& pControl: qAsConst(m_engineControls)) {
+
+    for(auto && pControl : qAsConst(m_engineControls))
         pControl->notifySeek(m_filepos_play, adjustingPhase);
-    }
+
 
     verifyPlay(); // verify or update play button and indicator
 }
@@ -599,7 +602,7 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
     bool playPossible = true;
     if ((!m_pCurrentTrack && m_iTrackLoading.load() == 0) ||
             (m_pCurrentTrack && m_iTrackLoading.load() == 0 &&
-             m_filepos_play >= m_pTrackSamples->get() &&
+             m_filepos_play >= m_trackSamplesOld &&
              !m_iSeekQueued.load())) {
         // play not possible
         playPossible = false;
@@ -1064,8 +1067,8 @@ void EngineBuffer::processSlip(int iBufferSize) {
             m_dSlipRate = m_rate_old;
         } else {
             // TODO(owen) assuming that looping will get canceled properly
-            double newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
-            double roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
+            auto newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
+            auto roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
             slotControlSeekExact(roundedSlip);
             m_dSlipPosition = 0;
         }
@@ -1078,11 +1081,8 @@ void EngineBuffer::processSlip(int iBufferSize) {
 }
 
 void EngineBuffer::processSyncRequests() {
-    SyncRequestQueued enable_request =
-            static_cast<SyncRequestQueued>(
-                    m_iEnableSyncQueued.fetchAndStoreRelease(SYNC_REQUEST_NONE));
-    SyncMode mode_request =
-            static_cast<SyncMode>(m_iSyncModeQueued.fetchAndStoreRelease(SYNC_INVALID));
+    auto enable_request =SyncRequestQueued(m_iEnableSyncQueued.exchange(SYNC_REQUEST_NONE));
+    auto mode_request = SyncMode(m_iSyncModeQueued.exchange(SYNC_INVALID));
     switch (enable_request) {
     case SYNC_REQUEST_ENABLE:
         m_pEngineSync->requestEnableSync(m_pSyncControl, true);
@@ -1110,9 +1110,8 @@ void EngineBuffer::processSeek(bool paused) {
     // The later case is ok, because we will process the new seek in the next
     // call anyway again.
 
-    SeekRequests seekType = static_cast<SeekRequest>(
-            m_iSeekQueued.fetchAndStoreRelease(SEEK_NONE));
-    double position = m_queuedSeekPosition.getValue();
+    SeekRequests seekType = m_iSeekQueued.exchange(SEEK_NONE);
+    auto position = m_queuedSeekPosition.getValue();
 
     // Don't allow the playposition to go past the end.
     if (position > m_trackSamplesOld) {
@@ -1120,11 +1119,11 @@ void EngineBuffer::processSeek(bool paused) {
     }
 
     // Add SEEK_PHASE bit, if any
-    if (m_iSeekPhaseQueued.fetchAndStoreRelease(0)) {
+    if (m_iSeekPhaseQueued.exchange(false)) {
         seekType |= SEEK_PHASE;
     }
 
-    bool adjustingPhase = false;
+    auto adjustingPhase = false;
     switch (seekType) {
         case SEEK_NONE:
             return;
@@ -1264,9 +1263,9 @@ void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {
 }
 
 bool EngineBuffer::isTrackLoaded() {
-    if (m_pCurrentTrack) {
+    if (m_pCurrentTrack)
         return true;
-    }
+
     return false;
 }
 
@@ -1319,7 +1318,7 @@ void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
 }
 
 void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {
-    if (m_pBpmControl != NULL) {
+    if (m_pBpmControl ) {
         m_pBpmControl->collectFeatures(pGroupFeatures);
     }
 }

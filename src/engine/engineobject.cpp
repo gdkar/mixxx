@@ -17,13 +17,13 @@
 
 #include "engineobject.h"
 
-EngineObject::EngineObject() {
+EngineObject::EngineObject(QObject *p) :QObject(p){
 }
 
 EngineObject::~EngineObject() {
 }
 
-EngineObjectConstIn::EngineObjectConstIn() {
+EngineObjectConstIn::EngineObjectConstIn(QObject *p):QObject(p) {
 }
 
 EngineObjectConstIn::~EngineObjectConstIn() {

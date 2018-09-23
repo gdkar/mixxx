@@ -4,6 +4,8 @@
 #ifndef READAHEADMANGER_H
 #define READAHEADMANGER_H
 
+#include <QObject>
+#include <QtCore>
 #include <QLinkedList>
 #include <QList>
 
@@ -23,11 +25,13 @@ class RateControl;
 // seeks or the current play position is invalidated somehow, the Engine must
 // call notifySeek to inform the ReadAheadManager to reset itself to the seek
 // point.
-class ReadAheadManager {
+class ReadAheadManager : public QObject {
+    Q_OBJECT
   public:
-    ReadAheadManager(); // Only for testing: ReadAheadManagerMock
+    ReadAheadManager(QObject *p); // Only for testing: ReadAheadManagerMock
     ReadAheadManager(CachingReader* reader,
-                              LoopingControl* pLoopingControl);
+                     LoopingControl* pLoopingControl,
+                     QObject *p);
     virtual ~ReadAheadManager();
 
     // Call this method to fill buffer with requested_samples out of the
@@ -45,7 +49,7 @@ class ReadAheadManager {
 
     // Get the current read-ahead position in samples.
     // unused in Mixxx, but needed for testing
-    virtual inline double getPlaypos() const {
+    virtual double getPlaypos() const {
         return m_currentPosition;
     }
 
@@ -85,7 +89,7 @@ class ReadAheadManager {
         }
 
         double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
+            return std::abs(virtualPlaypositionEndNonInclusive -
                        virtualPlaypositionStart);
         }
 

@@ -12,8 +12,9 @@
 #include "util/assert.h"
 
 QuantizeControl::QuantizeControl(QString group,
-                                 UserSettingsPointer pConfig)
-        : EngineControl(group, pConfig) {
+                                 UserSettingsPointer pConfig,
+                                 QObject *p)
+        : EngineControl(group, pConfig, p) {
     // Turn quantize OFF by default. See Bug #898213
     m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), true);
     m_pCOQuantizeEnabled->setButtonMode(ControlPushButton::TOGGLE);

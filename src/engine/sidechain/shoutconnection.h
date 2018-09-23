@@ -146,7 +146,7 @@ class ShoutConnection
     bool m_protocol_is_icecast2;
     bool m_protocol_is_shoutcast;
     bool m_ogg_dynamic_update;
-    QAtomicInt m_threadWaiting;
+    std::atomic<bool> m_threadWaiting;
     QSemaphore m_readSema;
     QSharedPointer<FIFO<CSAMPLE>> m_pOutputFifo;
 

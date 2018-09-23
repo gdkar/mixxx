@@ -24,7 +24,7 @@ class KeyControl : public EngineControl {
         bool keylock;
     };
 
-    KeyControl(QString group, UserSettingsPointer pConfig);
+    KeyControl(QString group, UserSettingsPointer pConfig,QObject *p);
     ~KeyControl() override;
 
     // Returns a struct, with the results of the last pitch and tempo calculations

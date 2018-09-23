@@ -77,7 +77,8 @@ class CachingReader : public QObject {
   public:
     // Construct a CachingReader with the given group.
     CachingReader(QString group,
-                  UserSettingsPointer _config);
+                  UserSettingsPointer _config,
+                  QObject *p);
     virtual ~CachingReader();
 
     virtual void process();

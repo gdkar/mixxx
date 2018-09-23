@@ -23,9 +23,10 @@
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation,
                              EffectsManager* pEffectsManager, bool isTalkoverChannel)
-        : m_group(handle_group),
+        : EngineObject(nullptr),
+          m_group(handle_group),
           m_pEffectsManager(pEffectsManager),
-          m_vuMeter(getGroup()),
+          m_vuMeter(getGroup(),this),
           m_pSampleRate(new ControlProxy("[Master]", "samplerate")),
           m_sampleBuffer(nullptr),
           m_bIsTalkoverChannel(isTalkoverChannel) {

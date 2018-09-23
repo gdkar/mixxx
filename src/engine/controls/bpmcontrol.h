@@ -19,7 +19,7 @@ class BpmControl : public EngineControl {
     Q_OBJECT
 
   public:
-    BpmControl(QString group, UserSettingsPointer pConfig);
+    BpmControl(QString group, UserSettingsPointer pConfig,QObject *p);
     ~BpmControl() override;
 
     double getBpm() const;

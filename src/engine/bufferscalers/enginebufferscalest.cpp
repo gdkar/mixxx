@@ -26,8 +26,8 @@ const SINT kSeekOffsetFrames = 519;
 
 }  // namespace
 
-EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : m_pReadAheadManager(pReadAheadManager),
+EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QObject *p)
+    : EngineBufferScale(pReadAheadManager, p),
       m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>()),
       buffer_back_size(getAudioSignal().frames2samples(kSeekOffsetFrames)),
       buffer_back(SampleUtil::alloc(buffer_back_size)),
@@ -151,6 +151,8 @@ double EngineBufferScaleST::scaleBuffer(
             } else {
                 if (last_read_failed) {
                     m_pSoundTouch->flush();
+                    qWarning() << __FILE__ << "- only wrote" << total_received_frames
+                             << "frames instead of requested" << getAudioSignal().samples2frames(iOutputBufferSize);
                     break; // exit loop after failure
                 }
                 last_read_failed = true;

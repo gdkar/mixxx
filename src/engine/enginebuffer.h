@@ -19,6 +19,7 @@
 #define ENGINEBUFFER_H
 
 #include <QMutex>
+#include <atomic>
 #include <QAtomicInt>
 #include <gtest/gtest_prod.h>
 
@@ -111,8 +112,9 @@ class EngineBuffer : public EngineObject {
         KEYLOCK_ENGINE_COUNT,
     };
 
-    EngineBuffer(const QString& group, UserSettingsPointer pConfig,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+    EngineBuffer(const QString& _group, UserSettingsPointer pConfig,
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine,
+                 QObject *p);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
@@ -375,11 +377,11 @@ class EngineBuffer : public EngineObject {
     // Indicates that dependency injection has taken place.
     bool m_bScalerOverride;
 
-    QAtomicInt m_iSeekQueued;
-    QAtomicInt m_iSeekPhaseQueued;
-    QAtomicInt m_iEnableSyncQueued;
-    QAtomicInt m_iSyncModeQueued;
-    ControlValueAtomic<double> m_queuedSeekPosition;
+    std::atomic<SeekRequests>       m_iSeekQueued;
+    std::atomic<bool>               m_iSeekPhaseQueued;
+    std::atomic<SyncRequestQueued>  m_iEnableSyncQueued;
+    std::atomic<SyncMode>           m_iSyncModeQueued;
+    ControlValueAtomic<double>      m_queuedSeekPosition;
 
     // Is true if the previous buffer was silent due to pausing
     QAtomicInt m_iTrackLoading;

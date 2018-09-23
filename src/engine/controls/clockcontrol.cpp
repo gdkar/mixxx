@@ -5,8 +5,8 @@
 #include "engine/controls/enginecontrol.h"
 #include "control/controlproxy.h"
 
-ClockControl::ClockControl(QString group, UserSettingsPointer pConfig)
-        : EngineControl(group, pConfig) {
+ClockControl::ClockControl(QString group, UserSettingsPointer pConfig,QObject *p)
+        : EngineControl(group, pConfig,p) {
     m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"));
     m_pCOBeatActive->set(0.0);
     m_pCOSampleRate = new ControlProxy("[Master]","samplerate");
