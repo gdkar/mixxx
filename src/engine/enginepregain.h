@@ -29,16 +29,15 @@ class EnginePregain : public EngineObject {
     void collectFeatures(GroupFeatureState* pGroupFeatures) const override;
 
   private:
-    double m_dSpeed;
-    double m_dOldSpeed;
-    double m_dNonScratchSpeed;
-    bool m_scratching;
-    CSAMPLE_GAIN
-    m_fPrevGain;
-    ControlAudioTaperPot* m_pPotmeterPregain;
-    ControlObject* m_pTotalGain;
-    ControlObject* m_pCOReplayGain;
-    ControlObject* m_pPassthroughEnabled;
+    double                  m_dSpeed;
+    double                  m_dOldSpeed;
+    double                  m_dNonScratchSpeed;
+    bool                    m_scratching;
+    CSAMPLE_GAIN            m_fPrevGain;
+    ControlAudioTaperPot*   m_pPotmeterPregain;
+    ControlObject*          m_pTotalGain;
+    ControlObject*          m_pCOReplayGain;
+    ControlObject*          m_pPassthroughEnabled;
     static ControlPotmeter* s_pReplayGainBoost;
     static ControlPotmeter* s_pDefaultBoost;
     static ControlObject* s_pEnableReplayGain;
