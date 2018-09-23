@@ -102,13 +102,13 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
                                       ConfigKey(group, "gain"));
 
     // VU meter:
-    m_pVumeter = new EngineVuMeter(group);
+    m_pVumeter = new EngineVuMeter(group, this);
 
-    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"));
-    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"));
-    m_pBoothDelay = new EngineDelay(group, ConfigKey(group, "boothDelay"));
+    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"),true,this);
+    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"),true,this);
+    m_pBoothDelay = new EngineDelay(group, ConfigKey(group, "boothDelay"),true,this);
     m_pLatencyCompensationDelay = new EngineDelay(group,
-        ConfigKey(group, "microphoneLatencyCompensation"));
+        ConfigKey(group, "microphoneLatencyCompensation"),true,this);
     m_pNumMicsConfigured = new ControlObject(ConfigKey(group, "num_mics_configured"));
 
     // Headphone volume

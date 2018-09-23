@@ -14,7 +14,8 @@ class ClockControl: public EngineControl {
     Q_OBJECT
   public:
     ClockControl(QString group,
-                 UserSettingsPointer pConfig);
+                 UserSettingsPointer pConfig,
+                 QObject *p);
 
     ~ClockControl() override;
 

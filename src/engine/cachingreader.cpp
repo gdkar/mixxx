@@ -29,8 +29,10 @@ const SINT kNumberOfCachedChunksInMemory = 80;
 
 
 CachingReader::CachingReader(QString group,
-                             UserSettingsPointer config)
-        : m_pConfig(config),
+                             UserSettingsPointer config,
+                             QObject *p)
+        : QObject(p),
+          m_pConfig(config),
           m_chunkReadRequestFIFO(1024),
           m_readerStatusFIFO(1024),
           m_readerStatus(INVALID),

@@ -8,16 +8,17 @@
 #include "mixer/playermanager.h"
 
 EngineControl::EngineControl(QString group,
-                             UserSettingsPointer pConfig)
-        : m_group(group),
+                             UserSettingsPointer pConfig,
+                             QObject *p)
+        : QObject{p},
+          m_group(group),
           m_pConfig(pConfig),
           m_pEngineMaster(NULL),
           m_pEngineBuffer(NULL) {
     setCurrentSample(0.0, 0.0);
 }
 
-EngineControl::~EngineControl() {
-}
+EngineControl::~EngineControl() = default;
 
 void EngineControl::process(const double dRate,
                            const double dCurrentSample,
@@ -43,6 +44,10 @@ void EngineControl::setEngineMaster(EngineMaster* pEngineMaster) {
 
 void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {
     m_pEngineBuffer = pEngineBuffer;
+    if(parent() != pEngineBuffer) {
+        qWarning() << "setting parent of " << this << " from " << parent() << " to " << pEngineBuffer;
+        setParent(pEngineBuffer);
+    }
 }
 
 void EngineControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
@@ -105,19 +110,19 @@ void EngineControl::notifySeek(double dNewPlaypos, bool adjustingPhase) {
 }
 
 EngineBuffer* EngineControl::pickSyncTarget() {
-    EngineMaster* pMaster = getEngineMaster();
+    auto  pMaster = getEngineMaster();
     if (!pMaster) {
         return NULL;
     }
 
-    EngineSync* pEngineSync = pMaster->getEngineSync();
+    auto pEngineSync = pMaster->getEngineSync();
     if (pEngineSync == NULL) {
         return NULL;
     }
 
     // TODO(rryan): Remove. This is a linear search over groups in
     // EngineMaster. We should pass the EngineChannel into EngineControl.
-    EngineChannel* pThisChannel = pMaster->getChannel(getGroup());
-    EngineChannel* pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
+    auto pThisChannel = pMaster->getChannel(getGroup());
+    auto pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
     return pChannel ? pChannel->getEngineBuffer() : NULL;
 }

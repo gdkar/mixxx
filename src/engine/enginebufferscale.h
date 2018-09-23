@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "util/audiosignal.h"
+#include "engine/readaheadmanager.h"
 
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
@@ -23,7 +24,7 @@
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *raman, QObject *pParent = nullptr);
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -41,19 +42,10 @@ class EngineBufferScale : public QObject {
     // be set to the value it was clamped to.
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
-                                    double* pPitchRatio) {
-        m_dBaseRate = base_rate;
-        m_dTempoRatio = *pTempoRatio;
-        m_dPitchRatio = *pPitchRatio;
-    }
-
+                                    double* pPitchRatio);
     // Set the desired output sample rate.
     virtual void setSampleRate(SINT iSampleRate);
-
-    const mixxx::AudioSignal& getAudioSignal() const {
-        return m_audioSignal;
-    }
-
+    const mixxx::AudioSignal& getAudioSignal() const;
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer
@@ -71,6 +63,8 @@ class EngineBufferScale : public QObject {
     mixxx::AudioSignal m_audioSignal;
 
   protected:
+    ReadAheadManager* m_pReadAheadManager;
+
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

@@ -21,7 +21,9 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-EngineVuMeter::EngineVuMeter(QString group) {
+EngineVuMeter::EngineVuMeter(QString group,QObject *p)
+: EngineObject(p)
+{
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
     m_ctrlVuMeter = new ControlPotmeter(ConfigKey(group, "VuMeter"), 0., 1.);

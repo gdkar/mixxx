@@ -31,7 +31,8 @@ class PositionScratchController;
 class RateControl : public EngineControl {
     Q_OBJECT
 public:
-    RateControl(QString group, UserSettingsPointer pConfig);
+    RateControl(QString group, UserSettingsPointer pConfig
+,QObject *p);
     ~RateControl() override;
 
     // Enumerations which hold the state of the pitchbend buttons.

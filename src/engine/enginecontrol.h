@@ -35,7 +35,8 @@ class EngineControl : public QObject {
     Q_OBJECT
   public:
     EngineControl(QString group,
-                  UserSettingsPointer pConfig);
+                  UserSettingsPointer pConfig,
+                  QObject *p);
     ~EngineControl() override;
 
     // Called by EngineBuffer::process every latency period. See the above

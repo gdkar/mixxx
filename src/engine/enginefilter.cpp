@@ -20,7 +20,8 @@
 
 
 EngineFilter::EngineFilter(char * conf, int predefinedType)
-        : iir(0),
+        : EngineObject(nullptr),
+          iir(0),
           fir(0),
           tmp(0),
           ff(NULL),

@@ -26,8 +26,9 @@ const SINT kSamplesPerFrame = 2;
 }
 
 BpmControl::BpmControl(QString group,
-                       UserSettingsPointer pConfig) :
-        EngineControl(group, pConfig),
+                       UserSettingsPointer pConfig,
+                       QObject *p) :
+        EngineControl(group, pConfig,p),
         m_dSyncTargetBeatDistance(0.0),
         m_dSyncInstantaneousBpm(0.0),
         m_dLastSyncAdjustment(1.0),

@@ -7,8 +7,8 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : m_pReadAheadManager(pReadAheadManager),
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *p)
+    : EngineBufferScale(pReadAheadManager, p),
       m_bufferInt(SampleUtil::alloc(kiLinearScaleReadAheadLength)),
       m_bufferIntSize(0),
       m_bClear(false),
@@ -238,7 +238,7 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
 
     // Hot frame loop
     while (i < buf_size) {
-        // shift indices
+        // shift indicies
         m_dCurrentFrame = m_dNextFrame;
 
         // Because our index is a float value, we're going to be interpolating

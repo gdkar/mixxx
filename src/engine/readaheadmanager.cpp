@@ -12,8 +12,9 @@
 
 static const int kNumChannels = 2;
 
-ReadAheadManager::ReadAheadManager()
-        : m_pLoopingControl(NULL),
+ReadAheadManager::ReadAheadManager(QObject *p)
+        : QObject{p},
+          m_pLoopingControl(NULL),
           m_pRateControl(NULL),
           m_currentPosition(0),
           m_pReader(NULL),
@@ -23,8 +24,10 @@ ReadAheadManager::ReadAheadManager()
 }
 
 ReadAheadManager::ReadAheadManager(CachingReader* pReader,
-                                   LoopingControl* pLoopingControl)
-        : m_pLoopingControl(pLoopingControl),
+                                   LoopingControl* pLoopingControl,
+                                   QObject *p)
+        : QObject(p),
+          m_pLoopingControl(pLoopingControl),
           m_pRateControl(NULL),
           m_currentPosition(0),
           m_pReader(pReader),

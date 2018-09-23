@@ -118,7 +118,7 @@ class CachingReaderWorker : public EngineWorker {
     // last frame with readable sample data.
     mixxx::IndexRange m_readableFrameIndexRange;
 
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop{false};
 };
 
 

@@ -29,8 +29,9 @@ const double RateControl::kWheelMultiplier = 40.0;
 const double RateControl::kPausedJogMultiplier = 18.0;
 
 RateControl::RateControl(QString group,
-                         UserSettingsPointer pConfig)
-    : EngineControl(group, pConfig),
+                         UserSettingsPointer pConfig,
+                         QObject *p)
+    : EngineControl(group, pConfig, p),
       m_pBpmControl(NULL),
       m_ePbCurrent(0),
       m_ePbPressed(0),
