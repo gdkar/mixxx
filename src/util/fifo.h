@@ -273,8 +273,8 @@ class fifo<T,false> {
     difference_type  bigMask{};
     difference_type  smallMask{};
     std::unique_ptr<storage_type[]> m_data{};
-    std::atomic<difference_type> m_ridx{0};
-    std::atomic<difference_type> m_widx{0};
+    std::atomic<difference_type>    m_ridx{0};
+    std::atomic<difference_type>    m_widx{0};
 
   public:
     explicit fifo(size_type size)
