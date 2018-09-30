@@ -1,19 +1,19 @@
 /*
 	FPTruncateMode.h
-	
+
 	Copyright 2001-11 Tim Goetze <tim@quitte.de>
-	
+
 	http://quitte.de/dsp/
 
 	Sets the FP rounding mode to 'truncate' in the constructor
-	and loads the previous FP conrol word in the destructor. 
+	and loads the previous FP conrol word in the destructor.
 
 	By directly using the machine instruction to convert float to int
 	we avoid the performance hit that loading the control word twice for
 	every (int) cast causes on i386.
 
 	On other architectures this is a no-op.
- 
+
 */
 /*
 	This program is free software; you can redistribute it and/or
@@ -56,14 +56,14 @@
 
 namespace DSP {
 
-static inline int 
+static inline int
 fast_trunc (float f)
 {
 	int i;
 	fistp (f, i);
 	return i;
 }
-	
+
 class FPTruncateMode
 {
 	public:
