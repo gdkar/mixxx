@@ -139,15 +139,15 @@ void SampleUtil::addWithRampingGain(CSAMPLE *pDest, const CSAMPLE *pSrc, CSAMPLE
 }
 void SampleUtil::applyGain(CSAMPLE *pSrc, CSAMPLE_GAIN gain, SINT num)
 {
-    if(gain != CSAMPLE_GAIN_ONE)
+    if(gain == CSAMPLE_GAIN_ZERO)
+        std::fill(pSrc, pSrc + num, CSAMPLE_ZERO);
+    else if(gain != CSAMPLE_GAIN_ONE)
         std::transform(pSrc,pSrc + num, pSrc,[gain](auto x){return x * gain;});
 }
 void SampleUtil::applyRampingGain(CSAMPLE *pBuffer, CSAMPLE_GAIN gain_pre, CSAMPLE_GAIN gain_post, SINT num)
 {
     if(gain_post == gain_pre) {
-        if(gain_pre) {
-            std::transform(pBuffer ,pBuffer+ num, pBuffer,[gain_pre](auto x){return x * gain_pre;});
-        }
+        SampleUtil::applyGain(pBuffer, gain_pre, num);
     } else {
         num >>= 1;
         auto step = (gain_post - gain_pre) / num;
