@@ -314,7 +314,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         if (!found) {
             // Queue this mapping and value for processing once we receive the next
             // message.
-            m_fourteen_bit_queued_mappings.append(qMakePair(mapping, value));
+            m_fourteen_bit_queued_mappings.append(std::make_pair(mapping, value));
             return;
         }
     } else if (opCode == MIDI_PITCH_BEND) {
