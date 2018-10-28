@@ -589,21 +589,6 @@ class ProtoBuf(Dependence):
             raise Exception(
                 "Could not find libprotobuf or its development headers.")
 
-class FpClassify(Dependence):
-
-    def enabled(self, build):
-        return build.toolchain_is_gnu
-
-    # This is a wrapper around the fpclassify function that prevents inlining
-    # It is compiled without optimization and allows to use these function
-    # from -ffast-math optimized objects
-    def sources(self, build):
-        # add this file without fast-math flag
-        env = build.env.Clone()
-        if '-ffast-math' in env['CCFLAGS']:
-                env['CCFLAGS'].remove('-ffast-math')
-        return env.Object('src/util/fpclassify.cpp')
-
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/qtscript-bytearray')
@@ -1212,7 +1197,7 @@ class MixxxCore(Feature):
             'src/preferences/dialog/dlgprefvinyldlg.ui',
             'src/preferences/dialog/dlgprefwaveformdlg.ui',
         ]
-        map(Qt.uic(build), ui_files)
+        list(map(Qt.uic(build), ui_files))
 
         if build.platform_is_windows:
             # Add Windows resource file with icons and such
@@ -1444,7 +1429,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices, IOKit,
-                QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer, LAME]
+                QtScriptByteArray, Reverb, PortAudioRingBuffer, LAME]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
