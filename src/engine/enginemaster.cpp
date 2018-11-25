@@ -229,6 +229,7 @@ EngineMaster::~EngineMaster() {
     delete m_pHeadphoneEnabled;
 
     SampleUtil::free(m_pHead);
+    SampleUtil::free(m_pSidechainMix);
     SampleUtil::free(m_pMaster);
     SampleUtil::free(m_pBooth);
     SampleUtil::free(m_pTalkover);

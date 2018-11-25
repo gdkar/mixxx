@@ -330,7 +330,7 @@ class VinylControl(Feature):
 
 
 class Vamp(Feature):
-    INTERNAL_LINK = False
+    INTERNAL_LINK = True
     INTERNAL_VAMP_PATH = 'lib/vamp'
 
     def description(self):

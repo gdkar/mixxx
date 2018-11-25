@@ -18,13 +18,14 @@
 
 #ifdef __SSE__
 
+#include <x86intrin.h>
 #include <xmmintrin.h>
-
+/*
 #define _MM_SET_DENORMALS_ZERO_MODE(mode) \
   _mm_setcsr ((_mm_getcsr () & ~_MM_DENORMALS_ZERO_MASK) | (mode))
 #define _MM_GET_DENORMALS_ZERO_MODE() \
   (_mm_getcsr() & _MM_DENORMALS_ZERO_MASK)
-
+*/
 #else
 
 // this section is active on armhf builds, where DAZ is default

@@ -197,6 +197,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,
                                  m_pChannelHandleFactory, true);
 
+    m_pEngine->setParent(this);
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
     BuiltInBackend* pBuiltInBackend = new BuiltInBackend(m_pEffectsManager);
@@ -342,7 +343,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     // (long)
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(pConfig);
-
+    m_pControllerManager->setParent(this);
     launchProgress(47);
 
     WaveformWidgetFactory::createInstance(); // takes a long time

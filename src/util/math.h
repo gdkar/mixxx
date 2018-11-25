@@ -80,7 +80,7 @@ constexpr int roundUpToPowerOf2(int v) {
     return power;
 }
 
-constexpr double roundToFraction(double value, int denominator) {
+inline double roundToFraction(double value, int denominator) {
     int wholePart = value;
     double fractionPart = value - wholePart;
     double numerator = std::round(fractionPart * denominator);
@@ -88,7 +88,7 @@ constexpr double roundToFraction(double value, int denominator) {
 }
 
 template <typename T>
-constexpr T ratio2db(const T a) {
+inline T ratio2db(const T a) {
     static_assert(std::is_same<float, T>::value ||
                   std::is_same<double, T>::value ||
                   std::is_same<long double, T>::value,
@@ -97,7 +97,7 @@ constexpr T ratio2db(const T a) {
 }
 
 template <typename T>
-constexpr T db2ratio(const T a) {
+inline T db2ratio(const T a) {
     static_assert(std::is_same<float, T>::value ||
                   std::is_same<double, T>::value ||
                   std::is_same<long double, T>::value,
