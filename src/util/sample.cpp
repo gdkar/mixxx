@@ -39,6 +39,8 @@ constexpr bool useAlignedAlloc() {
 // static
 CSAMPLE* SampleUtil::alloc(SINT size)
 {
+    auto alloc_size = ((size * sizeof(CSAMPLE)) + (kAlignment-1)) & ~(kAlignment-1);
+    return static_cast<CSAMPLE*>(std::aligned_alloc(kAlignment,alloc_size));
     // To speed up vectorization we align our sample buffers to 16-byte (128
     // bit) boundaries on SSE builds and 32-byte (256 bit) on AVX builds so
     // that vectorized loops doesn't have to do a serial ramp-up before going
@@ -57,39 +59,11 @@ CSAMPLE* SampleUtil::alloc(SINT size)
     // true start of the buffer in the slack space as well so that we can free
     // it correctly.
     // TODO(XXX): Replace with C++17 aligned_alloc.
-    if (useAlignedAlloc()) {
-#ifdef _MSC_VER
-        return static_cast<CSAMPLE*>(
-                _aligned_malloc(sizeof(CSAMPLE) * size, kAlignment));
-#else
-        // This block will be only used on non-Windows platforms that don't
-        // produce 16-byte aligned pointers via malloc. We allocate 16 bytes of
-        // slack space so that we can align the pointer we return to the caller.
-        const size_t alignment = kAlignment;
-        const size_t unaligned_size = sizeof(CSAMPLE[size]) + alignment;
-        void* pUnaligned = std::malloc(unaligned_size);
-        if (pUnaligned == NULL) {
-            return NULL;
-        }
-        // Shift
-        void* pAligned = (void*)(((size_t)pUnaligned & ~(alignment - 1)) + alignment);
-        // Store pointer to the original buffer in the slack space before the
-        // shifted pointer.
-        *((void**)(pAligned) - 1) = pUnaligned;
-        return static_cast<CSAMPLE*>(pAligned);
-#endif
-    } else {
-        // Our platform already produces aligned pointers (or is an exotic target)
-        return new CSAMPLE[size];
-    }
-    // TODO(XXX): Replace with C++11 aligned_alloc.
-    // TODO(XXX): consider 32 byte alignement to optimize for AVX builds
-    return new CSAMPLE[size];
 }
 
 void SampleUtil::free(CSAMPLE* pBuffer)
 {
-    delete[] pBuffer;
+    std::free(pBuffer);
 }
 
 void SampleUtil::copyWithGain(CSAMPLE *pDest, const CSAMPLE *pSrc, CSAMPLE_GAIN gain, SINT num)

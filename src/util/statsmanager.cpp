@@ -13,7 +13,7 @@ const int kStatsPipeSize = 1 << 10;
 const int kProcessLength = kStatsPipeSize * 4 / 5;
 
 // static
-bool StatsManager::s_bStatsManagerEnabled = false;
+std::atomic<bool> StatsManager::s_bStatsManagerEnabled = false;
 
 StatsPipe::StatsPipe(StatsManager* pManager)
         : FIFO<StatReport>(kStatsPipeSize),
@@ -171,7 +171,9 @@ StatsPipe* StatsManager::getStatsPipeForThread() {
     if (m_threadStatsPipes.hasLocalData()) {
         return m_threadStatsPipes.localData();
     }
-    StatsPipe* pResult = new StatsPipe(this);
+    if(!s_bStatsManagerEnabled.load())
+        return NULL;
+    auto pResult = new StatsPipe(this);
     m_threadStatsPipes.setLocalData(pResult);
     QMutexLocker locker(&m_statsPipeLock);
     m_statsPipes.push_back(pResult);

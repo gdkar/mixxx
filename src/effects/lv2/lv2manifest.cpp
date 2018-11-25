@@ -24,11 +24,11 @@ LV2Manifest::LV2Manifest(const LilvPlugin* plug,
     lilv_node_free(info);
 
     int numPorts = lilv_plugin_get_num_ports(plug);
-    m_minimum = new float[numPorts];
-    m_maximum = new float[numPorts];
-    m_default = new float[numPorts];
-    lilv_plugin_get_port_ranges_float(m_pLV2plugin, m_minimum, m_maximum,
-                                      m_default);
+    m_minimum = std::make_unique<float[]>(numPorts);
+    m_maximum = std::make_unique<float[]>(numPorts);
+    m_default = std::make_unique<float[]>(numPorts);
+    lilv_plugin_get_port_ranges_float(m_pLV2plugin, m_minimum.get(), m_maximum.get(),
+                                      m_default.get());
 
     // Counters to determine the type of the plug in
     int inputPorts = 0;
@@ -155,11 +155,7 @@ LV2Manifest::LV2Manifest(const LilvPlugin* plug,
     lilv_nodes_free(features);
 }
 
-LV2Manifest::~LV2Manifest() {
-    delete m_minimum;
-    delete m_maximum;
-    delete m_default;
-}
+LV2Manifest::~LV2Manifest() { }
 
 EffectManifestPointer LV2Manifest::getEffectManifest() const {
     return m_pEffectManifest;

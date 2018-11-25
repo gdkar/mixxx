@@ -1,6 +1,9 @@
 #ifndef LV2MANIFEST_H
 #define LV2MANIFEST_H
 
+#include <memory>
+#include <utility>
+
 #include "effects/effectmanifest.h"
 #include "effects/defs.h"
 #include <lilv-0/lilv/lilv.h>
@@ -38,9 +41,9 @@ class LV2Manifest {
     QList<int> controlPortIndices;
 
     // Arrays used for storing minimum, maximum and default parameter values
-    float* m_minimum;
-    float* m_maximum;
-    float* m_default;
+    std::unique_ptr<float[]> m_minimum;
+    std::unique_ptr<float[]> m_maximum;
+    std::unique_ptr<float[]> m_default;
     Status m_status;
     bool m_isValid;
 };

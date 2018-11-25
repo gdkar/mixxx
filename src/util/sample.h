@@ -42,19 +42,19 @@ namespace SampleUtil {
     {
         std::fill(pBuffer, pBuffer + iNumSamples, value);
     }
-    constexpr SINT ceilPlayPosToFrameStart(double playPos, int numChannels)
+    inline SINT ceilPlayPosToFrameStart(double playPos, int numChannels)
     {
         return static_cast<SINT>(std::ceil(playPos/numChannels)) * numChannels;
     }
-    constexpr SINT floorPlayPosToFrameStart(double playPos, int numChannels)
+    inline SINT floorPlayPosToFrameStart(double playPos, int numChannels)
     {
         return static_cast<SINT>(std::floor(playPos/numChannels)) * numChannels;
     }
-    constexpr SINT roundPlayPosToFrameStart(double playPos, int numChannels)
+    inline SINT roundPlayPosToFrameStart(double playPos, int numChannels)
     {
-        return static_cast<SINT>(std::round(playPos/numChannels)) * numChannels;
+        return static_cast<SINT>(playPos/numChannels) * numChannels;
     }
-    constexpr SINT truncPlayPosToFrameStart(double playPos, int numChannels)
+    inline  SINT truncPlayPosToFrameStart(double playPos, int numChannels)
     {
         return static_cast<SINT>(playPos/numChannels) * numChannels;
     }
@@ -94,20 +94,20 @@ namespace SampleUtil {
         return CSAMPLE_GAIN_clamp(in);
     }
 
-    constexpr SINT roundPlayPosToFrame(double playPos) {
-        return static_cast<SINT>(std::round(playPos / kPlayPositionChannels));
+    inline SINT roundPlayPosToFrame(double playPos) {
+        return static_cast<SINT>(std::round(playPos/kPlayPositionChannels));
     }
 
-    constexpr SINT truncPlayPosToFrame(double playPos) {
+    inline SINT truncPlayPosToFrame(double playPos) {
         return static_cast<SINT>(playPos / kPlayPositionChannels);
     }
 
-    constexpr SINT floorPlayPosToFrame(double playPos) {
+    inline SINT floorPlayPosToFrame(double playPos) {
         return static_cast<SINT>(std::floor(playPos / kPlayPositionChannels));
 
     }
 
-    constexpr SINT ceilPlayPosToFrame(double playPos) {
+    inline SINT ceilPlayPosToFrame(double playPos) {
         return static_cast<SINT>(std::ceil(playPos / kPlayPositionChannels));
     }
 

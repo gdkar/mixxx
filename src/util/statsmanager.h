@@ -36,7 +36,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
 
-    static bool s_bStatsManagerEnabled;
+    static std::atomic<bool> s_bStatsManagerEnabled;
 
     // Tell the StatsManager to emit statUpdated for every stat that exists.
     void emitAllStats() {
