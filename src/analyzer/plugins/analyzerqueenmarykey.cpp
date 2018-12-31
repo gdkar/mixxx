@@ -58,7 +58,7 @@ bool AnalyzerQueenMaryKey::initialize(int samplerate) {
             const auto key = static_cast<ChromaticKey>(iKey);
             if (key != m_prevKey) {
                 // TODO(rryan) reserve?
-                m_resultKeys.push_back(qMakePair(
+                m_resultKeys.push_back(std::make_pair(
                     key, static_cast<double>(m_currentFrame)));
                 m_prevKey = key;
             }
